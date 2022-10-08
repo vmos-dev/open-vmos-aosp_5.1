@@ -10,4 +10,4 @@ The source code size is about 20Gb, and the overall size of the compiled and out
 # Development
 1. Maintain system version number: manually change the version number in ```$ANDROID_BUILD_TOP/RomVersion```. (Just for version management, you can do it without modification)  
 2. Execute the package script ```pack.sh``` in the source root directory.  
-3. After the script is executed successfully, the system image package will be output in ````$ANDROID_BUILD_TOP/vmos_51_$TARGET_PRODUCT-$TARGET_BUILD_VARIANT.zip```.  
+3. After the script is executed successfully, the system image package will be output in ```$ANDROID_BUILD_TOP/vmos_51_$TARGET_PRODUCT-$TARGET_BUILD_VARIANT.zip```.  
