@@ -1,0 +1,12 @@
+system\src\openmax_il\lcml\Makefile
+system\src\openmax_il\lcml\docs\Makefile
+system\src\openmax_il\lcml\docs\OMAPSSP_34xx_LCML_DesignSpec.doc
+system\src\openmax_il\lcml\docs\OMAPSSP_34xx_LCML_RelNotes.doc
+system\src\openmax_il\lcml\inc\Makefile
+system\src\openmax_il\lcml\inc\LCML_CodecInterface.h
+system\src\openmax_il\lcml\inc\LCML_DspCodec.h
+system\src\openmax_il\lcml\inc\LCML_Types.h
+system\src\openmax_il\lcml\inc\usn.h
+system\src\openmax_il\lcml\src\Makefile
+system\src\openmax_il\lcml\src\LCML_DspCodec.c
+

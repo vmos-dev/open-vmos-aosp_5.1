@@ -1,0 +1,29 @@
+CLIENTS:= loc_api
+SERVERS:= loc_api_cb
+COMMON:= loc_api_common
+RPC_INC:= inc-$(AMSS_VERSION)
+
+all: $(CLIENTS) $(SERVERS) $(COMMON) fixup
+
+$(CLIENTS) $(SERVERS) $(COMMON):: xdr = $(@:=.xdr) 
+
+$(CLIENTS) $(SERVERS) $(COMMON)::
+	rpcgen -h -M $(xdr) -o ../$(RPC_INC)/$(addsuffix .h, $@)
+	rpcgen -c -M $(xdr) -o $(addsuffix _xdr.c, $@)
+
+$(CLIENTS)::
+	rpcgen -l -M $(xdr) -o $(addsuffix _clnt.c, $@)
+
+$(SERVERS)::
+	rpcgen -m -M $(xdr) -o $(addsuffix _svc.c, $@)
+
+fixup:
+	mv ../$(RPC_INC)/loc_api_common.h ../$(RPC_INC)/loc_api_common.h.bak
+	sed ../$(RPC_INC)/loc_api_common.h.bak -e "/#include <rpc/a#include \"loc_api_fixup.h\"" > ../$(RPC_INC)/loc_api_common.h
+	rm -f ../$(RPC_INC)/loc_api_common.h.bak
+
+clean:
+	rm -f $(addsuffix _clnt.c, $(CLIENTS))
+	rm -f $(addsuffix _svc.c, $(SERVERS))
+	rm -f $(addsuffix _xdr.c, $(CLIENTS) $(SERVERS) $(COMMON))
+	rm -f $(addprefix ../$(RPC_INC)/, $(addsuffix .h, $(CLIENTS) $(SERVERS) $(COMMON)))

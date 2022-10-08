@@ -1,0 +1,262 @@
+/****************************************************************************
+ ****************************************************************************
+ ***
+ ***   This header was automatically generated from a Linux kernel header
+ ***   of the same name, to make information necessary for userspace to
+ ***   call into the kernel available to libc.  It contains only constants,
+ ***   structures, and macros generated from the original header, and thus,
+ ***   contains no copyrightable information.
+ ***
+ ***   To edit the content of this header, modify the corresponding
+ ***   source file (e.g. under external/kernel-headers/original/) then
+ ***   run bionic/libc/kernel/tools/update_all.py
+ ***
+ ***   Any manual change here will be lost the next time this script will
+ ***   be run. You've been warned!
+ ***
+ ****************************************************************************
+ ****************************************************************************/
+#ifndef __FIMG2D_H
+#define __FIMG2D_H __FILE__
+#define FIMG2D_MAX_PLANES 2
+#define FIMG2D_IOCTL_MAGIC 'F'
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+#define FIMG2D_BITBLT_BLIT _IOWR(FIMG2D_IOCTL_MAGIC, 0, struct fimg2d_blit)
+#define FIMG2D_BITBLT_SYNC _IOW(FIMG2D_IOCTL_MAGIC, 1, int)
+#define FIMG2D_BITBLT_VERSION _IOR(FIMG2D_IOCTL_MAGIC, 2, struct fimg2d_version)
+struct fimg2d_version {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ unsigned int hw;
+ unsigned int sw;
+};
+enum blit_sync {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_SYNC,
+ BLIT_ASYNC,
+};
+enum addr_space {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ ADDR_NONE = 0,
+ ADDR_DMA_BUF,
+};
+enum pixel_order {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ AX_RGB = 0,
+ RGB_AX,
+ AX_BGR,
+ BGR_AX,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ ARGB_ORDER_END,
+ P1_CRY1CBY0,
+ P1_CBY1CRY0,
+ P1_Y1CRY0CB,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ P1_Y1CBY0CR,
+ P1_ORDER_END,
+ P2_CRCB,
+ P2_CBCR,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ P2_ORDER_END,
+};
+enum color_format {
+ CF_XRGB_8888 = 0,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ CF_ARGB_8888,
+ CF_RGB_565,
+ CF_XRGB_1555,
+ CF_ARGB_1555,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ CF_XRGB_4444,
+ CF_ARGB_4444,
+ CF_RGB_888,
+ CF_YCBCR_444,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ CF_YCBCR_422,
+ CF_YCBCR_420,
+ CF_A8,
+ CF_L8,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ SRC_DST_FORMAT_END,
+ CF_MSK_1BIT,
+ CF_MSK_4BIT,
+ CF_MSK_8BIT,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ CF_MSK_16BIT_565,
+ CF_MSK_16BIT_1555,
+ CF_MSK_16BIT_4444,
+ CF_MSK_32BIT_8888,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ MSK_FORMAT_END,
+};
+enum rotation {
+ ORIGIN,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ ROT_90,
+ ROT_180,
+ ROT_270,
+ XFLIP,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ YFLIP,
+};
+enum repeat {
+ NO_REPEAT = 0,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ REPEAT_NORMAL,
+ REPEAT_PAD,
+ REPEAT_REFLECT, REPEAT_MIRROR = REPEAT_REFLECT,
+ REPEAT_CLAMP,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+};
+enum scaling {
+ NO_SCALING,
+ SCALING_NEAREST,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ SCALING_BILINEAR,
+};
+enum scaling_factor {
+ SCALING_PIXELS,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ SCALING_RATIO,
+};
+enum premultiplied {
+ PREMULTIPLIED,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ NON_PREMULTIPLIED,
+};
+enum bluescreen {
+ OPAQUE,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ TRANSP,
+ BLUSCR,
+};
+enum blit_op {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_SOLID_FILL = 0,
+ BLIT_OP_CLR,
+ BLIT_OP_SRC, BLIT_OP_SRC_COPY = BLIT_OP_SRC,
+ BLIT_OP_DST,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_SRC_OVER,
+ BLIT_OP_DST_OVER, BLIT_OP_OVER_REV = BLIT_OP_DST_OVER,
+ BLIT_OP_SRC_IN,
+ BLIT_OP_DST_IN, BLIT_OP_IN_REV = BLIT_OP_DST_IN,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_SRC_OUT,
+ BLIT_OP_DST_OUT, BLIT_OP_OUT_REV = BLIT_OP_DST_OUT,
+ BLIT_OP_SRC_ATOP,
+ BLIT_OP_DST_ATOP, BLIT_OP_ATOP_REV = BLIT_OP_DST_ATOP,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_XOR,
+ BLIT_OP_ADD,
+ BLIT_OP_MULTIPLY,
+ BLIT_OP_SCREEN,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_DARKEN,
+ BLIT_OP_LIGHTEN,
+ BLIT_OP_DISJ_SRC_OVER,
+ BLIT_OP_DISJ_DST_OVER, BLIT_OP_SATURATE = BLIT_OP_DISJ_DST_OVER,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_DISJ_SRC_IN,
+ BLIT_OP_DISJ_DST_IN, BLIT_OP_DISJ_IN_REV = BLIT_OP_DISJ_DST_IN,
+ BLIT_OP_DISJ_SRC_OUT,
+ BLIT_OP_DISJ_DST_OUT, BLIT_OP_DISJ_OUT_REV = BLIT_OP_DISJ_DST_OUT,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_DISJ_SRC_ATOP,
+ BLIT_OP_DISJ_DST_ATOP, BLIT_OP_DISJ_ATOP_REV = BLIT_OP_DISJ_DST_ATOP,
+ BLIT_OP_DISJ_XOR,
+ BLIT_OP_CONJ_SRC_OVER,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_CONJ_DST_OVER, BLIT_OP_CONJ_OVER_REV = BLIT_OP_CONJ_DST_OVER,
+ BLIT_OP_CONJ_SRC_IN,
+ BLIT_OP_CONJ_DST_IN, BLIT_OP_CONJ_IN_REV = BLIT_OP_CONJ_DST_IN,
+ BLIT_OP_CONJ_SRC_OUT,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_CONJ_DST_OUT, BLIT_OP_CONJ_OUT_REV = BLIT_OP_CONJ_DST_OUT,
+ BLIT_OP_CONJ_SRC_ATOP,
+ BLIT_OP_CONJ_DST_ATOP, BLIT_OP_CONJ_ATOP_REV = BLIT_OP_CONJ_DST_ATOP,
+ BLIT_OP_CONJ_XOR,
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ BLIT_OP_USER_COEFF,
+ BLIT_OP_USER_SRC_GA,
+ BLIT_OP_END,
+};
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+#define MAX_FIMG2D_BLIT_OP (int)BLIT_OP_END
+struct fimg2d_addr {
+ enum addr_space type;
+ int fd[FIMG2D_MAX_PLANES];
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+};
+struct fimg2d_rect {
+ int x1;
+ int y1;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ int x2;
+ int y2;
+};
+struct fimg2d_scale {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ enum scaling mode;
+ int src_w, src_h;
+ int dst_w, dst_h;
+};
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+struct fimg2d_clip {
+ __u32 enable;
+ int x1;
+ int y1;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ int x2;
+ int y2;
+};
+struct fimg2d_repeat {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ enum repeat mode;
+ unsigned long pad_color;
+};
+struct fimg2d_bluscr {
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ enum bluescreen mode;
+ unsigned long bs_color;
+ unsigned long bg_color;
+};
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+struct fimg2d_image {
+ int width;
+ int height;
+ int stride;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ enum pixel_order order;
+ enum color_format fmt;
+ struct fimg2d_addr addr;
+ struct fimg2d_rect rect;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+};
+struct fimg2d_param {
+ unsigned long solid_color;
+ unsigned char g_alpha;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ __u32 dither;
+ enum rotation rotate;
+ enum premultiplied premult;
+ struct fimg2d_scale scaling;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ struct fimg2d_repeat repeat;
+ struct fimg2d_bluscr bluscr;
+ struct fimg2d_clip clipping;
+};
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+struct fimg2d_blit {
+ enum blit_op op;
+ struct fimg2d_param param;
+ struct fimg2d_image *src;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ struct fimg2d_image *msk;
+ struct fimg2d_image *tmp;
+ struct fimg2d_image *dst;
+ enum blit_sync sync;
+/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+ unsigned int seq_no;
+};
+#endif
+

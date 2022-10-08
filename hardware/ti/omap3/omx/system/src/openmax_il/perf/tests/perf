@@ -1,0 +1,346 @@
+#!/bin/sh
+
+# temporary files used by this script
+my_perf=/tmp/.perf.$$
+my_perf_pattern=/tmp/.perf.*
+
+# commands to measure certain metrics
+cmd_VCrate="Video+Capture+Rate CAMT PERF.awk+who=CAMT+from=Hardware+what=frame+how=received"
+cmd_VDrate="Video+Decode+Rate VD_T PERF.awk+who=VD_T+to=HLMM+what=frame+how=sending"
+cmd_VDTrate="Video+Decode+Rate VD_T PERF.awk+who=VD_T+to=LLMM+what=frame+how=sending"
+cmd_VErate="Video+Encode+Rate VE_T PERF.awk+who=VE_T+to=HLMM+what=buffer+how=sending"
+cmd_VERrate="Video+Encode+Input+Rate VE__ PERF.awk+who=VE__+from=HLMM+what=frame+how=received"
+cmd_VPPYrate="Video+PreProc+YUV+Output+Rate VPPT PERF.awk+who=VPPT+to=HLMM+what=frame+how=sending"
+cmd_VPPRrate="Video+PreProc+RGB+Output+Rate VPPT PERF.awk+who=VPPT+to=HLMM+what=frame+how=sending"
+cmd_VPPIrate="Video+PreProc+Input+Rate VPP_ PERF.awk+who=VPP_+from=HLMM+what=frame+how=received"
+cmd_VPrate="Video+Display+Rate VP_T PERF.awk+who=VP_T+to=Hardware+what=frame+how=sending"
+cmd_VCPrate="Video+Preview+Rate VP_T PERF.awk+who=VP_T+to=Hardware+what=frame+how=sending"
+
+# save the original test command
+test="$@"
+
+# --------- BEGIN DEBUG INFRASTRUCTURE ---------
+VFLAG=;DBG=false;DO=;DODO=;PERFORM=
+debug_do() { perform=$PERFORM; if [ "$1" = "-y" ]; then shift; perform=; fi
+[ "$1" = "eval" ] && echo $2 || echo $*; $perform $*
+}
+debug_on() { VFLAG=$1;DBG=$2;DO=debug_do;DODO=debug_do;PERFORM=$3
+}
+
+# ---------- END DEBUG INFRASTRUCTURE ----------
+# debug_on
+
+# ------------------------------ START FUNCTIONS ------------------------------
+# scale factor size => scale a size by factor percent
+scale() {
+  if [ $1 -lt 100 ]
+  then
+    expr $2 / 2
+  elif [ $1 -gt 100 ]
+  then
+    expr $2 \* 2
+  else
+    expr $2
+  fi
+}
+
+warn_param() {
+  echo "perf: Unsupported configuration of test: $1. No PERF measurement will be performed." 1>&2
+}
+
+# ------------------------------- END FUNCTIONS -------------------------------
+
+MSG=;EVAL=
+# figure out which test we are running, and add metrics to evaluate
+while true
+do
+  # remove path
+  i=`echo $1 | sed "s/.*\///"`
+  case $i in
+    # skip any test wrappers, such as armtime or time, as they are not the real
+    # test being executed
+    armtime) # we are measuring ARM time, we need to skip this and its options
+      shift
+
+      while true
+      do
+        case $1 in
+          -v|-vv|-notime|-CPU=*) shift ;;  # skip options
+          *)                     break ;;
+        esac
+      done
+      ;;
+
+    time)
+      shift
+
+      while true
+      do
+        case $1 in
+          -*) shift ;;  # skip options
+          *)  break ;;
+        esac
+      done
+      ;;
+
+    # this is the test then - see if we recognize it
+    
+    AvPlayTest*)
+      case $2 in
+        6)     VDsize=$(expr $6 \* $7 \* 2)
+               VPsize=$(scale $18 $(scale $19 $VDsize)) ;;               
+        13|14) VDsize=$(expr $9 \* $10 \* 2)
+               VPsize=$(scale $16 $(scale $17 $VDsize)) ;;
+        15)    VDsize=$(expr $5 \* $6 \* 2)
+               VPsize=$(scale $12 $(scale $13 $VDsize)) ;;
+        *)     warn_param $1 ; break ;;
+      esac
+      EVAL="$EVAL $cmd_VDTrate+size=$VDsize"
+      EVAL="$EVAL $cmd_VPrate+size=$VDsize"
+      break
+      ;;
+
+    AVRecordTest*)
+      size=$(expr $4 \* $5 \* 2)
+      EVAL="$EVAL $cmd_VCrate+size=$size"
+      EVAL="$EVAL $cmd_VCPrate+size=$size"
+      break
+      ;;
+
+    CameraTest*)
+      width=176;height=144
+      shift
+
+      while [ $# -gt 0 ]
+      do
+        case $1 in
+          -w)   width=$2; shift ;;
+          -w*)  width=`echo $1 | cut -c3-` ;;
+          -h)   height=$2; shift ;;
+          -h*)  height=`echo $1 | cut -c3-` ;;
+          --widthv*=*)  width=`echo $1 | cut -d= -f2` ;;
+          --widthv*)    width=$2; shift ;;
+          --heightv*=*) height=`echo $1 | cut -d= -f2` ;;
+          --heightv*)   height=$2; shift ;;
+          -a|--hel*|-d|--de*|-g|--u*|-j|--n*|-u|--ti*|-e|--di*|--*=*) ;;
+          -*) shift ;;
+          *) ;;
+        esac
+        shift
+      done
+
+      size=$(expr $width \* $height \* 2)
+      EVAL="$EVAL $cmd_VCrate+size=$size"
+      EVAL="$EVAL $cmd_VCPrate+size=$size"
+
+      break
+      ;;
+
+    PostProcTest*)
+      if [ \( $2 -eq 0 \) -o \( \( $2 -ge 8 \) -a \( $2 -le 15 \) \) ]
+      then
+        size=$(expr $4 \* $5 \* 2)
+      else
+        warn_param $1 ; break
+      fi
+
+      EVAL="$EVAL $cmd_VPrate+size=$size"
+      break
+      ;;
+
+    VideoCaptureTest*)
+      width=176;height=144
+      shift
+
+      while [ $# -gt 0 ]
+      do
+        case $1 in
+          -w)   width=$2; shift ;;
+          -w*)  width=`echo $1 | cut -c3-` ;;
+          -h)   height=$2; shift ;;
+          -h*)  height=`echo $1 | cut -c3-` ;;
+          --widthv*=*)  width=`echo $1 | cut -d= -f2` ;;
+          --widthv*)    width=$2; shift ;;
+          --heightv*=*) height=`echo $1 | cut -d= -f2` ;;
+          --heightv*)   height=$2; shift ;;
+          -a|--hel*|-d|--debu*|-g|--u*|-j|--n*|-u|--ti*|-e|--di*|-D|--debl*|--*=*) ;;
+          -*) shift ;;
+          *) ;;
+        esac
+        shift
+      done
+
+      size=$(expr $width \* $height \* 2)
+      EVAL="$EVAL $cmd_VCrate+size=$size"
+      EVAL="$EVAL $cmd_VERrate"
+      EVAL="$EVAL $cmd_VCPrate+size=$size"
+
+      break
+      ;;
+
+    VidDecTest*)
+      size=$(expr $6 \* $7 \* 2)
+      EVAL="$EVAL $cmd_VDrate+size=$size"
+      break
+      ;;
+
+    VideoDisplayTest*)
+      case $2 in
+        5|6) VDsize=$(expr $5 \* $6 \* 2)
+             VPsize=$(scale $12 $(scale $13 $VDsize)) ;;
+        *)   warn_param $1 ; break ;;
+      esac
+      EVAL="$EVAL $cmd_VDTrate+size=$VDsize"
+      EVAL="$EVAL $cmd_VPrate+size=$VDsize"
+      break
+      ;;
+
+    VideoEncTest*)
+      size=$(expr $4 \* $5 \* 2)
+      if [ $6 -eq 19 ]
+      then
+        size=$(expr $(expr $size \* 3) / 4)
+      fi
+      EVAL="$EVAL $cmd_VERrate+size=$size"
+      EVAL="$EVAL $cmd_VErate"
+      break
+      ;;
+
+    VPPCaptureTest*)
+      VCsize=
+      IPsize=
+      VEsize=
+      case $2 in        
+        3|4|5) VCsize=$(expr $4 \* $5 \* 2)
+               VEsize=$VCsize ;;
+        1)     IPsize=$(expr $9 \* $10 \* 2) ;;
+        *)     warn_param $1 ; break ;;
+      esac
+
+      [ "$VCsize" ] && EVAL="$EVAL $cmd_VCrate+size=$VCsize"
+      # [ "$VEsize" ] && EVAL="$EVAL $cmd_VERrate+size=$size"
+      [ "$VEsize" ] && EVAL="$EVAL $cmd_VErate"
+      break
+      ;;
+
+    VPPTest*)
+      in_size=$(expr $4 \* $5)
+
+      case $6 in
+        3)       in_size=$(expr $in_size \* 3) ;;
+        1|2|4|5|6|7) in_size=$(expr $in_size \* 2) ;;  # 5, 6, 7 should not be here
+        0|5)   in_size=$(expr $(expr $in_size \* 3) / 2) ;;
+        6|8)     ;;
+        7|9)     in_size=$(expr $in_size / 2) ;;
+        10)      in_size=$(expr $in_size / 4) ;;
+        11)      in_size=$(expr $in_size / 8) ;;
+        *)  warn_param $1 ; break ;;
+      esac
+
+      out_size=$(expr $8 \* $9)
+
+      case $10 in
+        0)   yuv_size=0 ;;
+        2|3) yuv_size=$(expr $out_size \* 2) ;;
+        1|*) yuv_size=$(expr $(expr $out_size \* 3) / 2) ;;
+      esac
+
+      case $11 in
+        0)   rgb_size=0 ;;
+        4|6) rgb_size=$out_size ;;
+        10)  rgb_size=$(expr $out_size * 4) ;;
+        8)   rgb_size=$(expr $out_size / 4) ;;
+        1)   rgb_size=$(expr $out_size \* 3) ;;
+        3)   rgb_size=$(expr $(expr $out_size \* 3) / 2) ;;
+        9)   rgb_size=$(expr $out_size / 8) ;;
+        5|7) rgb_size=$(expr $out_size / 2) ;;
+        2|*) rgb_size=$(expr $out_size \* 2) ;;
+      esac
+
+      if [ $yuv_size -eq $rgb_size ]
+      then
+        MSG="RGB and YUV output frame sizes are identical.  Printing multiples of the frame rates."
+        factor=2x+
+      fi
+
+      EVAL="$EVAL $cmd_VPPIrate+size=$in_size"
+      [ $rgb_size ] && EVAL="$EVAL $factor$cmd_VPPRrate+size=$rgb_size"
+      [ $yuv_size ] && EVAL="$EVAL $factor$cmd_VPPYrate+size=$yuv_size"
+      break
+      ;;
+
+    VPPTunnelTest*)
+      IDsize=
+      VDsize=
+      VPsize=
+      case $2 in
+        7)     IDsize=$(expr $4 \* $5 \* 2)
+               IVPsize=$IDsize
+               if [ $# -gt 8 ]
+               then
+                 IVPsize=$(expr $8 \* $9 \* 2)
+               fi
+
+               case $6 in
+               1) 2 ;; # overwrite
+               1) 4 ;;
+               2) 3 ;;
+               2|3|5|6) 2 ;;
+               4) 1.5 ;;
+               5|7) 1 ;;
+               6|8) 0.5 ;;
+               9) 0.25 ;;
+               10) 0.125 ;;
+               esac
+
+               warn_param $1 ; break
+               ;;
+        1)     VPsize=$(expr $8 \* $9 \* 2) ;;
+        10|12) VDsize=$(expr $5 \* $6 \* 2)
+               VPsize=$(expr $10 \* $11 \* 2) ;;
+        *)   warn_param $1 ; break ;;
+      esac
+      [ "$VDsize" ] && EVAL="$EVAL $cmd_VDTrate+size=$VDsize"
+      [ "$VPsize" ] && EVAL="$EVAL $cmd_VPrate+size=$VPsize"
+      break
+      ;;
+
+    *)
+      echo "perf: Unsupported test: $1. No PERF measurement will be performed." 1>&2
+      break
+      ;;
+  esac
+done
+
+# If we need to evaluate some PERF metrics, set up PERF measurement
+if [ "$EVAL" ]
+then
+  echo "trace_file=$my_perf
+  csv=1
+  mask=0x3cffff" > ./perf.ini
+  rm $my_perf_pattern*.trace
+else
+  echo csv=1 > ./perf.ini
+fi
+
+# run the test
+$test
+
+# evaluate the test
+evaluate_test() {
+  if [ "$MSG" ]
+  then
+    echo perf: NOTE: $MSG
+  fi
+
+  while [ $# -gt 1 ]
+  do
+    echo Evaluating `echo $1 | sed "s/\+/ /g"` ...
+    $DBG echo /omx/PERF_reader $my_perf*$2.trace "|" awk -f /omx/`echo $3 | sed "s/\+/ /g"`
+    /omx/PERF_reader $my_perf*$2.trace | awk -f /omx/`echo $3 | sed "s/\+/ /g"`
+    shift 3
+  done
+  echo csv=1 > ./perf.ini
+}
+evaluate_test $EVAL
+

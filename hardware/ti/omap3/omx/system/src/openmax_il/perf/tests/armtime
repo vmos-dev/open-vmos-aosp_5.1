@@ -1,0 +1,233 @@
+#!/bin/sh
+
+debug=false;args=;time=true
+
+# temporary files used by this script
+my_awk=/tmp/.uptime.$$.awk
+my_log=/tmp/.uptime.$$.log
+
+# check for arguments - to override temporary file names
+yes=true
+while $yes && [ $# -gt 1 ]
+do
+  case $1 in
+    -v)
+      # verbose mode: print collected info
+      debug=true
+      shift
+      ;;
+    -vv)
+      # super verbose mode: print collected info and debug awk script
+      debug=true
+      args="$args debug=1"
+      shift
+      ;;
+    -notime)
+      # do not use time
+      time=false
+      shift
+      ;;
+    -CPU=*)
+      # CPU speed
+      args="$args `echo "$1" | cut -c2-`"
+      shift
+      ;;
+    *)
+      yes=false
+      ;;
+  esac
+done
+
+cat >$my_awk <<"AWKSCRIPT"
+
+BEGIN {
+   FS=" "
+   factor=0;           # we are measuring after-before as (-before) + (after),
+                       # so the factor before the test is -1, after the test is
+                       # +1.
+   uptime_total = 0;   # total system uptime (before/after)
+   uptime_idle  = 0;   # total idle uptime (before/after)
+   proctime_total = 0; # total time the test was running
+   proctime_work  = 0; # total CPU time that the test was using
+   cpu_time = 0;       # total time the CPU stats were measured on
+   cpu_MHz = 0;        # total kHz work for the CPU
+   cpu_eMHz = 0;       # effective CPU operating point
+   delete MHZtime;     # total time spent in various power states
+   kernel = 0;         # don't print separate kernel time statistics
+
+   # get variable assignments from ARGV
+   for (i=1; i<ARGC; i++)
+   {
+      arg = ARGV[i];
+      if      (gsub("^CPU=",     "",arg)) { cpu_eMHz = arg; }
+      else if (gsub("^debug=",   "",arg)) { debug    = arg; }
+      else if (arg == "kernel")           { kernel   = 1; }
+      else continue;
+      delete ARGV[i]; # we can do this is AWK, and we don't need to decrement i
+   }
+}
+
+/^[0-9]+\./ {  # /proc/uptime lines
+   # the first time an uptime line is encountered factor should be -1, the
+   # second time it should be 1.  We set it to 0 at the beginning, so we use
+   # that to decide if it is the 1st uptime line
+   factor = factor ? 1 : -1
+   # get uptime stats (for beginning or end)
+   uptime_total += factor * $1
+   uptime_idle  += factor * $2
+   if (debug)
+   {
+      print "got(/proc/uptime):", $0, "=>", factor, uptime_total, uptime_idle
+   }
+}
+
+/^[0-9]+ / {   # /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state lines
+   # get time spent in various power states (in 10ms)
+   MHZtime[$1] += factor * $2 * 0.01
+   cpu_time += factor * $2 * 0.01
+   cpu_MHz += factor * $1 * $2 / 100000 # (CPU freq is in kHz)
+   if (debug)
+   {
+      print "got(/sys/..time_in_state):", $0, "=>", factor, cpu_time, cpu_MHz, MHZtime[$1]
+   }
+}
+
+/^(real|user|sys)/ {
+   # test has run
+   factor=1
+   # get time (from h m s notation to seconds)
+   time=0
+   for (i = 2; i <= NF; i++)
+   {
+      if ($i ~ /h/)
+      {
+         time += 3600 * $i
+      }
+      else if ($i ~ /m/)
+      {
+         time += 60 * $i
+      }
+      else
+      {  # this works for both POSIX and normal output
+         time += 1 * $i
+      }
+      if (debug)
+      {
+         print "got (" $i ") =>", time
+      }
+   }
+
+   if ($1 ~ /real/)
+   {
+      proctime_total = time
+   }
+   else
+   {
+      proctime_work += time;
+      if (kernel && ($1 ~ /sys/))
+      {
+         proctime_kernel += time;
+      }
+   }
+
+   if (debug)
+   {
+      print "got(time)", $0, "=>", proctime_total, proctime_work
+   }
+}
+
+END {
+   print "ARMtime Results"
+
+   if (proctime_total)
+   {
+      dur_time = ", " proctime_total " (time)"
+   }
+   if (cpu_time)
+   {
+      dur_cpu = ", " cpu_time " (cpu-stats)"
+   }
+   
+   print " Test duration:", uptime_total, "(uptime)" dur_time dur_cpu
+
+   # calculate CPU MHz for test
+   cpu_states = 0
+   for (i in MHZtime)
+   {
+      if (MHZtime[i] > 0)
+      {
+         print " ARM-CPU time at", i/1000, "MHz: ", MHZtime[i], "s"
+         cpu_states ++;
+      }
+   }
+
+   if (cpu_time)
+   {
+      cpu_eMHz = cpu_MHz/cpu_time
+   }
+   else if (cpu_states)
+   {
+      cpu_eMHz /= cpu_states
+   }
+   else if (cpu_eMHz == 0)
+   {
+      "grep mpu /proc/omap_clocks /proc/ckomap24xx" | getline clock_speed
+      split(clock_speed, clock_speeds)
+      if (debug) {
+         print "got", clock_speed
+         print "got", clock_speeds[1], clock_speeds[2], clock_speeds[3]
+      }
+      cpu_eMHz = clock_speeds[3] / 1000000
+   }
+
+   # mark ~ if we are not sure about the CPU-speed (e.g. if we had more than one
+   # power states during the test run)
+   cpu_sureness = (cpu_states == 1) ? "" : "~"
+
+   cpu_eMHz /= 100  # so we can multiply with the %-s
+   if (uptime_total > 0)
+   {
+      # WE always will use uptime total
+      uptime_idle -= uptime_total
+      util = int(0.5 - 1000 * uptime_idle/uptime_total) / 10
+
+      # don't let utilization be negative (because it is infact 0)
+      if (util < 0)
+      {
+         util = 0
+      }
+
+      print " Total ARM-CPU utilization:", util "% =", cpu_sureness (util * cpu_eMHz), "eMHz"
+      if (proctime_total)
+      {
+         util = int(0.5 + 1000 * proctime_work/uptime_total) / 10
+         print " Test  ARM-CPU utilization:", util "% =", cpu_sureness (util * cpu_eMHz), "eMHz"
+
+         if (kernel)
+         {
+            util = int(0.5 + 1000 * proctime_kernel/uptime_total) / 10
+            proc_util = int(0.5 + 1000 * proctime_kernel/proctime_work) / 10
+            print " Test's kernel space util.:", util "% =", cpu_sureness (util * cpu_eMHz), "eMHz (" proc_util "% of test thread)"
+         }
+      }
+   }
+}
+AWKSCRIPT
+
+# run measurement
+cat /proc/uptime /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state >$my_log
+if $time
+then
+  time -p $* 2>>$my_log
+else
+  $*
+fi
+cat /proc/uptime /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state >>$my_log
+
+# evaluate and debug
+$debug && cat $my_log
+awk -f $my_awk $args $my_log
+
+# remove temporary files
+rm $my_log $my_awk
+

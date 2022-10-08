@@ -1,0 +1,752 @@
+/*
+ * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (c) 2010 - 2014, The Linux Foundation. All rights reserved.
+ *
+ * Not a Contribution, Apache license notifications and license are retained
+ * for attribution purposes only.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <cutils/log.h>
+
+#include <linux/msm_mdp.h>
+#include <linux/fb.h>
+
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+
+#include <copybit.h>
+
+#include "gralloc_priv.h"
+#include "software_converter.h"
+
+#define DEBUG_MDP_ERRORS 1
+
+/******************************************************************************/
+
+#define MAX_SCALE_FACTOR    (4)
+#define MAX_DIMENSION       (4096)
+
+/******************************************************************************/
+struct blitReq{
+    struct  mdp_buf_sync sync;
+    uint32_t count;
+    struct mdp_blit_req req[10];
+};
+
+/** State information for each device instance */
+struct copybit_context_t {
+    struct copybit_device_t device;
+    int     mFD;
+    uint8_t mAlpha;
+    int     mFlags;
+    bool    mBlitToFB;
+    int     acqFence[MDP_MAX_FENCE_FD];
+    int     relFence;
+    struct  mdp_buf_sync sync;
+    struct  blitReq list;
+};
+
+/**
+ * Common hardware methods
+ */
+
+static int open_copybit(const struct hw_module_t* module, const char* name,
+                        struct hw_device_t** device);
+
+static struct hw_module_methods_t copybit_module_methods = {
+open:  open_copybit
+};
+
+/*
+ * The COPYBIT Module
+ */
+struct copybit_module_t HAL_MODULE_INFO_SYM = {
+common: {
+tag: HARDWARE_MODULE_TAG,
+     version_major: 1,
+     version_minor: 0,
+     id: COPYBIT_HARDWARE_MODULE_ID,
+     name: "QCT MSM7K COPYBIT Module",
+     author: "Google, Inc.",
+     methods: &copybit_module_methods
+        }
+};
+
+/******************************************************************************/
+
+/** min of int a, b */
+static inline int min(int a, int b) {
+    return (a<b) ? a : b;
+}
+
+/** max of int a, b */
+static inline int max(int a, int b) {
+    return (a>b) ? a : b;
+}
+
+/** scale each parameter by mul/div. Assume div isn't 0 */
+static inline void MULDIV(uint32_t *a, uint32_t *b, int mul, int div) {
+    if (mul != div) {
+        *a = (mul * *a) / div;
+        *b = (mul * *b) / div;
+    }
+}
+
+/** Determine the intersection of lhs & rhs store in out */
+static void intersect(struct copybit_rect_t *out,
+                      const struct copybit_rect_t *lhs,
+                      const struct copybit_rect_t *rhs) {
+    out->l = max(lhs->l, rhs->l);
+    out->t = max(lhs->t, rhs->t);
+    out->r = min(lhs->r, rhs->r);
+    out->b = min(lhs->b, rhs->b);
+}
+
+/** convert COPYBIT_FORMAT to MDP format */
+static int get_format(int format) {
+    switch (format) {
+        case HAL_PIXEL_FORMAT_RGB_565:       return MDP_RGB_565;
+        case HAL_PIXEL_FORMAT_RGBX_8888:     return MDP_RGBX_8888;
+        case HAL_PIXEL_FORMAT_BGRX_8888:     return MDP_BGRX_8888;
+        case HAL_PIXEL_FORMAT_RGB_888:       return MDP_RGB_888;
+        case HAL_PIXEL_FORMAT_RGBA_8888:     return MDP_RGBA_8888;
+        case HAL_PIXEL_FORMAT_BGRA_8888:     return MDP_BGRA_8888;
+        case HAL_PIXEL_FORMAT_YCrCb_422_I:   return MDP_YCRYCB_H2V1;
+        case HAL_PIXEL_FORMAT_YCbCr_422_I:   return MDP_YCBYCR_H2V1;
+        case HAL_PIXEL_FORMAT_YCrCb_422_SP:  return MDP_Y_CRCB_H2V1;
+        case HAL_PIXEL_FORMAT_YCrCb_420_SP:  return MDP_Y_CRCB_H2V2;
+        case HAL_PIXEL_FORMAT_YCbCr_422_SP:  return MDP_Y_CBCR_H2V1;
+        case HAL_PIXEL_FORMAT_YCbCr_420_SP:  return MDP_Y_CBCR_H2V2;
+        case HAL_PIXEL_FORMAT_YCrCb_420_SP_ADRENO: return MDP_Y_CBCR_H2V2_ADRENO;
+        case HAL_PIXEL_FORMAT_YCbCr_420_SP_VENUS: return MDP_Y_CBCR_H2V2_VENUS;
+        case HAL_PIXEL_FORMAT_NV12_ENCODEABLE: return MDP_Y_CBCR_H2V2;
+    }
+    return -1;
+}
+
+/** convert from copybit image to mdp image structure */
+static void set_image(struct mdp_img *img, const struct copybit_image_t *rhs)
+{
+    private_handle_t* hnd = (private_handle_t*)rhs->handle;
+    if(hnd == NULL){
+        ALOGE("copybit: Invalid handle");
+        return;
+    }
+    img->width      = rhs->w;
+    img->height     = rhs->h;
+    img->format     = get_format(rhs->format);
+    img->offset     = (uint32_t)hnd->offset;
+    img->memory_id  = hnd->fd;
+}
+/** setup rectangles */
+static void set_rects(struct copybit_context_t *dev,
+                      struct mdp_blit_req *e,
+                      const struct copybit_rect_t *dst,
+                      const struct copybit_rect_t *src,
+                      const struct copybit_rect_t *scissor) {
+    struct copybit_rect_t clip;
+    intersect(&clip, scissor, dst);
+
+    e->dst_rect.x  = clip.l;
+    e->dst_rect.y  = clip.t;
+    e->dst_rect.w  = clip.r - clip.l;
+    e->dst_rect.h  = clip.b - clip.t;
+
+    uint32_t W, H, delta_x, delta_y;
+    if (dev->mFlags & COPYBIT_TRANSFORM_ROT_90) {
+        delta_x = (clip.t - dst->t);
+        delta_y = (dst->r - clip.r);
+        e->src_rect.w = (clip.b - clip.t);
+        e->src_rect.h = (clip.r - clip.l);
+        W = dst->b - dst->t;
+        H = dst->r - dst->l;
+    } else {
+        delta_x  = (clip.l - dst->l);
+        delta_y  = (clip.t - dst->t);
+        e->src_rect.w  = (clip.r - clip.l);
+        e->src_rect.h  = (clip.b - clip.t);
+        W = dst->r - dst->l;
+        H = dst->b - dst->t;
+    }
+
+    MULDIV(&delta_x, &e->src_rect.w, src->r - src->l, W);
+    MULDIV(&delta_y, &e->src_rect.h, src->b - src->t, H);
+
+    e->src_rect.x = delta_x + src->l;
+    e->src_rect.y = delta_y + src->t;
+
+    if (dev->mFlags & COPYBIT_TRANSFORM_FLIP_V) {
+        if (dev->mFlags & COPYBIT_TRANSFORM_ROT_90) {
+            e->src_rect.x = (src->l + src->r) - (e->src_rect.x + e->src_rect.w);
+        }else{
+            e->src_rect.y = (src->t + src->b) - (e->src_rect.y + e->src_rect.h);
+        }
+    }
+
+    if (dev->mFlags & COPYBIT_TRANSFORM_FLIP_H) {
+        if (dev->mFlags & COPYBIT_TRANSFORM_ROT_90) {
+            e->src_rect.y = (src->t + src->b) - (e->src_rect.y + e->src_rect.h);
+        }else{
+            e->src_rect.x = (src->l + src->r) - (e->src_rect.x + e->src_rect.w);
+        }
+    }
+}
+
+/** setup mdp request */
+static void set_infos(struct copybit_context_t *dev,
+                      struct mdp_blit_req *req, int flags)
+{
+    req->alpha = dev->mAlpha;
+    req->transp_mask = MDP_TRANSP_NOP;
+    req->flags = dev->mFlags | flags;
+    // check if we are blitting to f/b
+    if (COPYBIT_ENABLE == dev->mBlitToFB) {
+        req->flags |= MDP_MEMORY_ID_TYPE_FB;
+    }
+#if defined(COPYBIT_QSD8K)
+    req->flags |= MDP_BLEND_FG_PREMULT;
+#endif
+}
+
+/** copy the bits */
+static int msm_copybit(struct copybit_context_t *dev, void const *list)
+{
+    int err;
+    if (dev->relFence != -1) {
+        close(dev->relFence);
+        dev->relFence = -1;
+    }
+    err = ioctl(dev->mFD, MSMFB_ASYNC_BLIT,
+                    (struct mdp_async_blit_req_list const*)list);
+    ALOGE_IF(err<0, "copyBits failed (%s)", strerror(errno));
+    if (err == 0) {
+        return 0;
+    } else {
+#if DEBUG_MDP_ERRORS
+        struct mdp_async_blit_req_list const* l =
+            (struct mdp_async_blit_req_list const*)list;
+        for (unsigned int i=0 ; i<l->count ; i++) {
+            ALOGE("%d: src={w=%d, h=%d, f=%d, rect={%d,%d,%d,%d}}\n"
+                  "    dst={w=%d, h=%d, f=%d, rect={%d,%d,%d,%d}}\n"
+                  "    flags=%08x"
+                  ,
+                  i,
+                  l->req[i].src.width,
+                  l->req[i].src.height,
+                  l->req[i].src.format,
+                  l->req[i].src_rect.x,
+                  l->req[i].src_rect.y,
+                  l->req[i].src_rect.w,
+                  l->req[i].src_rect.h,
+                  l->req[i].dst.width,
+                  l->req[i].dst.height,
+                  l->req[i].dst.format,
+                  l->req[i].dst_rect.x,
+                  l->req[i].dst_rect.y,
+                  l->req[i].dst_rect.w,
+                  l->req[i].dst_rect.h,
+                  l->req[i].flags
+                 );
+        }
+#endif
+        return -errno;
+    }
+}
+
+/*****************************************************************************/
+
+/** Set a parameter to value */
+static int set_parameter_copybit(
+    struct copybit_device_t *dev,
+    int name,
+    int value)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    int status = 0;
+    if (ctx) {
+        switch(name) {
+            case COPYBIT_ROTATION_DEG:
+                switch (value) {
+                    case 0:
+                        ctx->mFlags &= ~0x7;
+                        break;
+                    case 90:
+                        ctx->mFlags &= ~0x7;
+                        ctx->mFlags |= MDP_ROT_90;
+                        break;
+                    case 180:
+                        ctx->mFlags &= ~0x7;
+                        ctx->mFlags |= MDP_ROT_180;
+                        break;
+                    case 270:
+                        ctx->mFlags &= ~0x7;
+                        ctx->mFlags |= MDP_ROT_270;
+                        break;
+                    default:
+                        ALOGE("Invalid value for COPYBIT_ROTATION_DEG");
+                        status = -EINVAL;
+                        break;
+                }
+                break;
+            case COPYBIT_PLANE_ALPHA:
+                if (value < 0)      value = MDP_ALPHA_NOP;
+                if (value >= 256)   value = 255;
+                ctx->mAlpha = (uint8_t)value;
+                break;
+            case COPYBIT_DITHER:
+                if (value == COPYBIT_ENABLE) {
+                    ctx->mFlags |= MDP_DITHER;
+                } else if (value == COPYBIT_DISABLE) {
+                    ctx->mFlags &= ~MDP_DITHER;
+                }
+                break;
+            case COPYBIT_BLUR:
+                if (value == COPYBIT_ENABLE) {
+                    ctx->mFlags |= MDP_BLUR;
+                } else if (value == COPYBIT_DISABLE) {
+                    ctx->mFlags &= ~MDP_BLUR;
+                }
+                break;
+            case COPYBIT_BLEND_MODE:
+                if(value == COPYBIT_BLENDING_PREMULT) {
+                    ctx->mFlags |= MDP_BLEND_FG_PREMULT;
+                } else {
+                    ctx->mFlags &= ~MDP_BLEND_FG_PREMULT;
+                }
+                break;
+            case COPYBIT_TRANSFORM:
+                ctx->mFlags &= ~0x7;
+                ctx->mFlags |= value & 0x7;
+                break;
+            case COPYBIT_BLIT_TO_FRAMEBUFFER:
+                if (COPYBIT_ENABLE == value) {
+                    ctx->mBlitToFB = value;
+                } else if (COPYBIT_DISABLE == value) {
+                    ctx->mBlitToFB = value;
+                } else {
+                    ALOGE ("%s:Invalid input for COPYBIT_BLIT_TO_FRAMEBUFFER : %d",
+                            __FUNCTION__, value);
+                }
+                break;
+            case COPYBIT_FG_LAYER:
+                if(value == COPYBIT_ENABLE) {
+                     ctx->mFlags |= MDP_IS_FG;
+                } else if (value == COPYBIT_DISABLE) {
+                    ctx->mFlags &= ~MDP_IS_FG;
+                }
+                break ;
+            default:
+                status = -EINVAL;
+                break;
+        }
+    } else {
+        status = -EINVAL;
+    }
+    return status;
+}
+
+/** Get a static info value */
+static int get(struct copybit_device_t *dev, int name)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    int value;
+    if (ctx) {
+        switch(name) {
+            case COPYBIT_MINIFICATION_LIMIT:
+                value = MAX_SCALE_FACTOR;
+                break;
+            case COPYBIT_MAGNIFICATION_LIMIT:
+                value = MAX_SCALE_FACTOR;
+                break;
+            case COPYBIT_SCALING_FRAC_BITS:
+                value = 32;
+                break;
+            case COPYBIT_ROTATION_STEP_DEG:
+                value = 90;
+                break;
+            default:
+                value = -EINVAL;
+        }
+    } else {
+        value = -EINVAL;
+    }
+    return value;
+}
+
+static int set_sync_copybit(struct copybit_device_t *dev,
+    int acquireFenceFd)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    if (acquireFenceFd != -1) {
+        if (ctx->list.sync.acq_fen_fd_cnt < (MDP_MAX_FENCE_FD - 1)) {
+            ctx->acqFence[ctx->list.sync.acq_fen_fd_cnt++] = acquireFenceFd;
+        } else {
+            int ret = -EINVAL;
+            struct blitReq *list = &ctx->list;
+
+            // Since fence is full kick off what is already in the list
+            ret = msm_copybit(ctx, list);
+            if (ret < 0) {
+                ALOGE("%s: Blit call failed", __FUNCTION__);
+                return -EINVAL;
+            }
+            list->count = 0;
+            list->sync.acq_fen_fd_cnt = 0;
+            ctx->acqFence[list->sync.acq_fen_fd_cnt++] = acquireFenceFd;
+        }
+    }
+    return 0;
+}
+
+/** do a stretch blit type operation */
+static int stretch_copybit(
+    struct copybit_device_t *dev,
+    struct copybit_image_t const *dst,
+    struct copybit_image_t const *src,
+    struct copybit_rect_t const *dst_rect,
+    struct copybit_rect_t const *src_rect,
+    struct copybit_region_t const *region)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    struct blitReq *list;
+    int status = 0;
+    private_handle_t *yv12_handle = NULL;
+
+    if (ctx) {
+        list = &ctx->list;
+
+        if (ctx->mAlpha < 255) {
+            switch (src->format) {
+                // we don't support plane alpha with RGBA formats
+                case HAL_PIXEL_FORMAT_RGBA_8888:
+                case HAL_PIXEL_FORMAT_BGRA_8888:
+                    ALOGE ("%s : Unsupported Pixel format %d", __FUNCTION__,
+                           src->format);
+                    return -EINVAL;
+            }
+        }
+
+        if (src_rect->l < 0 || (uint32_t)src_rect->r > src->w ||
+            src_rect->t < 0 || (uint32_t)src_rect->b > src->h) {
+            // this is always invalid
+            ALOGE ("%s : Invalid source rectangle : src_rect l %d t %d r %d b %d",\
+                   __FUNCTION__, src_rect->l, src_rect->t, src_rect->r, src_rect->b);
+
+            return -EINVAL;
+        }
+
+        if (src->w > MAX_DIMENSION || src->h > MAX_DIMENSION) {
+            ALOGE ("%s : Invalid source dimensions w %d h %d", __FUNCTION__, src->w, src->h);
+            return -EINVAL;
+        }
+
+        if (dst->w > MAX_DIMENSION || dst->h > MAX_DIMENSION) {
+            ALOGE ("%s : Invalid DST dimensions w %d h %d", __FUNCTION__, dst->w, dst->h);
+            return -EINVAL;
+        }
+
+        if(src->format ==  HAL_PIXEL_FORMAT_YV12) {
+            int usage =
+            GRALLOC_USAGE_PRIVATE_IOMMU_HEAP | GRALLOC_USAGE_PRIVATE_UNCACHED;
+            if (0 == alloc_buffer(&yv12_handle,src->w,src->h,
+                                  src->format, usage)){
+                if(0 == convertYV12toYCrCb420SP(src,yv12_handle)){
+                    (const_cast<copybit_image_t *>(src))->format =
+                        HAL_PIXEL_FORMAT_YCrCb_420_SP;
+                    (const_cast<copybit_image_t *>(src))->handle =
+                        yv12_handle;
+                    (const_cast<copybit_image_t *>(src))->base =
+                        (void *)yv12_handle->base;
+                }
+                else{
+                    ALOGE("Error copybit conversion from yv12 failed");
+                    if(yv12_handle)
+                        free_buffer(yv12_handle);
+                    return -EINVAL;
+                }
+            }
+            else{
+                ALOGE("Error:unable to allocate memeory for yv12 software conversion");
+                return -EINVAL;
+            }
+        }
+        const uint32_t maxCount =
+                (uint32_t)(sizeof(list->req)/sizeof(list->req[0]));
+        const struct copybit_rect_t bounds = { 0, 0, (int)dst->w, (int)dst->h };
+        struct copybit_rect_t clip;
+        status = 0;
+        while ((status == 0) && region->next(region, &clip)) {
+            intersect(&clip, &bounds, &clip);
+            mdp_blit_req* req = &list->req[list->count];
+            int flags = 0;
+
+            private_handle_t* src_hnd = (private_handle_t*)src->handle;
+            if(src_hnd != NULL && src_hnd->flags & private_handle_t::PRIV_FLAGS_DO_NOT_FLUSH) {
+                flags |=  MDP_BLIT_NON_CACHED;
+            }
+
+            set_infos(ctx, req, flags);
+            set_image(&req->dst, dst);
+            set_image(&req->src, src);
+            set_rects(ctx, req, dst_rect, src_rect, &clip);
+
+            if (req->src_rect.w<=0 || req->src_rect.h<=0)
+                continue;
+
+            if (req->dst_rect.w<=0 || req->dst_rect.h<=0)
+                continue;
+
+            if (++list->count == maxCount) {
+                status = msm_copybit(ctx, list);
+                list->sync.acq_fen_fd_cnt = 0;
+                list->count = 0;
+            }
+        }
+        if(yv12_handle) {
+            //Before freeing the buffer we need buffer passed through blit call
+            if (list->count != 0) {
+                status = msm_copybit(ctx, list);
+                list->sync.acq_fen_fd_cnt = 0;
+                list->count = 0;
+            }
+            free_buffer(yv12_handle);
+        }
+    } else {
+        ALOGE ("%s : Invalid COPYBIT context", __FUNCTION__);
+        status = -EINVAL;
+    }
+    return status;
+}
+
+/** Perform a blit type operation */
+static int blit_copybit(
+    struct copybit_device_t *dev,
+    struct copybit_image_t const *dst,
+    struct copybit_image_t const *src,
+    struct copybit_region_t const *region)
+{
+    struct copybit_rect_t dr = { 0, 0, (int)dst->w, (int)dst->h };
+    struct copybit_rect_t sr = { 0, 0, (int)src->w, (int)src->h };
+    return stretch_copybit(dev, dst, src, &dr, &sr, region);
+}
+
+static int finish_copybit(struct copybit_device_t *dev)
+{
+    // NOP for MDP copybit
+    if(!dev)
+       return -EINVAL;
+
+    return 0;
+}
+static int clear_copybit(struct copybit_device_t *dev,
+                         struct copybit_image_t const *buf,
+                         struct copybit_rect_t *rect)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    uint32_t color = 0; // black color
+
+    if (!ctx) {
+        ALOGE ("%s: Invalid copybit context", __FUNCTION__);
+        return -EINVAL;
+    }
+
+    struct blitReq list1;
+    memset((char *)&list1 , 0 ,sizeof (struct blitReq) );
+    list1.count = 1;
+    int rel_fen_fd = -1;
+    int my_tmp_get_fence = -1;
+
+    list1.sync.acq_fen_fd  =  ctx->acqFence;
+    list1.sync.rel_fen_fd  =  &my_tmp_get_fence;
+    list1.sync.acq_fen_fd_cnt = ctx->list.sync.acq_fen_fd_cnt;
+    mdp_blit_req* req = &list1.req[0];
+
+    if(!req) {
+        ALOGE ("%s : Invalid request", __FUNCTION__);
+        return -EINVAL;
+    }
+
+    set_image(&req->dst, buf);
+    set_image(&req->src, buf);
+
+    if (rect->l < 0 || (uint32_t)(rect->r - rect->l) > req->dst.width ||
+       rect->t < 0 || (uint32_t)(rect->b - rect->t) > req->dst.height) {
+       ALOGE ("%s : Invalid rect : src_rect l %d t %d r %d b %d",\
+       __FUNCTION__, rect->l, rect->t, rect->r, rect->b);
+       return -EINVAL;
+    }
+
+    req->dst_rect.x  = rect->l;
+    req->dst_rect.y  = rect->t;
+    req->dst_rect.w  = rect->r - rect->l;
+    req->dst_rect.h  = rect->b - rect->t;
+
+    req->src_rect = req->dst_rect;
+
+    req->const_color.b = (uint32_t)((color >> 16) & 0xff);
+    req->const_color.g = (uint32_t)((color >> 8) & 0xff);
+    req->const_color.r = (uint32_t)((color >> 0) & 0xff);
+    req->const_color.alpha = MDP_ALPHA_NOP;
+
+    req->transp_mask = MDP_TRANSP_NOP;
+    req->flags = MDP_SOLID_FILL | MDP_MEMORY_ID_TYPE_FB | MDP_BLEND_FG_PREMULT;
+    int status = msm_copybit(ctx, &list1);
+
+    ctx->list.sync.acq_fen_fd_cnt = 0;
+    if (my_tmp_get_fence !=  -1)
+        close(my_tmp_get_fence);
+
+    return status;
+}
+
+/** Fill the rect on dst with RGBA color **/
+static int fill_color(struct copybit_device_t *dev,
+                      struct copybit_image_t const *dst,
+                      struct copybit_rect_t const *rect,
+                      uint32_t color)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    if (!ctx) {
+        ALOGE("%s: Invalid copybit context", __FUNCTION__);
+        return -EINVAL;
+    }
+
+    if (dst->w > MAX_DIMENSION || dst->h > MAX_DIMENSION) {
+        ALOGE("%s: Invalid DST w=%d h=%d", __FUNCTION__, dst->w, dst->h);
+        return -EINVAL;
+    }
+
+    if (rect->l < 0 || (uint32_t)(rect->r - rect->l) > dst->w ||
+        rect->t < 0 || (uint32_t)(rect->b - rect->t) > dst->h) {
+        ALOGE("%s: Invalid destination rect: l=%d t=%d r=%d b=%d",
+                __FUNCTION__, rect->l, rect->t, rect->r, rect->b);
+        return -EINVAL;
+    }
+
+    int status = 0;
+    struct blitReq* list = &ctx->list;
+    mdp_blit_req* req = &list->req[list->count++];
+    set_infos(ctx, req, MDP_SOLID_FILL);
+    set_image(&req->src, dst);
+    set_image(&req->dst, dst);
+
+    req->dst_rect.x = rect->l;
+    req->dst_rect.y = rect->t;
+    req->dst_rect.w = rect->r - rect->l;
+    req->dst_rect.h = rect->b - rect->t;
+    req->src_rect = req->dst_rect;
+
+    req->const_color.r = (uint32_t)((color >> 0) & 0xff);
+    req->const_color.g = (uint32_t)((color >> 8) & 0xff);
+    req->const_color.b = (uint32_t)((color >> 16) & 0xff);
+    req->const_color.alpha = (uint32_t)((color >> 24) & 0xff);
+
+    if (list->count == sizeof(list->req)/sizeof(list->req[0])) {
+        status = msm_copybit(ctx, list);
+        list->sync.acq_fen_fd_cnt = 0;
+        list->count = 0;
+    }
+    return status;
+}
+
+/*****************************************************************************/
+
+/** Close the copybit device */
+static int close_copybit(struct hw_device_t *dev)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    if (ctx) {
+        close(ctx->mFD);
+        free(ctx);
+    }
+    return 0;
+}
+
+static int flush_get_fence(struct copybit_device_t *dev, int* fd)
+{
+    struct copybit_context_t* ctx = (struct copybit_context_t*)dev;
+    struct blitReq *list = &ctx->list;
+    int ret = -EINVAL;
+
+    if (list->count) {
+        ret = msm_copybit(ctx, list);
+        if (ret < 0)
+            ALOGE("%s: Blit call failed", __FUNCTION__);
+        list->count = 0;
+    }
+    *fd = ctx->relFence;
+    list->sync.acq_fen_fd_cnt = 0;
+    ctx->relFence = -1;
+    return ret;
+}
+
+/** Open a new instance of a copybit device using name */
+static int open_copybit(const struct hw_module_t* module, const char* name,
+                        struct hw_device_t** device)
+{
+    int status = -EINVAL;
+
+    if (strcmp(name, COPYBIT_HARDWARE_COPYBIT0)) {
+        return COPYBIT_FAILURE;
+    }
+    copybit_context_t *ctx;
+    ctx = (copybit_context_t *)malloc(sizeof(copybit_context_t));
+    memset(ctx, 0, sizeof(*ctx));
+
+    ctx->device.common.tag = HARDWARE_DEVICE_TAG;
+    ctx->device.common.version = 1;
+    ctx->device.common.module = const_cast<hw_module_t*>(module);
+    ctx->device.common.close = close_copybit;
+    ctx->device.set_parameter = set_parameter_copybit;
+    ctx->device.get = get;
+    ctx->device.blit = blit_copybit;
+    ctx->device.set_sync = set_sync_copybit;
+    ctx->device.stretch = stretch_copybit;
+    ctx->device.finish = finish_copybit;
+    ctx->device.fill_color = fill_color;
+    ctx->device.flush_get_fence = flush_get_fence;
+    ctx->device.clear = clear_copybit;
+    ctx->mAlpha = MDP_ALPHA_NOP;
+    ctx->mFlags = 0;
+    ctx->sync.flags = 0;
+    ctx->relFence = -1;
+    for (int i=0; i < MDP_MAX_FENCE_FD; i++) {
+        ctx->acqFence[i] = -1;
+    }
+    ctx->sync.acq_fen_fd = ctx->acqFence;
+    ctx->sync.rel_fen_fd = &ctx->relFence;
+    ctx->list.count = 0;
+    ctx->list.sync.acq_fen_fd_cnt = 0;
+    ctx->list.sync.rel_fen_fd = ctx->sync.rel_fen_fd;
+    ctx->list.sync.acq_fen_fd = ctx->sync.acq_fen_fd;
+    ctx->mFD = open("/dev/graphics/fb0", O_RDWR, 0);
+    if (ctx->mFD < 0) {
+        status = errno;
+        ALOGE("Error opening frame buffer errno=%d (%s)",
+              status, strerror(status));
+        status = -status;
+    } else {
+        status = 0;
+        *device = &ctx->device.common;
+    }
+    return status;
+}

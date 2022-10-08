@@ -1,0 +1,157 @@
+DOCUMENTATION ROADMAP
+=====================
+
+This file contains the following sections:
+
+NAMING RULE      Files named rules
+
+CODE STRUCTURE   General description files structure in psb_video
+
+
+
+NAMING RULE
+=====================
+This part describes general rule for naming added files in future.
+Name Fomat: xx_xxxx.c/h
+
+Explanation:
+xx: represents the platform, such as psb for MRST, pnw for MFLD and tng for MRFLD.
+xxxx: generally describes files function, such as cmdbuf for command buffer processing, H264ES for H264	encoding, H264 for H264 decoding. For encode codec, xxES is used.
+
+The existed files may not be consistent with it completely. For the exsited files:
+lnc_xxxx.c/h are files for encoding on MRST
+psb_xxxx.c/h are files for decoding on MRST (some files are reused in MFLD)
+pnw_xxxx.c/h are files for encoding/decoding on MFLD
+tng_xxxx.c/h are files for encoding/decoding on MRFLD
+xx_xxES.c/h are files for various encoding codec, others codec named are for various decoding codec
+
+
+
+CODE STRUCTURE
+=====================
+psb_video
+|
+|--src (vide driver user space code)
+|   |--mrst
+|   |   |- lnc_cmdbuf.h (below files are for encode on MRST)
+|   |   |- lnc_cmdbuf.c
+|   |   |- lnc_H263ES.h
+|   |   |- lnc_H263ES.c
+|   |   |- lnc_H264ES.h
+|   |   |- lnc_H264ES.c
+|   |   |- lnc_MPEG4ES.h
+|   |   |- lnc_MPEG4ES.c
+|   |   |- lnc_hostcode.h
+|   |   |- lnc_hostcode.c
+|   |   |- lnc_hostheader.h
+|   |   |- lnc_hostheader.c
+|   |   |- psb_deblock.c (below files are for decode on MRST)
+|   |   |- psb_VC1.h
+|   |   |- psb_VC1.c
+|   |   |- psb_H264.h
+|   |   |- psb_H264.c
+|   |   |- psb_MPEG4.h
+|   |   |- psb_MPEG4.c
+|   |   |- psb_MPEG2.h
+|   |   |- psb_MPEG2.c
+|   |   |- psb_MPEG2MC.c
+|   |- pnw_cmdbuf.h (below files are for encode on MFLD)
+|   |- pnw_cmdbuf.c
+|   |- pnw_H263ES.h
+|   |- pnw_H263ES.c
+|   |- pnw_H264ES.h
+|   |- pnw_H264ES.c
+|   |- pnw_MPEG4ES.h
+|   |- pnw_MPEG4ES.c
+|   |- pnw_hostcode.h
+|   |- pnw_hostcode.c
+|   |- pnw_hostheader.h
+|   |- pnw_hostheader.c
+|   |- pnw_hostjpeg.h
+|   |- pnw_hostjpeg.c
+|   |- pnw_jpeg.h
+|   |- pnw_jpeg.c
+|   |- psb_cmdbuf.h (below files are for decode on MFLD)
+|   |- psb_cmdbuf.c
+|   |- tng_vld_dec.h
+|   |- tng_vld_dec.c
+|   |- pnw_VC1.h
+|   |- pnw_VC1.c
+|   |- pnw_H264.h
+|   |- pnw_H264.c
+|   |- pnw_MPEG4.h
+|   |- pnw_MPEG4.c
+|   |- pnw_MPEG2.h
+|   |- pnw_MPEG2.c
+|   |- vc1_defs.h
+|   |- vc1_header.h
+|   |- vc1_idx.c
+|   |- vc1_vlc.c
+|   |- psb_overlay.h
+|   |- psb_overlay.c
+|   |- psb_output.h
+|   |- psb_output.c
+|   |- object_heap.h (below files are common for encode and decode on MFLD)
+|   |- object_heap.c
+|   |- pnw_rotate.h
+|   |- pnw_rotate.c
+|   |- psb_buffer.h
+|   |- psb_buffer.c
+|   |- psb_buffer_dm.c
+|   |- psb_def.h
+|   |- psb_drv_debug.h
+|   |- psb_drv_debug.c
+|   |- psb_drv_video.h
+|   |- psb_drv_video.c
+|   |- psb_surface.h
+|   |- psb_surface.c
+|   |- psb_surface_attrib.h
+|   |- psb_surface_attrib.c
+|   |- psb_ws_driver.h
+|   |- psb_ws_driver.c
+|   |- psb_texture.h
+|   |- psb_texture.c
+|   |- tng_cmdbuf.h (below files are for encode on MRFLD)
+|   |- tng_cmdbuf.c
+|   |- tng_H263ES.h
+|   |- tng_H263ES.c
+|   |- tng_H264ES.h
+|   |- tng_H264ES.c
+|   |- tng_MPEG4ES.h
+|   |- tng_MPEG4ES.c
+|   |- tng_hostcode.h
+|   |- tng_hostcode.c
+|   |- tng_hostheader.h
+|   |- tng_hostheader.c
+|   |- tng_jpegES.h
+|   |- tng_jpegES.c
+|   |- tng_hostair.h
+|   |- tng_hostair.c
+|   |- tng_hostbias.h
+|   |- tng_hostbias.c
+|   |- tng_picmgmt.h
+|   |- tng_picmgmt.c
+|   |- tng_slotorder.h
+|   |- tng_slotorder.c
+|   |- tng_hostdefs.h
+|   |- tng_VP8.h (below files are for decode on MRFLD)
+|   |- tng_VP8.c
+|   |- tng_JPEG.h
+|   |- tng_JPEG.c
+|   |- tng_yuv_processor.h
+|   |- tng_yuv_processor.c
+|   |- vsp_cmdbuf.h (below files are for VSP on MRFLD)
+|   |- vsp_cmdbuf.c
+|   |- tng_VPP.h
+|   |- tng_VPP.c
+|   |-- hwdefs (HW related info definition)
+|   |-- android (display on Android)
+|   |-- x11 (display on FPGA, etc.)
+|
+|--debian (used for package)
+|
+|--fw (firmware info)
+    |-- msvdx (decode firmware)
+    |-- topazhp (encode firmware on MRFLD)
+    |-- topazsc (encode firmware on MFLD)
+    

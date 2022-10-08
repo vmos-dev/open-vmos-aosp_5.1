@@ -1,0 +1,28 @@
+psb-video (0.1-5) unstable; urgency=low
+
+  * MPEG4: Don't require IQ matrix
+
+ -- Waldo Bastian <waldo.bastian@intel.com>  Mon, 27 Aug 2007 13:33:05 -0700
+
+  * MPEG4 VLD working
+  * MPEG2 MC mostly working
+  * VC1 almost working
+  * Updated for libVA 0.20
+
+ -- Waldo Bastian <waldo.bastian@intel.com>  Wed, 22 Aug 2007 12:34:33 -0700
+
+  * Updated firmware
+  * Link against libva
+
+ -- Waldo Bastian <waldo.bastian@intel.com>  Wed, 01 Aug 2007 14:13:19 -0700
+
+  * Added GL based vaPutSurface
+  * Fixed handling of split buffers 
+  * Include firmware
+
+ -- Waldo Bastian <waldo.bastian@intel.com>  Thu, 21 Jun 2007 18:41:18 -0700
+
+  * Pre-alpha version of video decode driver for Poulsbo, MPEG2 VLD working
+
+ -- Waldo Bastian <waldo.bastian@intel.com>  Thu, 21 Jun 2007 18:41:18 -0700
+

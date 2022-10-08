@@ -1,0 +1,15 @@
+Source: psb-video
+Priority: extra
+Maintainer: Waldo Bastian <waldo.bastian@intel.com>
+Build-Depends: debhelper (>= 5), libva-dev
+Standards-Version: 3.7.2
+Section: libs
+
+Package: psb-video
+Section: libs
+Architecture: any
+Depends: libdrm2 (>= 2.3.0),
+         libgl1-mesa-glx | libgl1,
+         psb-kmd-video (>= 0.1)
+Description: Video decode driver for Poulsbo
+  Video decode driver for Poulsbo

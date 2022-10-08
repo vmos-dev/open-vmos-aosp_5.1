@@ -1,0 +1,49 @@
+Pull the new libvpx checkout into external/libvpx/libvpx:
+$ cd external/libvpx/
+$ rm -rf libvpx
+$ git clone http://git.chromium.org/webm/libvpx.git
+$ cd libvpx
+$ git checkout <branch>
+$ rm -rf .git*
+
+Enter the subdirectory for the relevant platform. For example, armv7-neon for
+armv7 targets with neon extensions. We disable many features. Some for
+functional reasons and some for aesthetic ones.
+
+Functional:
+--force-target=$TARGET
+  The "Android" support in libvpx is targeted at the NDK and does not yet
+  include support for architectures such as MIPS. However, we can still generate
+  the necessary files for them.
+--disable-runtime-cpu-detect
+--disable-neon
+  The platform knows at build time what extensions are supported.
+--sdk-path=$SDK_PATH
+  For configuration we do some compiler tests. It is much easier to accept them
+  than to work around them. This uses the compilers included in the NDK.
+--enable-realtime-only
+  Reduce binary size when building the encoder.
+
+Aesthetic:
+--disable-examples
+--disable-docs
+  Skip unnecessary extra makefiles.
+
+Example:
+$ cd external/libvpx/armv7a
+$ ../libvpx/configure --target=armv7-android-gcc --disable-runtime-cpu-detect \
+  --disable-neon --sdk-path=$ANDROID_NDK_ROOT --disable-vp9-encoder \
+  --disable-examples --disable-docs
+
+Run 'make libvpx_srcs.txt'
+This will generate a file listing all of the required sources. It will also
+generate vpx_rtcd.h and vpx_version.h
+
+Remove the unused files leaving only:
+libvpx_srcs.txt
+vpx_config.c
+vpx_config.h
+vpx_scale_rtcd.h
+vp8_rtcd.h
+vp9_rtcd.h
+vpx_version.h

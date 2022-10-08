@@ -1,0 +1,23 @@
+Default (and possibly architecture dependents) HAL modules go here. 
+
+
+libhardware.so eventually should contain *just* the HAL hub
+(hardware.c), everything in it should be rewritten as modules.
+
+Modules are .so in /system/libs/hw/ and have a well defined naming
+convention:
+
+    /system/libs/hw/<*_HARDWARE_MODULE_ID>.<ro.product.board>.so
+    /system/libs/hw/<*_HARDWARE_MODULE_ID>.<ro.board.platform>.so
+    /system/libs/hw/<*_HARDWARE_MODULE_ID>.<ro.arch>.so
+    /system/libs/hw/<*_HARDWARE_MODULE_ID>.default.so
+
+They also have a well defined interface which lives in include/hardware/.
+
+A module can have several variants: "default", "arch" and "board", and they're
+loaded in the "board", "arch" and "default" order.
+The source code for the "board" variant, usually lives under partners/...
+
+The source code for "default" and "arch" would usually
+live under hardware/modules/.
+

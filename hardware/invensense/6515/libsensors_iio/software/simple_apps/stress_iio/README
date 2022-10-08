@@ -1,0 +1,27 @@
+Usage of inv_stress_iio:
+
+> inv_stress_iio: 
+  this will run enable and disable sequence sequentially. 
+  In the enable sequence, this will enable all the engines, output, and all dmp
+  events. 
+  In the disable sequence, this will disable all but accel engine; all outputs 
+  are disabled, only events are allowed.
+
+> inv_stress_iio -e 10 -d 1: 
+  this set the enable sequence to 10 seconds and disable sequence for 1 seconds.
+
+> inv_stress_iio -c: 
+  this includes the compass in the enable sequence when you have 9150 or other
+  secondary bus compass. It won't work for compasses on the primary bus.
+
+> inv_stress_iio -r: 
+  this set the enable and disable sequences to last a random time. It is good 
+  for stress test.
+
+> inv_stress_iio -m: 
+  this enables motion interrupt during the disable sequence. 
+  When this is enabled, the driver enters low power accel mode and disables all 
+  other sensor output (including quaternion, gyro, accel, and compass.) in the 
+  disabled sequence:
+
+

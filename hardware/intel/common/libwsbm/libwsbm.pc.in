@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libwsbm
+Description: Buffer manager abstraction library.
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lwsbm
+Cflags: -I${includedir}/wsbm

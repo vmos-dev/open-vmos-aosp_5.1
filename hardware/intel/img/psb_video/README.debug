@@ -1,0 +1,6 @@
+To compile the driver with debug information enabled, define DEBUG_TRACE
+in src/psb_def.h
+
+If the driver is compiled with debug information enabled, setting
+the environment variable $PSB_VIDEO_TRACE will cause the driver to
+log tracing information to the file specified in $PSB_VIDEO_TRACE.

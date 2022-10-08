@@ -1,0 +1,12 @@
+1.2 add support to "large" kernel command line. Oct 20, 2011
+1.1 add cloverview support. Oct 6, 2011
+1.0 fix alignment issue in SFI mmap searching. Oct 13, 2010
+0.9 support medfield. Jun 9, 2010
+0.8 changed default spi clock to 100mhz Aug 12, 2009
+0.7 build e820 table and add SPI controller selection. June 4, 2009
+0.6 optimized spi uart and initrd relocation performance. May 26, 2009
+0.5 add arch parameter. March 12, 2009
+0.4 spi suppression flag. July 19, 2008
+0.3 spi on select 0x2. June 17, 2008
+0.2 spi support on. June 10, 2008
+0.1 Initial bootstub version for power on. May 21, 2008
