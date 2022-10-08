@@ -10,3 +10,6 @@
 [submodule "frameworks"]
 	path = frameworks
 	url = git@github.com:VMOS-XiaoSuan/frameworks.git
+[submodule "external"]
+	path = external
+	url = git@github.com:VMOS-XiaoSuan/external.git
