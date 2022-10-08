@@ -1,0 +1,146 @@
+page.title=Validating SELinux
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Android strongly encourages OEMs to test their SELinux implementations
+thoroughly. As manufacturers implement SELinux, they should apply the new
+policy to a test pool of devices first.</p>
+
+<p>Once applied, make sure SELinux is running in the correct mode on the device by
+issuing the command:getenforce</p>
+
+<p>This will print the global SELinux mode: either Disabled, Enforcing, or
+Permissive. Please note, this command shows only the global SELinux mode. To
+determine the SELinux mode for each domain, you must examine the corresponding
+files or run the latest version of <code>sepolicy-analyze</code> with the appropriate (-p) flag, present in /platform/external/sepolicy/tools/.</p>
+
+<h2 id=reading_denials>Reading denials</h2>
+
+<p>Then check for errors. Errors are routed as event logs to dmesg and <code>logcat</code> and are viewable locally on the device. Manufacturers should examine the
+SELinux output to dmesg on these devices and refine settings prior to public
+release in permissive mode and eventual switch to enforcing mode. SELinux log
+messages contain "AVC" and so may easily be found with <code>grep</code>. It is
+possible to capture the ongoing denial logs by running <code>cat /proc/kmsg</code>
+or to capture denial logs from the previous boot by running cat <code>/proc/last_kmsg</code>.</p>
+
+<p>With this output, manufacturers can readily identify when system users or
+components are in violation of SELinux policy. Manufacturers can then repair
+this bad behavior, either by changes to the software, SELinux policy, or both.</p>
+
+<p>Specifically, these log messages indicate what processes would fail under
+enforcing mode and why. Here is an example:</p>
+
+<pre>
+denied  { connectto } for  pid=2671 comm="ping" path="/dev/socket/dnsproxyd"
+scontext=u:r:shell:s0 tcontext=u:r:netd:s0 tclass=unix_stream_socket
+</pre>
+
+<p>Interpret this output like so:</p>
+
+<ul>
+  <li> The <code>{ connectto }</code> above represents the action being taken. Together with the
+<code>tclass</code> at the end (<code>unix_stream_socket</code>), it tells you roughly what was being done
+to what. In this case, something was trying to connect to a unix stream socket.
+  <li> The <code>scontext (u:r:shell:s0)</code> tells you what context initiated the action. In
+this case this is something running as the shell.
+  <li> The <code>tcontext (u:r:netd:s0)</code> tells you the context of the action’s target. In
+this case, that’s a unix_stream_socket owned by <code>netd</code>.
+  <li> The <code>comm="ping"</code> at the top gives you an additional hint about what was being
+run at the time the denial was generated. In this case, it’s a pretty good hint.
+</ul>
+
+<p>And here is another example:</p>
+
+<pre>
+$ adb shell su -c dmesg | grep 'avc: '
+&lt;5> type=1400 audit: avc:  denied  { read write } for  pid=177
+comm="rmt_storage" name="mem" dev="tmpfs" ino=6004 scontext=u:r:rmt:s0
+tcontext=u:object_r:kmem_device:s0 tclass=chr_file
+</pre>
+
+
+<p>Here are the key elements from this denial:</p>
+
+<ul>
+  <li><em>Action</em> - the attempted action is highlighted in brackets, <code>read write</code> or <code>setenforce</code>. 
+  <li><em>Actor</em> - The <code>scontext</code> (source context) entry represents the actor, in this case the<code> rmt_storage</code> daemon.
+  <li><em>Object</em> - The <code>tcontext</code> (target context) entry represents the object being acted upon, in this case
+kmem.
+  <li><em>Result</em> - The <code>tclass</code> (target class) entry indicates the type of object being acted upon, in this
+case a <code>chr_file</code> (character device).
+</ul>
+
+<h2 id=switching_to_permissive>Switching to permissive</h2>
+
+<p class="caution"><strong>Important:</strong> Permissive mode is not supported on production devices. CTS tests confirm
+enforcing mode is enabled.</p>
+
+<p>To turn a device’s SELinux enforcement into globally permissive via ADB, as
+root issue:</p>
+
+<pre>
+$ adb shell su -c setenforce 0
+</pre>
+
+<p>Or at the kernel command line (during early device bring-up):</p>
+
+<pre>
+androidboot.selinux=permissive
+androidboot.selinux=disabled
+androidboot.selinux=enforcing
+</pre>
+
+<h2 id=using_audit2allow>Using audit2allow</h2>
+
+<p>The <code>selinux/policycoreutils/audit2allow</code> tool takes <code>dmesg</code> denials and converts them into corresponding SELinux policy statements. As
+such, it can greatly speed SELinux development. To install it, run:</p>
+
+<pre>
+$ sudo apt-get install policycoreutils
+</pre>
+
+<p>To use it:</p>
+
+<pre>
+$ adb shell su -c dmesg | audit2allow
+</pre>
+
+<p>Nevertheless, care must be taken to examine each potential addition for
+overreaching permissions. For example, feeding audit2allow the <code>rmt_storage</code> denial shown earlier results in the following suggested SELinux policy
+statement:</p>
+
+<pre>
+#============= shell ==============
+allow shell kernel:security setenforce;
+#============= rmt ==============
+allow rmt kmem_device:chr_file { read write };
+</pre>
+
+
+<p>This would grant <code>rmt</code> the ability to write kernel memory, a glaring security hole. Often the <code>audit2allow</code> statements are only a starting point, after which changes to the source
+domain, the label of the target and the incorporation of proper macros may be
+required to arrive at a good policy. Sometimes the denial being examined should
+not result in any policy changes at all, but rather the offending application
+should be changed.</p>

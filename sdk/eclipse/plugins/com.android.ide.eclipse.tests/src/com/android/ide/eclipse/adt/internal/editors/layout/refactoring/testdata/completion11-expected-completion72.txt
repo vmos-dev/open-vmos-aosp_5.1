@@ -1,0 +1,3 @@
+Code completion in completion11.xml for ?^android:attr/Textapp:
+?android:attr/
+?attr/

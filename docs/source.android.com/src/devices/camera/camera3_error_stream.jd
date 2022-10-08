@@ -1,0 +1,160 @@
+page.title=Error and stream handling
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="error-mgmt">Error management</h2>
+<p>Camera HAL device ops functions that have a return value will all return -ENODEV 
+  / NULL in case of a serious error. This means the device cannot continue 
+  operation, and must be closed by the framework. Once this error is returned by 
+  some method, or if notify() is called with ERROR_DEVICE, only the close() method 
+  can be called successfully. All other methods will return -ENODEV / NULL.<br/>
+  If a device op is called in the wrong sequence, for example if the framework 
+  calls configure_streams() is called before initialize(), the device must return 
+  -ENOSYS from the call, and do nothing.<br/>
+  Transient errors in image capture must be reported through notify() as follows:</p>
+<ul>
+  <li>The failure of an entire capture to occur must be reported by the HAL by 
+    calling notify() with ERROR_REQUEST. Individual errors for the result metadata 
+    or the output buffers must not be reported in this case.</li>
+  <li>If the metadata for a capture cannot be produced, but some image buffers were 
+    filled, the HAL must call notify() with ERROR_RESULT.</li>
+  <li>If an output image buffer could not be filled, but either the metadata was 
+    produced or some other buffers were filled, the HAL must call notify() with 
+    ERROR_BUFFER for each failed buffer.</li>
+</ul>
+<p>In each of these transient failure cases, the HAL must still call 
+  process_capture_result, with valid output buffer_handle_t. If the result 
+  metadata could not be produced, it should be NULL. If some buffers could not be 
+  filled, their sync fences must be set to the error state.<br/>
+  Invalid input arguments result in -EINVAL from the appropriate methods. In that 
+  case, the framework must act as if that call had never been made.</p>
+<h2 id="stream-mgmt">Stream management</h2>
+<h3 id="configure_streams">configure_streams</h3>
+<p>Reset the HAL camera device processing pipeline and set up new input and output 
+  streams. This call replaces any existing stream configuration with the streams 
+  defined in the stream_list. This method will be called at least once after 
+  initialize() before a request is submitted with process_capture_request().<br/>
+  The stream_list must contain at least one output-capable stream, and may not 
+  contain more than one input-capable stream.<br/>
+  The stream_list may contain streams that are also in the currently-active set of 
+  streams (from the previous call to configure_stream()). These streams will 
+  already have valid values for usage, maxbuffers, and the private pointer. If 
+  such a stream has already had its buffers registered, register_stream_buffers() 
+  will not be called again for the stream, and buffers from the stream can be 
+  immediately included in input requests.<br/>
+  If the HAL needs to change the stream configuration for an existing stream due 
+  to the new configuration, it may rewrite the values of usage and/or maxbuffers 
+  during the configure call. The framework will detect such a change, and will 
+  then reallocate the stream buffers, and call register_stream_buffers() again 
+  before using buffers from that stream in a request.<br/>
+  If a currently-active stream is not included in stream_list, the HAL may safely 
+  remove any references to that stream. It will not be reused in a later 
+  configure() call by the framework, and all the gralloc buffers for it will be 
+  freed after the configure_streams() call returns.<br/>
+  The stream_list structure is owned by the framework, and may not be accessed 
+  once this call completes. The address of an individual camera3streamt 
+  structure will remain valid for access by the HAL until the end of the first 
+  configure_stream() call which no longer includes that camera3streamt in the 
+  stream_list argument. The HAL may not change values in the stream structure 
+  outside of the private pointer, except for the usage and maxbuffers members 
+  during the configure_streams() call itself.<br/>
+  If the stream is new, the usage, maxbuffer, and private pointer fields of the 
+  stream structure will all be set to 0. The HAL device must set these fields 
+  before the configure_streams() call returns. These fields are then used by the 
+  framework and the platform gralloc module to allocate the gralloc buffers for 
+  each stream.<br/>
+  Before such a new stream can have its buffers included in a capture request, the 
+  framework will call register_stream_buffers() with that stream. However, the 
+  framework is not required to register buffers for _all streams before 
+  submitting a request. This allows for quick startup of (for example) a preview 
+  stream, with allocation for other streams happening later or concurrently.</p>
+<h4><strong>Preconditions</strong></h4>
+<p>The framework will only call this method when no captures are being processed. 
+  That is, all results have been returned to the framework, and all in-flight 
+  input and output buffers have been returned and their release sync fences have 
+  been signaled by the HAL. The framework will not submit new requests for capture 
+  while the configure_streams() call is underway.</p>
+<h4><strong>Postconditions</strong></h4>
+<p>The HAL device must configure itself to provide maximum possible output frame 
+  rate given the sizes and formats of the output streams, as documented in the 
+  camera device's static metadata.</p>
+<h4><strong>Performance expectations</strong></h4>
+<p>This call is expected to be heavyweight and possibly take several hundred 
+  milliseconds to complete, since it may require resetting and reconfiguring the 
+  image sensor and the camera processing pipeline. Nevertheless, the HAL device 
+  should attempt to minimize the reconfiguration delay to minimize the 
+  user-visible pauses during application operational mode changes (such as 
+  switching from still capture to video recording).</p>
+<h4><strong>Return values</strong></h4>
+<ul>
+  <li>0: On successful stream configuration</li>
+  <li>undefined</li>
+  <li>-EINVAL: If the requested stream configuration is invalid. Some examples of 
+    invalid stream configurations include:
+    <ul>
+      <li>Including more than 1 input-capable stream (INPUT or BIDIRECTIONAL)</li>
+      <li>Not including any output-capable streams (OUTPUT or BIDIRECTIONAL)</li>
+      <li>Including streams with unsupported formats, or an unsupported size for 
+        that format.</li>
+      <li>Including too many output streams of a certain format.</li>
+      <li>Note that the framework submitting an invalid stream configuration is not 
+        normal operation, since stream configurations are checked before 
+        configure. An invalid configuration means that a bug exists in the 
+        framework code, or there is a mismatch between the HAL's static metadata 
+        and the requirements on streams.</li>
+    </ul>
+  </li>
+  <li>-ENODEV: If there has been a fatal error and the device is no longer 
+    operational. Only close() can be called successfully by the framework after 
+    this error is returned.</li>
+</ul>
+<h3 id="register-stream">register_stream_buffers</h3>
+<p>Register buffers for a given stream with the HAL device. This method is called 
+  by the framework after a new stream is defined by configure_streams, and before 
+  buffers from that stream are included in a capture request. If the same stream 
+  is listed in a subsequent configure_streams() call, register_stream_buffers will 
+  not be called again for that stream.<br/>
+  The framework does not need to register buffers for all configured streams 
+  before it submits the first capture request. This allows quick startup for 
+  preview (or similar use cases) while other streams are still being allocated.<br/>
+  This method is intended to allow the HAL device to map or otherwise prepare the 
+  buffers for later use. The buffers passed in will already be locked for use. At 
+  the end of the call, all the buffers must be ready to be returned to the stream. 
+  The bufferset argument is only valid for the duration of this call.<br/>
+  If the stream format was set to HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED, the 
+  camera HAL should inspect the passed-in buffers here to determine any 
+  platform-private pixel format information.</p>
+<h4><strong>Return values</strong></h4>
+<ul>
+  <li>0: On successful registration of the new stream buffers</li>
+  <li>-EINVAL: If the streambufferset does not refer to a valid active stream, or 
+    if the buffers array is invalid.</li>
+  <li>-ENOMEM: If there was a failure in registering the buffers. The framework must 
+    consider all the stream buffers to be unregistered, and can try to register 
+    again later.</li>
+  <li>-ENODEV: If there is a fatal error, and the device is no longer operational. 
+    Only close() can be called successfully by the framework after this error is 
+    returned.</li>
+</ul>

@@ -1,0 +1,4 @@
+Code completion in completion10.xml for "[^wrap_content]":
+fill_parent
+match_parent
+wrap_content

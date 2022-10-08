@@ -1,0 +1,2 @@
+# Grant access to qmux socket that is created by rild
+allow radio rild_qmuxd_socket:sock_file rw_file_perms;

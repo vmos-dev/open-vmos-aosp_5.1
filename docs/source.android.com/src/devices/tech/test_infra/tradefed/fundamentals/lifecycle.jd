@@ -1,0 +1,60 @@
+page.title=Test Lifecycle
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>The lifecycle of a test executed using TradeFederation is composed of four separate stages, designed
+around formally defined interfaces.</p>
+<ul>
+<li><a href="/reference/com/android/tradefed/build/IBuildProvider.html"
+  >Build Provider</a>: Provides a build to test, downloading appropriate files if necessary</li>
+<li><a href="/reference/com/android/tradefed/targetprep/ITargetPreparer.html"
+  >Target Preparer</a>: Prepares the test environment, possibly including software installation and
+  device configuration</li>
+<li><a href="/reference/com/android/tradefed/testtype/IRemoteTest.html"
+  >Test</a>: Executes test(s) and gathers test results.  This may be any JUnit Test, although our
+  <a href="/reference/com/android/tradefed/testtype/IRemoteTest.html"
+  >IRemoteTest</a> interface is specifically designed to work well in the Trade Federation
+  environment.</li>
+<li><a href="/reference/com/android/tradefed/result/ITestInvocationListener.html"
+  >Test Invocation Listener</a>: Listens for test results, usually for the purpose of forwarding the
+  test results to a repository or displaying them to the Test Runner</li>
+</ul>
+
+<p>The fundamental testing entity in TF is a <b>Configuration</b> (config). A config is an XML file
+that declares the lifecycle components of a test.</p>
+
+<p>This separation of the test's lifecycle is intended to allow for reuse.  Using this design, the
+Developer can create a Test once, and then the Integrator can create different Configurations to
+run that Test in different environments. For example,
+they could create a Configuration that will run a test on a local machine and dump the result to
+stdout.  They could then create a second Configuration that would execute that same test, but use a
+different Test Invocation Listener to store the test results in a database.  A third Configuration
+might be designed run that test continuously from a test lab somewhere.</p>
+
+<p>It's convenient to note here that a Configuration along with its command-line arguments (as
+provided by the Test Runner) is known as a <b>Command</b>.  When TF takes pairs a Command with an
+<code>ITestDevice</code> and executes it, the subsequent object is known as an <b>Invocation</b>.
+In short, an Invocation encompasses a complete TF test execution, across its entire lifecycle.</p>
+
+<h3>Additional Components of a Configuration</h3>
+<ul>
+<li><a href="/reference/com/android/tradefed/device/IDeviceRecovery.html"
+  >Device Recovery</a>: mechanism to recover device communication if lost</li>
+<li><a href="/reference/com/android/tradefed/log/package-summary.html">Logger</a>: collects tradefed logging data</li>
+</ul>
+

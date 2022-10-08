@@ -1,0 +1,9 @@
+userdebug_or_eng(`
+  # qxdmlogger access to /data/diag_logs.
+  allow platform_app diag_logs:dir rw_dir_perms;
+  allow platform_app diag_logs:file create_file_perms;
+')
+
+allow platform_app time:unix_stream_socket connectto;
+
+unix_socket_connect(platform_app, adspd, adspd)

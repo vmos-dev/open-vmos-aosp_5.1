@@ -1,0 +1,4 @@
+<resources>
+    <!-- Welcome message -->
+    <string name="welcome_message">welcome_message, eh?</string>
+</resources>

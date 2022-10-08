@@ -1,0 +1,7 @@
+Code completion in drawable2.xml for ^<gradient:
+<corners /> : Describes the corners for the rectangle shape of a GradientDrawable.
+<gradient /> : Used to describe the gradient used to fill the shape of a GradientDrawable.
+<padding /> : Used to specify the optional padding of a GradientDrawable.
+<size /> : Used to specify the size of the shape for GradientDrawable.
+<solid /> : Used to fill the shape of GradientDrawable with a solid color.
+<stroke /> : Used to describe the optional stroke of a GradientDrawable.

@@ -1,0 +1,213 @@
+  asus)
+    TO_EXTRACT="\
+            system/etc/firmware/IT8566_CEC.BIN \
+            system/lib/hw/hdmi_cec.fugu.so \
+            system/vendor/lib/mediadrm/libplayreadydrmplugin.so \
+            "
+    ;;
+  broadcom)
+    TO_EXTRACT="\
+            system/bin/BtFwLoader \
+            system/etc/wifi/bcmdhd.cal \
+            system/etc/wifi/bcmdhd_sr2.cal \
+            system/vendor/firmware/BCM4350C0.hcd \
+            system/vendor/firmware/BCM4350C0_SR2.hcd \
+            system/xbin/wlutil \
+            "
+    ;;
+  google)
+    TO_EXTRACT="\
+            system/lib/libiperf.so \
+            system/priv-app/AtvRemoteService/AtvRemoteService.apk \
+            system/priv-app/LeanbackLauncher/LeanbackLauncher.apk \
+            system/priv-app/TV/TV.apk \
+            "
+    ;;
+  intel)
+    TO_EXTRACT="\
+            system/bin/houdini \
+            system/etc/binfmt_misc/arm_dyn \
+            system/etc/binfmt_misc/arm_exe \
+            system/etc/binfmt_misc/disable \
+            system/etc/firmware/msvdx.bin.0008.0000.0000 \
+            system/etc/firmware/msvdx.bin.0008.0000.0001 \
+            system/etc/firmware/msvdx.bin.0008.0000.0002 \
+            system/etc/firmware/msvdx.bin.0008.0002.0001 \
+            system/etc/firmware/msvdx.bin.000c.0001.0001 \
+            system/etc/firmware/topaz.bin.0008.0000.0000 \
+            system/etc/firmware/topaz.bin.0008.0000.0001 \
+            system/etc/firmware/topaz.bin.0008.0000.0002 \
+            system/etc/firmware/topaz.bin.0008.0002.0001 \
+            system/etc/firmware/topaz.bin.000c.0001.0001 \
+            system/etc/firmware/vsp.bin.0008.0000.0000 \
+            system/etc/firmware/vsp.bin.0008.0000.0001 \
+            system/etc/firmware/vsp.bin.0008.0000.0002 \
+            system/etc/firmware/vsp.bin.0008.0002.0001 \
+            system/etc/firmware/vsp.bin.000c.0001.0001 \
+            system/lib/arm/cpuinfo \
+            system/lib/arm/libandroidfw.so \
+            system/lib/arm/libandroid_runtime.so \
+            system/lib/arm/libandroid.so \
+            system/lib/arm/libart.so \
+            system/lib/arm/libaudioflinger.so \
+            system/lib/arm/libaudioresampler.so \
+            system/lib/arm/libaudioutils.so \
+            system/lib/arm/libbacktrace_libc++.so \
+            system/lib/arm/libbacktrace.so \
+            system/lib/arm/libbcc.so \
+            system/lib/arm/libbcinfo.so \
+            system/lib/arm/libbinder.so \
+            system/lib/arm/libcamera_client.so \
+            system/lib/arm/libcamera_metadata.so \
+            system/lib/arm/libcommon_time_client.so \
+            system/lib/arm/libcompiler_rt.so \
+            system/lib/arm/libcrypto.so \
+            system/lib/arm/libc.so \
+            system/lib/arm/libc++.so \
+            system/lib/arm/libcutils.so \
+            system/lib/arm/libdl.so \
+            system/lib/arm/libeffects.so \
+            system/lib/arm/libEGL.so \
+            system/lib/arm/libemoji.so \
+            system/lib/arm/libETC1.so \
+            system/lib/arm/libexpat.so \
+            system/lib/arm/libfilterfw.so \
+            system/lib/arm/libfilterpack_imageproc.so \
+            system/lib/arm/libft2.so \
+            system/lib/arm/libgabi++.so \
+            system/lib/arm/libgccdemangle.so \
+            system/lib/arm/libGLES_trace.so \
+            system/lib/arm/libGLESv1_CM.so \
+            system/lib/arm/libGLESv2.so \
+            system/lib/arm/libgui.so \
+            system/lib/arm/libhardware_legacy.so \
+            system/lib/arm/libhardware.so \
+            system/lib/arm/libharfbuzz_ng.so \
+            system/lib/arm/libhwui.so \
+            system/lib/arm/libicui18n.so \
+            system/lib/arm/libicuuc.so \
+            system/lib/arm/libimg_utils.so \
+            system/lib/arm/libinputflinger.so \
+            system/lib/arm/libinput.so \
+            system/lib/arm/libjnigraphics.so \
+            system/lib/arm/libjpeg.so \
+            system/lib/arm/libLLVM.so \
+            system/lib/arm/liblog.so \
+            system/lib/arm/libmediandk.so \
+            system/lib/arm/libmedia.so \
+            system/lib/arm/libmemtrack.so \
+            system/lib/arm/libminikin.so \
+            system/lib/arm/libm.so \
+            system/lib/arm/libnativebridge.so \
+            system/lib/arm/libnativehelper.so \
+            system/lib/arm/libnbaio.so \
+            system/lib/arm/libnetd_client.so \
+            system/lib/arm/libnetutils.so \
+            system/lib/arm/libnfc_ndef.so \
+            system/lib/arm/libOpenMAXAL.so \
+            system/lib/arm/libOpenSLES.so \
+            system/lib/arm/libopus.so \
+            system/lib/arm/libpdfium.so \
+            system/lib/arm/libpixelflinger.so \
+            system/lib/arm/libpng.so \
+            system/lib/arm/libpowermanager.so \
+            system/lib/arm/libprocessgroup.so \
+            system/lib/arm/libRScpp.so \
+            system/lib/arm/libRSCpuRef.so \
+            system/lib/arm/libRSDriver.so \
+            system/lib/arm/libRS.so \
+            system/lib/arm/libselinux.so \
+            system/lib/arm/libsigchain.so \
+            system/lib/arm/libskia.so \
+            system/lib/arm/libsonivox.so \
+            system/lib/arm/libsoundtrigger.so \
+            system/lib/arm/libspeexresampler.so \
+            system/lib/arm/libsqlite.so \
+            system/lib/arm/libssl.so \
+            system/lib/arm/libstagefright_avc_common.so \
+            system/lib/arm/libstagefright_enc_common.so \
+            system/lib/arm/libstagefright_foundation.so \
+            system/lib/arm/libstagefright_http_support.so \
+            system/lib/arm/libstagefright_omx.so \
+            system/lib/arm/libstagefright.so \
+            system/lib/arm/libstagefright_yuv.so \
+            system/lib/arm/libstdc++.so \
+            system/lib/arm/libstlport.so \
+            system/lib/arm/libsurfaceflinger.so \
+            system/lib/arm/libsync.so \
+            system/lib/arm/libui.so \
+            system/lib/arm/libunwind-ptrace.so \
+            system/lib/arm/libunwind.so \
+            system/lib/arm/libusbhost.so \
+            system/lib/arm/libutils.so \
+            system/lib/arm/libvorbisidec.so \
+            system/lib/arm/libwebrtc_audio_coding.so \
+            system/lib/arm/libwilhelm.so \
+            system/lib/arm/libz.so \
+            system/lib/arm/linker \
+            system/lib/libDecoderVP9Hybrid.so \
+            system/lib/libdx_cc7.so \
+            system/lib/libgabi++-mfx.so \
+            system/lib/libhoudini.so \
+            system/lib/libifp.so \
+            system/lib/libkeymaster.so \
+            system/lib/libmfx_omx_components_sw.so \
+            system/lib/libmfx_omx_core.so \
+            system/lib/libmfxsw32.so \
+            system/lib/libmixvbp_h264secure.so \
+            system/lib/libmixvbp_h264.so \
+            system/lib/libmixvbp_mpeg4.so \
+            system/lib/libmixvbp.so \
+            system/lib/libmixvbp_vc1.so \
+            system/lib/libmixvbp_vp8.so \
+            system/lib/libOMXVideoDecoderAVCSecure.so \
+            system/lib/libsepdrm_cc54.so \
+            system/lib/libstlport-mfx.so \
+            system/usr/share/librscruntime.bc \
+            system/vendor/bin/bcc.moorefield \
+            system/vendor/bin/framebuffer_test \
+            system/vendor/bin/hwperfbin2jsont \
+            system/vendor/bin/pvrdebug \
+            system/vendor/bin/pvrhwperf \
+            system/vendor/bin/pvrsrvctl \
+            system/vendor/bin/pvrtld \
+            system/vendor/lib/egl/libEGL_POWERVR_ROGUE.so \
+            system/vendor/lib/egl/libGLESv1_CM_POWERVR_ROGUE.so \
+            system/vendor/lib/egl/libGLESv2_POWERVR_ROGUE.so \
+            system/vendor/lib/hw/gralloc.moorefield.so \
+            system/vendor/lib/libbcc.moorefield.so \
+            system/vendor/lib/libbcinfo.moorefield.so \
+            system/vendor/lib/libcptcompiler.so \
+            system/vendor/lib/libcreatesurface.so \
+            system/vendor/lib/libglslcompiler.so \
+            system/vendor/lib/libIMGegl.so \
+            system/vendor/lib/libLLVM.moorefield.so \
+            system/vendor/lib/libpvr2d.so \
+            system/vendor/lib/libpvrANDROID_WSEGL.so \
+            system/vendor/lib/libpvrcpt.so \
+            system/vendor/lib/libPVRRS.sha1.so \
+            system/vendor/lib/libPVRRS.so \
+            system/vendor/lib/libPVRScopeServices.so \
+            system/vendor/lib/librsccompiler.so \
+            system/vendor/lib/libRS.moorefield.so \
+            system/vendor/lib/libseppr_hal.so \
+            system/vendor/lib/libsrv_init.so \
+            system/vendor/lib/libsrv_um.so \
+            system/vendor/lib/libufwriter.so \
+            system/vendor/lib/libusc.so \
+            "
+    ;;
+  widevine)
+    TO_EXTRACT="\
+            system/etc/permissions/com.google.widevine.software.drm.xml \
+            system/framework/com.google.widevine.software.drm.jar \
+            system/lib/arm/libdrmframework.so \
+            system/vendor/lib/drm/libdrmwvmplugin.so \
+            system/vendor/lib/libdrmdecrypt.so \
+            system/vendor/lib/liboemcrypto.so \
+            system/vendor/lib/libwvdrm_L1.so \
+            system/vendor/lib/libwvm.so \
+            system/vendor/lib/libWVStreamControlAPI_L1.so \
+            system/vendor/lib/mediadrm/libwvdrmengine.so \
+            "
+    ;;

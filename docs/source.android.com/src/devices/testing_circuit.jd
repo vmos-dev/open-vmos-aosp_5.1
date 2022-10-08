@@ -1,0 +1,91 @@
+page.title=Testing Circuit
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+The file <a href="http://developer.android.com/downloads/partner/audio/av_sync_board.zip">av_sync_board.zip</a>
+contains CAD files for an A/V sync and latency testing
+printed circuit board (PCB).
+The files include a fabrication drawing, EAGLE CAD, schematic, and BOM. See <a
+href="audio_latency.html">Audio Latency</a> for recommended testing methods.
+</p>
+
+<p>
+This PCB
+can be used to help measure the time between flashing the device's
+notification LED or screen backlight, vs. detecting an audio signal.
+When combined with a dual-channel oscilloscope and suitable test app,
+it can show the difference in time between detecting the light and audio.
+That assumes the LED or backlight response time and light detector's response time
+are negligible relative to the audio.
+</p>
+
+<p>
+This design is supplied "as is", and we aren't be responsible for any errors in the design.
+But if you have any suggestions for improvement, please post to the <a
+href="https://groups.google.com/forum/#!forum/android-porting">android-porting</a> group.
+</p>
+
+<p>
+Of course, this is not the only (or necessarily best) way to measure A/V sync and latency,
+and we would like to hear about your alternative methods, also at android-porting group.
+</p>
+
+<p>
+There are currently no compatibility requirements to use this particular PCB.
+We supply it to encourage your continued attention to audio performance.
+</p>
+
+<h2 id="images">Images</h2>
+
+<p>
+These photos show the circuit in action.
+</p>
+
+<img style="margin:1.5em auto" src="images/breadboard.jpg" alt="breadboard prototype" />
+<br />
+<center>Breadboard prototype</center>
+
+<img style="margin:1.5em auto" src="images/pcb.jpg" alt="an early run of the PCB" />
+<br />
+<center>An early run of the PCB</center>
+
+<img style="margin:1.5em auto" src="images/display.jpg" alt="example display">
+<br />
+<center>Example display</center>
+<p>
+This image
+shows the scope display for an unspecified device, software release, and test conditions;
+the results are not typical and cannot be used to extrapolate to other situations.
+</p>
+
+<h2 id="video">Video</h2>
+
+<p>
+This <a href="http://www.youtube.com/watch?v=f95S2IILBJY">Youtube video</a>
+shows the the breadboard version testing circuit in operation.
+Skip ahead to 1:00 to see the circuit.
+</p>
+

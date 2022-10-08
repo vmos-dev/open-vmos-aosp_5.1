@@ -1,0 +1,100 @@
+page.title=Option Handling
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>Option handling lies at the heart of Trade Federation's modular approach.  In particular, options
+are the mechanism by which the Developer, Integrator, and Test Runner can work together without
+having to duplicate each-other's work.  Put simply, our implementation of option handling allows the
+Developer to mark a Java class member as being configurable, at which point the value of that member
+may be augmented or overridden by the Integrator, and may be subsequently augmented or overridden by
+the Test Runner.  This mechanism works for all Java intrinsic types, as well as for any
+<code>Map</code>s or <code>Collection</code>s of intrinsic types.</p>
+
+<p><em>Note:</em> the option-handling mechanism only works for classes implementing one of the
+interfaces included in the <a href="lifecycle.html">Test Lifecycle</a>, and only when that class is
+<em>instantiated</em> by the lifecycle machinery.</p>
+
+<h2>Developer</h2>
+<p>To start off, the developer marks a member with the
+<code><a href="https://android.googlesource.com/platform/tools/tradefederation/+/master/src/com/android/tradefed/config/Option.java"
+>@Option</a></code> annotation.  <!-- note: javadoc for the Option class is broken -->
+They specify (at a minimum) the <code>name</code> and <code>description</code> values, which
+specify the argument name associated with that Option, and the description that will be displayed on
+the TF console when the command is run with <code>--help</code> or <code>--help-all</code>.</p>
+
+<p>As an example, let's say we want to build a functional phone test which will dial a variety of
+phone numbers, and will expect to receive a sequence of DTMF tones from each number after it
+connects.</p>
+<code><pre>public class PhoneCallFuncTest extends IRemoteTest {
+    &#64;Option(name = "timeout", description = "How long to wait for connection, in millis")
+    private long mWaitTime = 30 * 1000;  // 30 seconds
+
+    &#64;Option(name = "call", description = "Key: Phone number to attempt.  " +
+            "Value: DTMF to expect.  May be repeated.")
+    private Map&lt;String, String&gt; mCalls = new HashMap&lt;String, String&gt;;
+
+    public PhoneCallFuncTest() {
+        mCalls.add("123-456-7890", "01134");  // default
+    }</pre></code>
+
+<p>That's all that's required for the Developer to set up two points of configuration for that
+test.  They could then go off and use <code>mWaitTime</code> and <code>mCalls</code> as normal,
+without paying much attention to the fact that they're configurable.  Because the
+<code>@Option</code> fields are set after the class is instantiated, but before the
+<code>run</code> method is called, that provides an easy way for implementors to set up defaults for
+or perform some kind of filtering on <code>Map</code> and <code>Collection</code> fields, which are
+otherwise append-only.</p>
+
+<h2>Integrator</h2>
+<p>The Integrator works in the world of Configurations, which are written in XML.  The config format
+allows the Integrator to set (or append) a value for any <code>@Option</code> field.  For instance,
+suppose the Integrator wanted to define a lower-latency test that calls the default number, as well
+as a long-running test that calls a variety of numbers.  They could create a pair of configurations
+that might look like the following:</p>
+
+<code><pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration description="low-latency default test; low-latency.xml"&gt;
+    &lt;test class="com.example.PhoneCallFuncTest"&gt;
+        &lt;option name="timeout" value="5000" /&gt;
+    &lt;/test&gt;
+&lt;/configuration&gt;</pre></code>
+
+<code><pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration description="call a bunch of numbers; many-numbers.xml"&gt;
+    &lt;test class="com.example.PhoneCallFuncTest"&gt;
+        &lt;option name="call" key="111-111-1111" value="#*#*TEST1*#*#" /&gt;
+        &lt;option name="call" key="222-222-2222" value="#*#*TEST2*#*#" /&gt;
+        &lt;!-- ... --&gt;
+    &lt;/test&gt;
+&lt;/configuration&gt;</pre></code>
+
+<h2>Test Runner</h2>
+<p>The Test Runner also has access to these configuration points via the Trade Federation console.
+First and foremost, they will run a Command (that is, a config and all of its arguments) with the
+<code>run command &lt;name&gt;</code> instruction (or <code>run &lt;name&gt;</code> for short).
+Beyond that, they can specify any list of arguments are part of the command, which may replace or
+append to fields specified by Lifecycle Objects within each config.</p>
+
+<p>To run the low-latency test with the <code>many-numbers</code> phone numbers, the Test Runner
+could execute:</p>
+<code><pre>tf >run low-latency.xml --call 111-111-1111 #*#*TEST1*#*# --call 222-222-2222 #*#*TEST2*#*#</pre></code>
+
+<p>Or, to get a similar effect from the opposite direction, the Test Runner could reduce the wait time
+for the <code>many-numbers</code> test:</p>
+<code><pre>tf >run many-numbers.xml --timeout 5000</code></pre>
+

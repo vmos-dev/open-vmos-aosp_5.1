@@ -1,0 +1,4 @@
+Code completion in completion10.xml for "[^wrap_content]" selecting fill_parent:
+@@ -9 +9
+-     android:layout_height="^wrap_content"/>
++     android:layout_height="fill_parent"^/>

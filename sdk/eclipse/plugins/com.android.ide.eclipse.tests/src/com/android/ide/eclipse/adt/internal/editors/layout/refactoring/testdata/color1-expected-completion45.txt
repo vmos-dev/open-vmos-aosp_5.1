@@ -1,0 +1,2 @@
+Code completion in color1.xml for ^<selector:
+<selector ></selector> : Required. This must be the root element. Contains one or more <item> elements.

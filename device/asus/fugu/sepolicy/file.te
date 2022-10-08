@@ -1,0 +1,7 @@
+type bluetooth_control, dev_type;
+
+type sysfs_thermal_writable, fs_type, sysfs_type;
+
+type atvr_device, dev_type;
+
+type sysfs_coretemp, fs_type, sysfs_type;

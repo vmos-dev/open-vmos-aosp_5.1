@@ -1,0 +1,3 @@
+Code completion in completionvalues1.xml for <item name="android:allowSingleTap">^</item>:
+true
+false

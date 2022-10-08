@@ -1,0 +1,15 @@
+type btfwloader, domain;
+type btfwloader_exec, exec_type, file_type;
+
+init_daemon_domain(btfwloader)
+
+# BtFwLoader is a shell script.
+# Allow it to execute /system/bin/sh
+allow btfwloader shell_exec:file rx_file_perms;
+
+# Copy a file from /system to /data/misc/bluedroid/
+allow btfwloader bluetooth_data_file:dir rw_dir_perms;
+allow btfwloader bluetooth_data_file:file create_file_perms;
+
+# Execute /system/bin/toolbox commands such as cp
+allow btfwloader system_file:file rx_file_perms;

@@ -1,0 +1,4 @@
+Code completion in completion1.xml for layout_width="fi^ll_parent" selecting fill_parent:
+@@ -8 +8
+-         android:layout_width="fi^ll_parent"
++         android:layout_width="fill_parent"^

@@ -1,0 +1,10 @@
+allow system_server { knv_device }:chr_file rw_file_perms;
+allow system_server elan_ip_device:chr_file rw_file_perms;
+
+# Access .gps.interface.pipe.to_gpsd.
+allow system_server gps_data_file:dir search;
+allow system_server gps_data_file:fifo_file { setattr rw_file_perms };
+
+# Access /data/sensors.
+allow system_server sensors_data_file:dir r_dir_perms;
+allow system_server sensors_data_file:file r_file_perms;

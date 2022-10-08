@@ -1,0 +1,111 @@
+/dev/mali0                0666   system     system
+/dev/ump                  0666   system     system
+/dev/ion                  0666   system     system
+/dev/video6               0660   media      media
+/dev/video7               0660   media      media
+
+# touchscreen power control
+/sys/devices/platform/s3c2440-i2c.3/i2c-3/3-004a/input/input*   enabled    0660   system     system
+
+# iio devices
+/dev/iio:device*          0660   system     system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0077/iio:device*    events/in_pressure0_thresh_either_en      0660    system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0077/iio:device*    sampling_frequency        0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0077/iio:device*    in_pressure0_input        0660    system    system
+/sys/devices/platform/s3c2440-i2c.2/i2c-2/2-0023/iio:device*    events/in_illuminance0_thresh_either_en   0660    system   system
+/sys/devices/platform/s3c2440-i2c.2/i2c-2/2-0023/iio:device*    sampling_frequency        0660    system    system
+/sys/devices/platform/s3c2440-i2c.2/i2c-2/2-0023/iio:device*    in_illuminance0_input     0660    system    system
+
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    compass_enable         0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    compass_enable         0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    accl_enable            0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    gyro_enable            0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    gyro_enable            0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    sampling_frequency     0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    dmp_event_int_on       0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    quaternion_on          0660    system    system
+
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    trigger/current_trigger          0660    system    system
+
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    power_state                      0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    buffer/enable                    0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    buffer/length                    0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    firmware_loaded                  0660    system    system
+
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    dmp_firmware                     0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    dmp_on                           0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    dmp_int_on                       0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    dmp_output_rate                  0660    system    system
+
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_accel_x_en      0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_accel_y_en      0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_accel_z_en      0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_anglvel_x_en    0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_anglvel_y_en    0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_anglvel_z_en    0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_magn_x_en       0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_magn_y_en       0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_magn_z_en       0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_quaternion_r_en 0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_quaternion_x_en 0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_quaternion_y_en 0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_quaternion_z_en 0660    system    system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0068/iio:device*    scan_elements/in_timestamp_en    0660    system    system
+
+# led
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    color       0660   system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    brightness  0660   system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    delay_on    0660   system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    delay_off   0660   system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    trigger     0660   system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    slope_up    0660   system   system
+/sys/devices/platform/s3c2440-i2c.1/i2c-1/1-0042/leds/as3668    slope_down  0660   system   system
+
+# gscalers
+/dev/video23              0660   media      graphics
+/dev/video26              0660   media      graphics
+/dev/video29              0660   media      graphics
+/dev/video32              0660   media      graphics
+
+/dev/video24              0660   media      graphics
+/dev/video27              0660   media      graphics
+/dev/video30              0660   media      graphics
+/dev/video33              0660   media      graphics
+
+/dev/video34              0660   system     system
+/dev/v4l-subdev*          0660   system     system
+/dev/media0               0660   system     system
+/dev/media1               0660   system     system
+
+# camera
+/dev/video40              0660   media      media
+/dev/video41              0660   media      media
+/dev/video42              0660   media      media
+/dev/video43              0660   media      media
+/dev/video44              0660   media      media
+/dev/media2               0660   media      media
+
+# mixer
+/dev/video16              0660   system     audio
+/dev/video17              0660   system     system
+/dev/video18              0660   system     system
+/dev/video19              0660   system     system
+
+# GPS
+/dev/ttySAC1              0660   root      system
+
+# NFC
+/dev/bcm2079x             0660   nfc        nfc
+
+#JPEG
+/dev/video12              0660   media      media
+
+# mobicore DRM
+/dev/mobicore             0600   drmrpc     drmrpc
+/dev/mobicore-user        0660   drm        drmrpc
+
+# secure mem driver
+/dev/s5p-smem             0660   drm        drmrpc
+
+# G2D
+/dev/fimg2d               0660   media      media

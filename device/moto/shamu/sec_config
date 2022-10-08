@@ -1,0 +1,13 @@
+/* IPC Security Config */
+/* <GPS QMI Service ID - 16>:<GPS QMI Instance ID - all instances>:<Client Group ID> */
+16:4294967295:1000
+501:4294967295:1001
+/* Allow QMID service to aquire net_raw permission */
+3:4294967295:1001:3004
+2:4294967295:1001:3004
+42:4294967295:1001:3004
+18:4294967295:1001:3004
+9:4294967295:1001:3004
+1:4294967295:1001:3004
+/* Allow MOTEX service to be used by radio processes and net_raw processes */
+228:4294967295:1001:3004

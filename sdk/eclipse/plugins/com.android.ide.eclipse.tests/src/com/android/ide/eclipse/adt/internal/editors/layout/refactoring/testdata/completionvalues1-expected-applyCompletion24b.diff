@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for 17^sp selecting 17mm:
+@@ -4 +4
+-         <item name="android:textSize">17^sp</item>
++         <item name="android:textSize">17mm^</item>

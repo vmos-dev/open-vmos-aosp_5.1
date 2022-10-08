@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+    <classpathentry kind="lib" path="libs/jfreechart-1.0.9.jar"/>
+    <classpathentry kind="lib" path="libs/jcommon-1.0.12.jar"/>
+    <classpathentry kind="lib" path="libs/jfreechart-swt-1.0.9.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/ddmlib.jar" sourcepath="/ddmlib"/>
+    <classpathentry exported="true" kind="lib" path="libs/ddmuilib.jar" sourcepath="/ddmuilib"/>
+    <classpathentry exported="true" kind="lib" path="libs/uiautomatorviewer.jar" sourcepath="/uiautomatorviewer/src"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

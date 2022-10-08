@@ -1,0 +1,161 @@
+page.title=Sensors
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+    <h2 id="what_are_“android_sensors”">What are Android sensors?</h2>
+    <p>Android sensors give applications access to a mobile device's underlying
+      physical sensors. They are data-providing virtual devices defined by the
+      implementation of <a
+      href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a>,
+      the sensor Hardware Abstraction Layer (HAL).</p>
+    <ul>
+      <li> Those virtual devices provide data coming from a set of physical sensors:
+        accelerometers, gyroscopes, magnetometers, barometer, humidity, pressure,
+        light, proximity and heart rate sensors.</li>
+      <li> Notably, camera, fingerprint sensor, microphone and touch screen are currently
+        not in the list of physical devices providing data through “Android sensors.”
+        They have their own reporting mechanism.</li>
+      <li> The separation is arbitrary, but in general, Android sensors provide lower
+        bandwidth data. For example, “100hz x 3 channels” for an accelerometer versus
+        “25hz x 8 MP x 3 channels” for a camera or “44kHz x 1 channel” for a
+        microphone.</li>
+    </ul>
+    <p>How the different physical sensors are connected to the system on chip
+       (SoC) is not defined by Android.</p>
+    <ul>
+      <li> Often, sensor chips are connected to the SoC through a <a href="sensor-stack.html#sensor_hub">sensor hub</a>, allowing some low-power monitoring and processing of the data. </li>
+      <li> Often, Inter-Integrated Circuit (I2C) or Serial Peripheral Interface
+        (SPI) is used as the transport mechanism. </li>
+      <li> To reduce power consumption, some architectures are hierarchical, with some
+	minimal processing being done in the application-specific integrated
+	circuit (ASIC - like motion detection on the accelerometer chip), and
+        more is done in a microcontroller (like step detection
+        in a sensor hub). </li>
+      <li> It is up to the device manufacturer to choose an architecture based on
+	accuracy, power, price and package-size characteristics. See <a
+        href="sensor-stack.html">Sensor stack</a> for more information. </li>
+      <li> Batching capabilities are an important consideration for power optimization.
+        See <a href="batching.html">Batching</a> for more information. </li>
+    </ul>
+    <p>Each Android sensor has a “type” representing how the sensor behaves and what
+      data it provides.</p>
+    <ul>
+      <li> The official Android <a href="sensor-types.html">Sensor types</a> are defined in <a href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a> under the names SENSOR_TYPE_…
+        <ul>
+          <li> The vast majority of sensors have an official sensor type. </li>
+          <li> Those types are documented in the Android SDK. </li>
+	  <li> Behavior of sensors with those types are tested in the Android
+               Compatibility Test Suite (CTS). </li>
+        </ul>
+      </li>
+      <li> If a manufacturer integrates a new kind of sensor on an Android device, the
+        manufacturer can define its own temporary type to refer to it.
+        <ul>
+          <li> Those types are undocumented, so application developers are unlikely to use
+            them, either because they don’t know about them, or know that they are rarely
+            present (only on some devices from this specific manufacturer). </li>
+          <li> They are not tested by CTS. </li>
+	  <li> Once Android defines an official sensor type for this kind of
+	       sensor, manufacturers must stop using their own temporary type
+	       and use the official type instead. This way, the sensor will be
+               used by more application developers. </li>
+        </ul>
+      </li>
+      <li> The list of all sensors present on the device is reported by the HAL
+        implementation.
+        <ul>
+          <li> There can be several sensors of the same type. For example, two proximity
+            sensors or two accelerometers. </li>
+          <li> The vast majority of applications request only a single sensor of a given type.
+            For example, an application requesting the default accelerometer will get the
+            first accelerometer in the list. </li>
+          <li> Sensors are often defined by <a href="suspend-mode.html#wake-up_sensors">wake-up</a> and <a href="suspend-mode.html#non-wake-up_sensors">non-wake-up</a> pairs, both sensors sharing the same type, but differing by their wake-up
+            characteristic. </li>
+        </ul>
+      </li>
+    </ul>
+<p>Android sensors provide data as a series of sensor events.</p>
+      <p> Each <a href="hal-interface.html#sensors_event_t">event</a> contains:</p>
+        <ul>
+          <li> a handle to the sensor that generated it </li>
+          <li> the timestamp at which the event was detected or measured </li>
+          <li> and some data </li>
+        </ul>
+      <p>The interpretation of the reported data depends on the sensor type.
+          See the <a href="sensor-types.html">sensor type</a> definitions for details on
+          what data is reported for each sensor type.</p>
+
+<h2 id="existing_documentation2">Existing documentation</h2>
+    <h3 id="targeted_at_developers">Targeted at developers</h3>
+    <ul>
+      <li> Overview
+        <ul>
+          <li><a href="https://developer.android.com/guide/topics/sensors/sensors_overview.html"> https://developer.android.com/guide/topics/sensors/sensors_overview.html </a></li>
+        </ul>
+      </li>
+      <li> SDK reference
+        <ul>
+          <li> <a href="https://developer.android.com/reference/android/hardware/SensorManager.html">https://developer.android.com/reference/android/hardware/SensorManager.html</a></li>
+          <li><a href="https://developer.android.com/reference/android/hardware/SensorEventListener.html"> https://developer.android.com/reference/android/hardware/SensorEventListener.html</a></li>
+          <li> <a href="https://developer.android.com/reference/android/hardware/SensorEvent.html">https://developer.android.com/reference/android/hardware/SensorEvent.html</a></li>
+          <li><a href="https://developer.android.com/reference/android/hardware/Sensor.html"> https://developer.android.com/reference/android/hardware/Sensor.html</a></li>
+        </ul>
+      </li>
+      <li> StackOverflow and tutorial websites
+        <ul>
+          <li> Because sensors documentation was sometimes lacking, developers resorted to Q&amp;A
+            websites like StackOverflow to find answers. </li>
+          <li> Some tutorial websites exist as well, but do not cover the latest features like
+            batching, significant motion and game rotation vectors. </li>
+          <li> The answers over there are not always right, and show where more documentation
+            is needed. </li>
+        </ul>
+      </li>
+    </ul>
+<h3 id="targeted_at_manufacturers_public">Targeted at manufacturers</h3>
+    <ul>
+      <li> Overview
+        <ul>
+	  <li>This <a href="{@docRoot}devices/sensors/index.html">Sensors</a>
+            page and its sub-pages. </li>
+        </ul>
+      </li>
+      <li> Hardware abstraction layer (HAL)
+        <ul>
+          <li> <a href="{@docRoot}devices/halref/sensors_8h_source.html">https://source.android.com/devices/halref/sensors_8h_source.html</a></li>
+          <li> Also known as “sensors.h” </li>
+          <li> The source of truth. First document to be updated when new features are
+            developed. </li>
+        </ul>
+      </li>
+      <li> Android CDD (Compatibility Definition Document)
+        <ul>
+          <li><a href="{@docRoot}compatibility/android-cdd.pdf">https://source.android.com/compatibility/android-cdd.pdf</a></li>
+          <li> See sections relative to sensors. </li>
+          <li> The CDD is lenient, so satisfying the CDD requirements is not enough to ensure
+            high quality sensors. </li>
+        </ul>
+      </li>
+    </ul>

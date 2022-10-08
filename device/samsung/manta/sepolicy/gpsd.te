@@ -1,0 +1,4 @@
+# gpsd on manta uses /data/.gps.interface.pipe.to_gpsd,
+# /data/.gps.interface.pipe.to_jni, /data/.gpsd.lock,
+# and /data/gldata.sto
+file_type_auto_trans(gpsd, system_data_file, gps_data_file);

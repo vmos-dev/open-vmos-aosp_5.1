@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+    <CheckBox android:text="CheckBox" android:id="@+id/checkBox1" android:layout_width="wrap_content" android:layout_height="wrap_content"></CheckBox>
+    <RelativeLayout android:layout_height="match_parent" android:id="@+id/relativeLayout1" android:layout_width="match_parent">
+        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Button" android:id="@+id/button5" android:layout_alignParentRight="true"></Button>
+    </RelativeLayout>
+</LinearLayout>
+

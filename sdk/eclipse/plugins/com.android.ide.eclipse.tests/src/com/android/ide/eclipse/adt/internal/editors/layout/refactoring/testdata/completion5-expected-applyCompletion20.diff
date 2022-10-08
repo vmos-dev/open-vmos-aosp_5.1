@@ -1,0 +1,4 @@
+Code completion in completion5.xml for android:layout_marginTop='50^dp' selecting 50pt:
+@@ -10 +10
+-         android:layout_marginTop='50^dp'
++         android:layout_marginTop='50pt'^

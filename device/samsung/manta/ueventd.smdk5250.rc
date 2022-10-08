@@ -1,0 +1,52 @@
+/dev/mali0                0666   system     system
+/dev/ump                  0666   system     system
+/dev/ion                  0666   system     system
+
+/dev/media0               0660   system     system
+/dev/media1               0660   system     camera
+/dev/media2               0660   system     camera
+/dev/v4l-subdev0          0660   system     system
+/dev/v4l-subdev1          0660   system     system
+/dev/v4l-subdev3          0660   system     system
+/dev/v4l-subdev4          0660   system     system
+/dev/v4l-subdev5          0660   system     system
+/dev/v4l-subdev6          0660   system     system
+/dev/v4l-subdev7          0660   system     system
+/dev/v4l-subdev8          0660   system     system
+/dev/v4l-subdev9          0660   system     system
+/dev/v4l-subdev10         0660   system     system
+/dev/v4l-subdev11         0660   system     system
+/dev/v4l-subdev12         0660   system     system
+/dev/v4l-subdev13         0660   system     system
+
+/dev/video6               0660   media      graphics
+/dev/video7               0660   media      graphics
+
+/dev/video11              0666   system     gragpics
+/dev/video12              0660   system     camera
+
+/dev/video16              0660   system     system
+/dev/video17              0660   system     system
+/dev/video18              0660   system     system
+/dev/video19              0660   system     system
+
+/dev/video23              0660   media      m2m
+/dev/video25              0660   system     camera
+/dev/video26              0660   media      m2m
+/dev/video29              0660   system     m2m
+/dev/video32              0660   media      m2m
+
+/dev/video33              0660   system     system
+
+/dev/video41              0660   system     camera
+/dev/video42              0660   system     camera
+/dev/video43              0660   system     camera
+
+/dev/i2c-2                0660   system     system
+/dev/CEC                  0660   system     system
+/dev/HPD                  0660   system     system
+/dev/fimg2d               0666   system     graphics
+
+#ALP Audio
+/dev/srp                  0660   system     audio
+

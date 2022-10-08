@@ -1,0 +1,132 @@
+page.title=Camera version support
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>The Android 5.0 (Lollipop) platform release adds a new app-level camera framework. This
+document outlines some logistical details that OEMs and SoC vendors need to
+know.</p>
+
+<h2 id=glossary>Terms</h2>
+
+<p>The following terms are used in this document:</p>
+
+<ul>
+  <li><em>Camera API1</em>: The app-level camera framework on KitKat and earlier devices, exposed
+through the <code>android.hardware.Camera</code> class.
+  <li><em>Camera API2</em>: The app-level camera framework on 5.0 and later
+devices, exposed through the<code> android.hardware.camera2</code> package.
+  <li><em>Camera HAL</em>: The camera module layer that SoC vendors implement. The app-level public
+frameworks are built on top of the camera HAL.
+  <li><em>Camera HAL3.2</em>: The version of the camera device HAL that is
+being released with Lollipop. KitKat launched with an earlier version (Camera HAL3.1).
+  <li><em>Camera API1 CTS</em>: The set of camera Compatibility Test Suite (CTS) tests that run on top of
+Camera API1.
+  <li><em>Camera API2 CTS</em>: An additional set of camera CTS tests that run on top of Camera API2.
+</ul>
+
+<h2 id=camera_api2_overview>Camera API2 overview</h2>
+
+<p>The new camera frameworks expose lower-level camera control to the app,
+including efficient zero-copy burst/streaming flows and per-frame controls of
+exposure, gain, white balance gains, color conversion, denoising, sharpening,
+and more. See this <a
+href="https://www.youtube.com/watch?v=92fgcUNCHic&feature=youtu.be&t=29m50s">brief
+video overview from the Google I/O 2014 conference</a> for additional details.
+</p>
+
+<h2 id=camera_api1_availability_and_deprecation_in_l>Camera API1 availability and deprecation in Android 5.0</h2>
+
+<p>The Camera API1 interfaces are still available for apps to use on Android
+5.0 and later devices, and camera apps built on top of Camera API1 should work
+as before. Camera API1 is being marked as deprecated in Lollipop, indicating that it
+will be phased out over time and new platform development will focus on Camera
+API2. However, we expect this phase-out period to be lengthy, and Camera API1
+apps will continue to be supported in Android for some time to come.</p>
+
+<p>All earlier camera HAL versions, including Camera HAL1.0, will also continue to
+be supported.</p>
+
+<h2 id=camera_api2_capabilities_and_support_levels>Camera API2 capabilities and support levels</h2>
+
+<p>Android 5.0 and later devices feature Camera API2, however they may not fully support all of
+the new features of Camera API2. The
+<code>android.info.supportedHardwareLevel</code> property that apps can query
+through the Camera API2 interfaces report one of three support levels:
+<code>LEGACY</code>, <code>FULL</code>, and <code>LIMITED</code>.</p>
+
+<p><em>Legacy</em> devices expose a level of capabilities through the Camera API2 interfaces that
+are approximately the same as is exposed to apps through the Camera API1
+interfaces; the legacy frameworks code conceptually translates Camera API2
+calls into Camera API1 calls under the hood. Legacy devices do not support
+the new Camera API2 features including per-frame controls.</p>
+
+<p><em>Full</em> devices support all of the major capabilities of Camera API2. Full devices by
+necessity must have a Camera HAL version of 3.2 (shipping with Android 5.0) or later.</p>
+
+<p><em>Limited</em> devices are in between: They support some of the new Camera API2 capabilities,
+but not all of them, and must also comprise a Camera HAL version of 3.2 or later.</p>
+
+<p>Individual capabilities are exposed via the<code>
+android.request.availableCapabilities</code> property in the Camera API2
+interfaces. Full devices require both the <code>MANUAL_SENSOR</code> and
+<code>MANUAL_POST_PROCESSING</code> capabilities, among others. There is also a
+<code>RAW</code> capability that is optional even for full devices. Limited
+devices can advertise any subset of these capabilities, including none of them. However,
+the <code>BACKWARD_COMPATIBLE</code> capability must always be defined.</p>
+
+<p>The supported hardware level of the device, as well as the specific Camera API2
+capabilities it supports, are available as the following feature flags to allow
+Play Store filtering of Camera API2 camera apps; a device must define the
+feature flag if any of its attached camera devices supports the feature.</p>
+
+<ul>
+  <li><code>android.hardware.camera.hardware_level.full</code>
+  <li><code>android.hardware.camera.capability.raw</code>
+  <li><code>android.hardware.camera.capability.manual_sensor</code>
+  <li><code>android.hardware.camera.capability.manual_post_processing</code>
+</ul>
+
+<h2 id=cts_requirements>CTS requirements</h2>
+
+<p>Android 5.0 and later devices must pass both Camera API1 CTS and Camera API2
+CTS. And as always, devices are required to pass the CTS Verifier camera
+tests.</p>
+
+<p>To add some context: For devices that don’t feature a Camera HAL3.2
+implementation and are not capable of supporting the full Camera API2
+interfaces, the Camera API2 CTS tests must still be passed. However, in this
+case the device will be running in Camera API2 <em>legacy</em> mode (in which
+the Camera API2 calls are conceptually just mapped to Camera
+API1 calls); and any Camera API2 CTS tests that relate to features or
+capabilities beyond Camera API1 have logic that will skip them in the case of
+old (legacy) devices.</p>
+
+<p>On a legacy device, the Camera API2 CTS tests that are not skipped are purely
+using the existing public Camera API1 interfaces and capabilities (with no new
+requirements), and any bugs that are exposed (which will in turn cause a Camera
+API2 CTS failure) are bugs that were already present in the device’s existing
+Camera HAL and would also be a bug that could be easily hit by existing Camera
+API1 apps. The expectation is that there should be very few bugs of this
+nature. Nevertheless, any such bugs will need to be fixed.</p>

@@ -1,0 +1,15 @@
+type atfwd, domain;
+type atfwd_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(atfwd)
+
+# Creates/Talks to qmuxd via the qmux_radio socket.
+allow atfwd qmuxd_socket:dir rw_dir_perms;
+allow atfwd qmuxd_socket:sock_file create_file_perms;
+allow atfwd qmux:unix_stream_socket connectto;
+
+#Allow IPC binding with ServiceManager & System apps
+binder_use(atfwd);
+binder_call(atfwd, system_app);
+binder_call(atfwd, servicemanager);

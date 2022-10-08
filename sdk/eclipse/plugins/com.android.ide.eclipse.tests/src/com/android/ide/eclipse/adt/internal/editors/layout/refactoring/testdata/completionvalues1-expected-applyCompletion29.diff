@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="gr^"> selecting android:gravity:
+@@ -8 +8
+-         <item name="gr^">@color/title_color</item>
++         <item name="android:gravity"^>@color/title_color</item>

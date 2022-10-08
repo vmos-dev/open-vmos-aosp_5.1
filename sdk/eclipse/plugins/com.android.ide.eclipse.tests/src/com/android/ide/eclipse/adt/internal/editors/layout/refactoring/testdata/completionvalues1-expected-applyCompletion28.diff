@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="android:gravity">  ^</item> selecting left:
+@@ -7 +7
+-         <item name="android:gravity">  ^</item>
++         <item name="android:gravity">  left^</item>

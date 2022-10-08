@@ -1,0 +1,434 @@
+page.title=Audio Debugging
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+This article describes some tips and tricks for debugging Android audio.
+</p>
+
+<h2 id="teeSink">Tee Sink</h2>
+
+<p>
+The "tee sink" is
+an AudioFlinger debugging feature, available in custom builds only,
+for retaining a short fragment of recent audio for later analysis.
+This permits comparison between what was actually played or recorded
+vs. what was expected.
+</p>
+
+<p>
+For privacy the tee sink is disabled by default, at both compile-time and
+run-time.  To use the tee sink, you will need to enable it by re-compiling,
+and also by setting a property.  Be sure to disable this feature after you are
+done debugging; the tee sink should not be left enabled in production builds.
+</p>
+
+<p>
+The instructions in the remainder of this section are for Android 4.4,
+and may require changes for other versions.
+</p>
+
+<h3>Compile-time setup</h3>
+
+<ol>
+<li><code>cd frameworks/av/services/audioflinger</code></li>
+<li>Edit <code>Configuration.h</code>.</li>
+<li>Uncomment <code>#define TEE_SINK</code>.</li>
+<li>Re-build <code>libaudioflinger.so</code>.</li>
+<li><code>adb root</code></li>
+<li><code>adb remount</code></li>
+<li>Push or sync the new <code>libaudioflinger.so</code> to the device's <code>/system/lib</code>.</li>
+</ol>
+
+<h3>Run-time setup</h3>
+
+<ol>
+<li><code>adb shell getprop | grep ro.debuggable</code>
+<br />Confirm that the output is: <code>[ro.debuggable]: [1]</code>
+</li>
+<li><code>adb shell</code></li>
+<li><code>ls -ld /data/misc/media</code>
+<br />
+<p>
+Confirm that the output is:
+</p>
+<pre>
+drwx------ media media ... media
+</pre>
+<br />
+<p>
+If the directory does not exist, create it as follows:
+</p>
+<code>
+mkdir /data/misc/media
+chown media:media /data/misc/media
+</code>
+</li>
+<li><code>echo af.tee=# &gt; /data/local.prop</code>
+<br />Where the <code>af.tee</code> value is a number described below.
+</li>
+<li><code>chmod 644 /data/local.prop</code></li>
+<li><code>reboot</code></li>
+</ol>
+
+<h4>Values for <code>af.tee</code> property</h4>
+
+<p>
+The value of <code>af.tee</code> is a number between 0 and 7, expressing
+the sum of several bits, one per feature.
+See the code at <code>AudioFlinger::AudioFlinger()</code> in <code>AudioFlinger.cpp</code>
+for an explanation of each bit, but briefly:
+</p>
+<ul>
+<li>1 = input</li>
+<li>2 = FastMixer output</li>
+<li>4 = per-track AudioRecord and AudioTrack</li>
+</ul>
+
+<p>
+There is no bit for deep buffer or normal mixer yet,
+but you can get similar results using "4."
+</p>
+
+<h3>Test and acquire data</h3>
+
+<ol>
+<li>Run your audio test.</li>
+<li><code>adb shell dumpsys media.audio_flinger</code></li>
+<li>Look for a line in dumpsys output such as this:<br />
+<code>tee copied to /data/misc/media/20131010101147_2.wav</code>
+<br />This is a PCM .wav file.</br>
+</li>
+<li><code>adb pull</code> any <code>/data/misc/media/*.wav</code> files of interest;
+note that track-specific dump filenames do not appear in the dumpsys output,
+but are still saved to <code>/data/misc/media</code> upon track closure.
+</li>
+<li>Review the dump files for privacy concerns before sharing with others.</li>
+</ol>
+
+<h4>Suggestions</h4>
+
+<p>Try these ideas for more useful results:</p>
+
+<ul>
+<li>Disable touch sounds and key clicks.</li>
+<li>Maximize all volumes.</li>
+<li>Disable apps that make sound or record from microphone,
+if they are not of interest to your test.
+</li>
+<li>Track-specific dumps are only saved when the track is closed;
+you may need to force close an app in order to dump its track-specific data
+<li>Do the <code>dumpsys</code> immediately after test;
+there is a limited amount of recording space available.</li>
+<li>To make sure you don't lose your dump files,
+upload them to your host periodically.
+Only a limited number of dump files are preserved;
+older dumps are removed after that limit is reached.</li>
+</ul>
+
+<h3>Restore</h3>
+
+<p>
+As noted above, the tee sink feature should not be left enabled.
+Restore your build and device as follows:
+</p>
+<ol>
+<li>Revert the source code changes to <code>Configuration.h</code>.</li>
+<li>Re-build <code>libaudioflinger.so</code>.</li>
+<li>Push or sync the restored <code>libaudioflinger.so</code>
+to the device's <code>/system/lib</code>.
+</li>
+<li><code>adb shell</code></li>
+<li><code>rm /data/local.prop</code></li>
+<li><code>rm /data/misc/media/*.wav</code></li>
+<li><code>reboot</code></li>
+</ol>
+
+<h2 id="mediaLog">media.log</h2>
+
+<h3>ALOGx macros</h3>
+
+<p>
+The standard Java language logging API in Android SDK is
+<a href="http://developer.android.com/reference/android/util/Log.html">android.util.Log</a>.
+</p>
+
+<p>
+The corresponding C language API in Android NDK is
+<code>__android_log_print</code>
+declared in <code>&lt;android/log.h&gt;</code>.
+</p>
+
+<p>
+Within the native portion of Android framework, we
+prefer macros named <code>ALOGE</code>, <code>ALOGW</code>,
+<code>ALOGI</code>, <code>ALOGV</code>, etc.  They are declared in
+<code>&lt;utils/Log.h&gt;</code>, and for the purposes of this article
+we'll collectively refer to them as <code>ALOGx</code>.
+</p>
+
+<p>
+All of these APIs are easy-to-use and well-understood, so they are pervasive
+throughout the Android platform.  In particular the <code>mediaserver</code>
+process, which includes the AudioFlinger sound server, uses
+<code>ALOGx</code> extensively.
+</p>
+
+<p>
+Nevertheless, there are some limitations to <code>ALOGx</code> and friends:
+</p>
+
+<ul>
+<li>
+They are suspectible to "log spam": the log buffer is a shared resource
+so it can easily overflow due to unrelated log entries, resulting in
+missed information.  The <code>ALOGV</code> variant is disabled at
+compile-time by default.  But of course even it can result in log spam
+if it is enabled.
+</li>
+<li>
+The underlying kernel system calls could block, possibly resulting in
+priority inversion and consequently measurement disturbances and
+inaccuracies.  This is of
+special concern to time-critical threads such as <code>FastMixer</code>.
+</li>
+<li>
+If a particular log is disabled to reduce log spam,
+then any information that would have been captured by that log is lost.
+It is not possible to enable a specific log retroactively,
+<i>after</i> it becomes clear that the log would have been interesting.
+</li>
+</ul>
+
+<h3>NBLOG, media.log, and MediaLogService</h3>
+
+<p>
+The <code>NBLOG</code> APIs and associated <code>media.log</code>
+process and <code>MediaLogService</code>
+service together form a newer logging system for media, and are specifically
+designed to address the issues above.  We will loosely use the term
+"media.log" to refer to all three, but strictly speaking <code>NBLOG</code> is the
+C++ logging API, <code>media.log</code> is a Linux process name, and <code>MediaLogService</code>
+is an Android binder service for examining the logs.
+</p>
+
+<p>
+A <code>media.log</code> "timeline" is a series
+of log entries whose relative ordering is preserved.
+By convention, each thread should use it's own timeline.
+</p>
+
+<h3>Benefits</h3>
+
+<p>
+The benefits of the <code>media.log</code> system are that it:
+</p>
+<ul>
+<li>Doesn't spam the main log unless and until it is needed.</li>
+<li>Can be examined even when <code>mediaserver</code> crashes or hangs.</li>
+<li>Is non-blocking per timeline.</li>
+<li>Offers less disturbance to performance.
+(Of course no form of logging is completely non-intrusive.)
+</li>
+</ul>
+
+<h3>Architecture</h3>
+
+<p>
+The diagram below shows the relationship of the <code>mediaserver</code> process
+and the <code>init</code> process, before <code>media.log</code> is introduced:
+</p>
+<img src="audio/images/medialog_before.png" alt="Architecture before media.log" />
+<p>
+Notable points:
+</p>
+<ul>
+<li><code>init</code> forks and execs <code>mediaserver</code>.</li>
+<li><code>init</code> detects the death of <code>mediaserver</code>, and re-forks as necessary.</li>
+<li><code>ALOGx</code> logging is not shown.
+</ul>
+
+<p>
+The diagram below shows the new relationship of the components,
+after <code>media.log</code> is added to the architecture:
+</p>
+<img src="audio/images/medialog_after.png" alt="Architecture after media.log" />
+<p>
+Important changes:
+</p>
+
+<ul>
+
+<li>
+Clients use <code>NBLOG</code> API to construct log entries and append them to
+a circular buffer in shared memory.
+</li>
+
+<li>
+<code>MediaLogService</code> can dump the contents of the circular buffer at any time.
+</li>
+
+<li>
+The circular buffer is designed in such a way that any corruption of the
+shared memory will not crash <code>MediaLogService</code>, and it will still be able
+to dump as much of the buffer that is not affected by the corruption.
+</li>
+
+<li>
+The circular buffer is non-blocking and lock-free for both writing
+new entries and reading existing entries.
+</li>
+
+<li>
+No kernel system calls are required to write to or read from the circular buffer
+(other than optional timestamps).
+</li>
+
+</ul>
+
+<h4>Where to use</h4>
+
+<p>
+As of Android 4.4, there are only a few log points in AudioFlinger
+that use the <code>media.log</code> system.  Though the new APIs are not as
+easy to use as <code>ALOGx</code>, they are not extremely difficult either.
+We encourage you to learn the new logging system for those
+occasions when it is indispensable.
+In particular, it is recommended for AudioFlinger threads that must
+run frequently, periodically, and without blocking such as the
+<code>FastMixer</code> thread.
+</p>
+
+<h3>How to use</h3>
+
+<h4>Add logs</h4>
+
+<p>
+First, you need to add logs to your code.
+</p>
+
+<p>
+In <code>FastMixer</code> thread, use code such as this:
+</p>
+<pre>
+logWriter->log("string");
+logWriter->logf("format", parameters);
+logWriter->logTimestamp();
+</pre>
+<p>
+As this <code>NBLog</code> timeline is used only by the <code>FastMixer</code> thread,
+there is no need for mutual exclusion.
+</p>
+
+<p>
+In other AudioFlinger threads, use <code>mNBLogWriter</code>:
+</p>
+<pre>
+mNBLogWriter->log("string");
+mNBLogWriter->logf("format", parameters);
+mNBLogWriter->logTimestamp();
+</pre>
+<p>
+For threads other than <code>FastMixer</code>,
+the thread's <code>NBLog</code> timeline can be used by both the thread itself, and
+by binder operations.  <code>NBLog::Writer</code> does not provide any
+implicit mutual exclusion per timeline, so be sure that all logs occur
+within a context where the thread's mutex <code>mLock</code> is held.
+</p>
+
+<p>
+After you have added the logs, re-build AudioFlinger.
+</p>
+
+<p class="caution"><strong>Caution:</strong>
+A separate <code>NBLog::Writer</code> timeline is required per thread,
+to ensure thread safety, since timelines omit mutexes by design.  If you
+want more than one thread to use the same timeline, you can protect with an
+existing mutex (as described above for <code>mLock</code>).  Or you can
+use the <code>NBLog::LockedWriter</code> wrapper instead of <code>NBLog::Writer</code>.
+However, this negates a prime benefit of this API: its non-blocking
+behavior.
+</p>
+
+<p>
+The full <code>NBLog</code> API is at <code>frameworks/av/include/media/nbaio/NBLog.h</code>.
+</p>
+
+<h4>Enable media.log</h4>
+
+<p>
+<code>media.log</code> is disabled by default. It is active only when property
+<code>ro.test_harness</code> is <code>1</code>.  You can enable it by:
+</p>
+
+<pre>
+adb root
+adb shell
+echo ro.test_harness=1 > /data/local.prop
+chmod 644 /data/local.prop
+reboot
+</pre>
+
+<p>
+The connection is lost during reboot, so:
+</p>
+<pre>
+adb shell
+</pre>
+
+The command <code>ps media</code> will now show two processes:
+<ul>
+<li>media.log</li>
+<li>mediaserver</li>
+</ul>
+<p>
+Note the process ID of <code>mediaserver</code> for later.
+</p>
+
+<h4>Displaying the timelines</h4>
+
+<p>
+You can manually request a log dump at any time.
+This command shows logs from all the active and recent timelines, and then clears them:
+</p>
+<pre>
+dumpsys media.log
+</pre>
+
+<p>
+Note that by design timelines are independent,
+and there is no facility for merging timelines.
+</p>
+
+<h4>Recovering logs after mediaserver death</h4>
+
+<p>
+Now try killing <code>mediaserver</code> process: <code>kill -9 #</code>, where # is
+the process ID you noted earlier.  You should see a dump from <code>media.log</code>
+in the main <code>logcat</code>, showing all the logs leading up to the crash.
+</p>
+<pre>
+dumpsys media.log
+</pre>

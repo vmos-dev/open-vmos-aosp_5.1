@@ -1,0 +1,296 @@
+page.title=Audio
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>This page explains how to implement the audio Hardware Abstraction Layer (HAL) and configure the
+shared library.</p>
+
+<h2 id="implementing">Implementing the HAL</h2>
+
+<p>The audio HAL is composed of three different interfaces that you must implement:</p>
+
+<ul>
+<li><code>hardware/libhardware/include/hardware/audio.h</code> - represents the main functions
+of an audio device.</li>
+<li><code>hardware/libhardware/include/hardware/audio_policy.h</code> - represents the audio policy
+manager, which handles things like audio routing and volume control policies.</li>
+<li><code>hardware/libhardware/include/hardware/audio_effect.h</code> - represents effects that can
+be applied to audio such as downmixing, echo, or noise suppression.</li>
+</ul>
+
+<p>For an example, refer to the implementation for the Galaxy Nexus at
+<code>device/samsung/tuna/audio</code>.</p>
+
+<p>In addition to implementing the HAL, you need to create a
+<code>device/&lt;company_name&gt;/&lt;device_name&gt;/audio/audio_policy.conf</code> file that
+declares the audio devices present on your product. For an example, see the file for the Galaxy
+Nexus audio hardware in <code>device/samsung/tuna/audio/audio_policy.conf</code>. Also, see the
+<code>system/core/include/system/audio.h</code> and
+<code>system/core/include/system/audio_policy.h</code> header files for a reference of the
+properties that you can define.</p>
+
+<h3 id="multichannel">Multi-channel support</h3>
+
+<p>If your hardware and driver supports multichannel audio via HDMI, you can output the audio
+stream  directly to the audio hardware. This bypasses the AudioFlinger mixer so it doesn't get
+downmixed to two channels.</p>
+
+<p>The audio HAL must expose whether an output stream profile supports multichannel audio
+capabilities. If the HAL exposes its capabilities, the default policy manager allows multichannel
+playback over HDMI.</p>
+
+<p>For more implementation details, see the <code>device/samsung/tuna/audio/audio_hw.c</code> in
+the Android 4.1 release.</p>
+
+<p>To specify that your product contains a multichannel audio output, edit the
+<code>audio_policy.conf</code> file to describe the multichannel output for your product. The
+following is an example from the Galaxy Nexus that shows a "dynamic" channel mask, which means the
+audio policy manager queries the actual channel masks supported by the HDMI sink after connection.
+You can also specify a static channel mask like <code>AUDIO_CHANNEL_OUT_5POINT1</code>.</p>
+
+<pre>
+audio_hw_modules {
+  primary {
+    outputs {
+        ...
+        hdmi {
+          sampling_rates 44100|48000
+          channel_masks dynamic
+          formats AUDIO_FORMAT_PCM_16_BIT
+          devices AUDIO_DEVICE_OUT_AUX_DIGITAL
+          flags AUDIO_OUTPUT_FLAG_DIRECT
+        }
+        ...
+    }
+    ...
+  }
+  ...
+}
+</pre>
+
+<p>AudioFlinger's mixer downmixes the content to stereo automatically when sent to an audio device
+that does not support multichannel audio.</p>
+
+<h3 id="codecs">Media codecs</h3>
+
+<p>Ensure the audio codecs your hardware and drivers support are properly declared for your
+product. For details on declaring supported codecs, see <a href="media.html#expose"> Exposing Codecs
+to the Framework</a>.</p>
+
+<h2 id="configuring">Configuring the shared library</h2>
+
+<p>You need to package the HAL implementation into a shared library and copy it to the appropriate
+location by creating an <code>Android.mk</code> file:</p>
+
+<ol>
+<li>Create a <code>device/&lt;company_name&gt;/&lt;device_name&gt;/audio</code> directory to
+contain your library's source files.</li>
+<li>Create an <code>Android.mk</code> file to build the shared library. Ensure that the Makefile
+contains the following line:
+<pre>
+LOCAL_MODULE := audio.primary.&lt;device_name&gt;
+</pre>
+
+<p>Notice your library must be named <code>audio_primary.&lt;device_name&gt;.so</code> so
+that Android can correctly load the library. The "<code>primary</code>" portion of this filename
+indicates that this shared library is for the primary audio hardware located on the device. The
+module names <code>audio.a2dp.&lt;device_name&gt;</code> and
+<code>audio.usb.&lt;device_name&gt;</code> are also available for bluetooth and USB audio
+interfaces. Here is an example of an <code>Android.mk</code> from the Galaxy Nexus audio hardware:
+</p>
+
+<pre>
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := audio.primary.tuna
+LOCAL_MODULE_RELATIVE_PATH := hw
+LOCAL_SRC_FILES := audio_hw.c ril_interface.c
+LOCAL_C_INCLUDES += \
+        external/tinyalsa/include \
+        $(call include-path-for, audio-utils) \
+        $(call include-path-for, audio-effects)
+LOCAL_SHARED_LIBRARIES := liblog libcutils libtinyalsa libaudioutils libdl
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_SHARED_LIBRARY)
+</pre>
+
+</li>
+
+<li>If your product supports low latency audio as specified by the Android CDD, copy the
+corresponding XML feature file into your product. For example, in your product's
+<code>device/&lt;company_name&gt;/&lt;device_name&gt;/device.mk</code> Makefile:
+
+<pre>
+PRODUCT_COPY_FILES := ...
+
+PRODUCT_COPY_FILES += \
+frameworks/native/data/etc/android.android.hardware.audio.low_latency.xml:system/etc/permissions/android.hardware.audio.low_latency.xml \
+</pre>
+
+</li>
+
+<li>Copy the <code>audio_policy.conf</code> file that you created earlier to the
+<code>system/etc/</code> directory in your product's
+<code>device/&lt;company_name&gt;/&lt;device_name&gt;/device.mk</code> Makefile. For example:
+
+<pre>
+PRODUCT_COPY_FILES += \
+        device/samsung/tuna/audio/audio_policy.conf:system/etc/audio_policy.conf
+</pre>
+
+</li>
+
+<li>Declare the shared modules of your audio HAL that are required by your product in the
+product's <code>device/&lt;company_name&gt;/&lt;device_name&gt;/device.mk</code> Makefile. For
+example, the Galaxy Nexus requires the primary and bluetooth audio HAL modules:
+
+<pre>
+PRODUCT_PACKAGES += \
+        audio.primary.tuna \
+        audio.a2dp.default
+</pre>
+
+</li>
+</ol>
+
+<h2 id="preprocessing">Audio pre-processing effects</h2>
+
+<p>The Android platform provides audio effects on supported devices in the
+<a href="http://developer.android.com/reference/android/media/audiofx/package-summary.html">audiofx
+</a> package, which is available for developers to access. For example, on the Nexus 10, the
+following pre-processing effects are supported:</p>
+
+<ul>
+<li>
+<a href="http://developer.android.com/reference/android/media/audiofx/AcousticEchoCanceler.html">
+Acoustic Echo Cancellation</a></li>
+<li>
+<a href="http://developer.android.com/reference/android/media/audiofx/AutomaticGainControl.html">
+Automatic Gain Control</a></li>
+<li>
+<a href="http://developer.android.com/reference/android/media/audiofx/NoiseSuppressor.html">
+Noise Suppression</a></li>
+</ul>
+
+
+<p>Pre-processing effects are paired with the use case mode in which the pre-processing is requested
+. In Android app development, a use case is referred to as an <code>AudioSource</code>; and app
+developers request to use the <code>AudioSource</code> abstraction instead of the actual audio
+hardware device. The Android Audio Policy Manager maps an <code>AudioSource</code> to the actual
+hardware with <code>AudioPolicyManagerBase::getDeviceForInputSource(int inputSource)</code>. The
+following sources are exposed to developers:</p>
+
+<ul>
+<li><code>android.media.MediaRecorder.AudioSource.CAMCORDER</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.VOICE_COMMUNICATION</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.VOICE_CALL</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.VOICE_DOWNLINK</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.VOICE_UPLINK</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.VOICE_RECOGNITION</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.MIC</code></li>
+<li><code>android.media.MediaRecorder.AudioSource.DEFAULT</code></li> </ul>
+
+<p>The default pre-processing effects applied for each <code>AudioSource</code> are specified in
+the <code>/system/etc/audio_effects.conf</code> file. To specify your own default effects for every
+<code>AudioSource</code>, create a <code>/system/vendor/etc/audio_effects.conf</code> file and
+specify the pre-processing effects to turn on. For an example, see the implementation for the Nexus
+10 in <code>device/samsung/manta/audio_effects.conf</code>. AudioEffect instances acquire and
+release a session when created and destroyed, enabling the effects (such as the Loudness Enhancer)
+to persist throughout the duration of the session. </p>
+
+<p class="warning"><strong>Warning:</strong> For the <code>VOICE_RECOGNITION</code> use case, do
+not enable the noise suppression pre-processing effect. It should not be turned on by default when
+recording from this audio source, and you should not enable it in your own audio_effects.conf file.
+Turning on the effect by default will cause the device to fail the <a
+href="/compatibility/index.html"> compatibility requirement</a> regardless of whether this was on by
+default due to configuration file , or the audio HAL implementation's default behavior.</p>
+
+<p>The following example enables pre-processing for the VoIP <code>AudioSource</code> and Camcorder
+<code>AudioSource</code>. By declaring the <code>AudioSource</code> configuration in this manner,
+the framework will automatically request from the audio HAL the use of those effects.</p>
+
+<pre>
+pre_processing {
+   voice_communication {
+       aec {}
+       ns {}
+   }
+   camcorder {
+       agc {}
+   }
+}
+</pre>
+
+<h3 id="tuning">Source tuning</h3>
+
+<p>For <code>AudioSource</code> tuning, there are no explicit requirements on audio gain or audio
+processing with the exception of voice recognition (<code>VOICE_RECOGNITION</code>).</p>
+
+<p>The requirements for voice recognition are:</p>
+
+<ul>
+<li>"flat" frequency response (+/- 3dB) from 100Hz to 4kHz</li>
+<li>close-talk config: 90dB SPL reads RMS of 2500 (16bit samples)</li>
+<li>level tracks linearly from -18dB to +12dB relative to 90dB SPL</li>
+<li>THD < 1% (90dB SPL in 100 to 4000Hz range)</li>
+<li>8kHz sampling rate (anti-aliasing)</li>
+<li>Effects/pre-processing must be disabled by default</li>
+</ul>
+
+<p>Examples of tuning different effects for different sources are:</p>
+
+<ul>
+<li>Noise Suppressor
+<ul>
+<li>Tuned for wind noise suppressor for <code>CAMCORDER</code></li>
+<li>Tuned for stationary noise suppressor for <code>VOICE_COMMUNICATION</code></li>
+</ul>
+</li>
+<li>Automatic Gain Control
+<ul>
+<li>Tuned for close-talk for <code>VOICE_COMMUNICATION</code> and main phone mic</li>
+<li>Tuned for far-talk for <code>CAMCORDER</code></li>
+</ul>
+</li>
+</ul>
+
+<h3 id="more">More information</h3>
+
+<p>For more information, see:</p>
+
+<ul>
+<li>Android documentation for
+<a href="http://developer.android.com/reference/android/media/audiofx/package-summary.html">
+audiofx package</a>
+
+<li>Android documentation for
+<a href="http://developer.android.com/reference/android/media/audiofx/NoiseSuppressor.html">
+Noise Suppression audio effect</a></li>
+
+<li><code>device/samsung/manta/audio_effects.conf</code> file for the Nexus 10</li>
+</ul>

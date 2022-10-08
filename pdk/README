@@ -1,0 +1,8 @@
+PDK (Platform Development Kit) is a reduced set of Android release provided to chipset vendors and OEMs before a new android platform is released.
+The goal of the PDK release is to help chipset vendors and OEMs to migrate to a new relelase.
+PDK release includes only necessary components for developing android HAL (Hardware Abstraction Layer). Note that the full android release is a superset of PDK release, and there is no separate PDK release to public as the full platform release includes everything in PDK.
+
+This repositorty is a place-holder for tools and test codes for PDK.
+
+- build: It is a place-holder for PDK build related stuffs.
+- apps: test apps

@@ -1,0 +1,33 @@
+page.title=Git Resources
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>For further information on Git, check out these excellent off-site resources:</p>
+<ul>
+<li>
+<p>The <a href="http://book.git-scm.com">Git Community Book</a> (maintained by Scott Chacon) </p>
+</li>
+<li>
+<p><a href="http://git.or.cz/gitwiki/FrontPage">Git Wiki</a></p>
+</li>
+<li>
+<p><a href="http://www.kernel.org/pub/software/scm/git/docs">Git Manual Page</a> </p>
+</li>
+<li>
+<p><a href="http://www.gitcasts.com">GitCasts</a> (Git how-to videos)</p>
+</li>
+</ul>

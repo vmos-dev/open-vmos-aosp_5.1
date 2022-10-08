@@ -1,0 +1,60 @@
+<mixer>
+  <!-- These are the initial mixer settings -->
+  <ctl name="Speaker Playback Switch" value="0" />
+  <ctl name="Int Spk Switch" value="0" />
+  <ctl name="HP Playback Switch" value="0" />
+  <ctl name="Headphone Jack Switch" value="0" />
+  <ctl name="AUX Switch" value="0" />
+  <ctl name="OUT Playback Switch" value="0" />
+  <ctl name="OUT Channel Switch" value="0" />
+
+  <!-- This is the dock volume -->
+  <ctl name="OUT Playback Volume" value="32" />
+
+  <!-- This is the dock (line out) source -->
+  <ctl name="LOUT MIX DAC L1 Switch" value="0" />
+  <ctl name="LOUT MIX DAC R1 Switch" value="0" />
+  <ctl name="LOUT MIX OUTVOL L Switch" value="1" />
+  <ctl name="LOUT MIX OUTVOL R Switch" value="1" />
+
+  <ctl name="Int Mic Switch" value="0" />
+  <ctl name="Mic Jack Switch" value="0" />
+  <ctl name="DMIC Switch" value="Disable" />
+  <ctl name="ADC Capture Volume" value="119" />
+
+  <path name="speaker">
+    <ctl name="Speaker Playback Switch" value="1" />
+    <ctl name="Int Spk Switch" value="1" />
+    <ctl name="DAC IF1 SWITCH" value="swap" />
+  </path>
+
+  <path name="headphone">
+    <ctl name="HP Playback Switch" value="1" />
+    <ctl name="Headphone Jack Switch" value="1" />
+    <!-- Even though the default is "Normal", this is used
+         to override the speaker setting -->
+    <ctl name="DAC IF1 SWITCH" value="Normal" />
+  </path>
+
+  <path name="dock">
+    <ctl name="AUX Switch" value="1" />
+    <ctl name="OUT Playback Switch" value="1" />
+    <ctl name="OUT Channel Switch" value="1" />
+  </path>
+
+  <path name="main-mic-top">
+    <ctl name="Int Mic Switch" value="1" />
+    <ctl name="DMIC Switch" value="DMIC1" />
+    <ctl name="ADC IF1 SWITCH" value="right copy to left" />
+  </path>
+
+  <path name="main-mic-left">
+    <ctl name="Int Mic Switch" value="1" />
+    <ctl name="DMIC Switch" value="DMIC1" />
+    <ctl name="ADC IF1 SWITCH" value="left copy to right" />
+  </path>
+
+  <path name="headset-mic">
+    <ctl name="Mic Jack Switch" value="1" />
+  </path>
+</mixer>

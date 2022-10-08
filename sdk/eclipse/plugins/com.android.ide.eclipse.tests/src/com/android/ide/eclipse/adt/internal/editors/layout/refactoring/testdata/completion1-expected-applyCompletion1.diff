@@ -1,0 +1,4 @@
+Code completion in completion1.xml for layout_w^idth="fill_parent" selecting android:layout_weight:
+@@ -8 +8
+-         android:layout_w^idth="fill_parent"
++         android:layout_weight^="fill_parent"

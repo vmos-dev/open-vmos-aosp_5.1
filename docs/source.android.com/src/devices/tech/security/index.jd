@@ -1,0 +1,839 @@
+page.title=Android Security Overview
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="introduction">Introduction</h2>
+<p>Android is a modern mobile platform that was designed to be truly open. Android
+applications make use of advanced hardware and software, as well as local and
+served data, exposed through the platform to bring innovation and value to
+consumers. To protect that value, the platform must offer an application
+environment that ensures the security of users, data, applications, the device,
+and the network.</p>
+
+<p>Securing an open platform requires a robust security architecture and rigorous
+security programs.  Android was designed with multi-layered security that
+provides the flexibility required for an open platform, while providing
+protection for all users of the platform.</p>
+
+<p>Android was designed with developers in mind. Security controls were designed
+to reduce the burden on developers. Security-savvy developers can easily work
+with and rely on flexible security controls.  Developers less familiar with
+security will be protected by safe defaults.</p>
+
+<p>Android was designed with device users in mind. Users are provided visibility
+into how applications work, and control over those applications.  This design
+includes the expectation that attackers would attempt to perform common
+attacks, such as social engineering attacks to convince device users to install
+malware, and attacks on third-party applications on Android. Android was
+designed to both reduce the probability of these attacks and greatly limit the
+impact of the attack in the event it was successful.</p>
+
+<p>This document outlines the goals of the Android security program, describes the
+fundamentals of the Android security architecture, and answers the most
+pertinent questions for system architects and security analysts.  This document
+focuses on the security features of Android's core platform and does not
+discuss security issues that are unique to specific applications, such as those
+related to the browser or SMS application. Recommended best practices for
+building Android devices, deploying Android devices, or developing applications
+for Android are not the goal of this document and are provided elsewhere.</p>
+
+<h1 id="background">Background</h1>
+<p>Android provides an open source platform and application environment for mobile
+devices.</p>
+<p>The main Android platform building blocks are:</p>
+<ul>
+<li>
+<p><strong>Device Hardware</strong>: Android runs on a wide range of hardware configurations
+including smart phones, tablets, and set-top-boxes.  Android is
+processor-agnostic, but it does take advantage of some hardware-specific
+security capabilities such as ARM v6 eXecute-Never.</p>
+</li>
+<li>
+<p><strong>Android Operating System</strong>: The core operating system is built on top of
+the Linux kernel. All device resources, like camera functions, GPS data,
+Bluetooth functions, telephony functions, network connections, etc. are
+accessed through the operating system.</p>
+</li>
+<li>
+<p><strong>Android Application Runtime</strong>: Android applications are most often written
+in the Java programming language and run in the Android runtime (ART).
+However, many applications, including core Android services and applications
+are native applications or include native libraries. Both ART and native
+applications run within the same security environment, contained within the
+Application Sandbox. Applications get a dedicated part of the filesystem in
+which they can write private data, including databases and raw files.</p>
+</li>
+</ul>
+<p>Android applications extend the core Android operating system.  There are two
+primary sources for applications:</p>
+<ul>
+<li>
+<p><strong>Pre-Installed Applications</strong>: Android includes a set of pre-installed
+applications including phone, email, calendar, web browser, and contacts. These
+function both as user applications and to provide key device capabilities that
+can be accessed by other applications.  Pre-installed applications may be part
+of the open source Android platform, or they may be developed by an OEM for a
+specific device.</p>
+</li>
+<li>
+<p><strong>User-Installed Applications</strong>: Android provides an open development
+environment supporting any third-party application. Google Play offers
+users hundreds of thousands of applications.</p>
+</li>
+</ul>
+<p>Google provides a set of cloud-based services that are available to any
+compatible Android device.  The primary services are:</p>
+<ul>
+<li>
+<p><strong>Google Play</strong>: Google Play is a collection of services that
+allow users to discover, install, and purchase applications from their Android
+device or the web.  Google Play makes it easy for developers to reach Android
+users and potential customers.   Google Play also provides community review,
+application <a href="https://developer.android.com/guide/publishing/licensing.html">license
+verification</a>, application security scanning, and other security services.</p>
+</li>
+<li>
+<p><strong>Android Updates</strong>: The Android update service delivers new capabilities and
+security updates to Android devices, including updates through the web or over
+the air (OTA).</p>
+</li>
+<li>
+<p><strong>Application Services</strong>: Frameworks that allow Android applications to use
+cloud capabilities such as (<a href="https://developer.android.com/guide/topics/data/backup.html">backing
+up</a>) application
+data and settings and cloud-to-device messaging
+(<a href="https://developers.google.com/android/c2dm/">C2DM</a>)
+for push messaging.</p>
+</li>
+</ul>
+<p>These services are not part of the Android Open Source Project and are out
+of scope for this document.  But they are relevant to the security of most
+Android devices, so a related security document titled “Google Services for
+Android: Security Overview” is available.</p>
+<h2 id="android-security-program-overview">Android Security Program Overview</h2>
+<p>Early on in development, the core Android development team recognized that a
+robust security model was required to enable a vigorous ecosystem of
+applications and devices built on and around the Android platform and supported
+by cloud services. As a result, through its entire development lifecycle,
+Android has been subjected to a professional security program. The Android team
+has had the opportunity to observe how other mobile, desktop, and server platforms
+prevented and reacted to security issues and built a security
+program to address weak points observed in other offerings.</p>
+<p>The key components of the Android Security Program include:</p>
+<ul>
+<li><strong>Design Review</strong>: The Android security process begins early in the
+development lifecycle with the creation of a rich and configurable security
+model and design. Each major feature of the platform is reviewed by engineering
+and security resources, with appropriate security controls integrated into the
+architecture of the system.</li>
+<li><strong>Penetration Testing and Code Review</strong>: During the development of the
+platform, Android-created and open-source components are subject to vigorous
+security reviews. These reviews are performed by the Android Security Team,
+Google’s Information Security Engineering team, and independent security
+consultants. The goal of these reviews is to identify weaknesses and possible
+vulnerabilities well before the platform is open-sourced, and to simulate the
+types of analysis that will be performed by external security experts upon
+release.</li>
+<li><strong>Open Source and Community Review</strong>: The Android Open Source Project enables
+broad security review by any interested party. Android also uses open source
+technologies that have undergone significant external security review,
+such as the Linux kernel.  Google Play provides a forum for users and companies
+to provide information about specific applications directly to users.</li>
+<li><strong>Incident Response</strong>: Even with all of these precautions, security issues
+may occur after shipping, which is why the Android project has created a
+comprehensive security response process. A full-time Android security team
+constantly monitors Android-specific and the general security community for
+discussion of potential vulnerabilities. Upon the discovery of legitimate
+issues, the Android team has a response process that enables the rapid
+mitigation of vulnerabilities to ensure that potential risk to all Android
+users is minimized.  These cloud-supported responses can include updating the
+Android platform (over-the-air updates), removing applications from Google
+Play, and removing applications from devices in the field.</li>
+</ul>
+<h2 id="android-platform-security-architecture">Android Platform Security Architecture</h2>
+<p>Android seeks to be the most secure and usable operating system for mobile
+platforms by re-purposing traditional operating system security controls to:</p>
+<ul>
+<li>Protect user data</li>
+<li>Protect system resources (including the network)</li>
+<li>Provide application isolation</li>
+</ul>
+<p>To achieve these objectives, Android provides these key security features:</p>
+<ul>
+<li>Robust security at the OS level through the Linux kernel</li>
+<li>Mandatory application sandbox for all applications</li>
+<li>Secure interprocess communication</li>
+<li>Application signing</li>
+<li>Application-defined and user-granted permissions</li>
+</ul>
+<p>The sections below describe these and other security features of the Android
+platform. <em>Figure 1</em> summarizes the security components and considerations of
+the various levels of the Android software stack. Each component assumes that
+the components below are properly secured. With the exception of a small amount
+of Android OS code running as root, all code above the Linux Kernel is
+restricted by the Application Sandbox.</p>
+<p><img alt="Figure 1: Android software stack" src="images/image00.png" /></p>
+<p><em>Figure 1: Android software stack.</em></p>
+<h1 id="system-and-kernel-level-security">System and Kernel Level Security</h1>
+<p>At the operating system level, the Android platform provides the security of
+the Linux kernel, as well as a secure inter-process communication (IPC)
+facility to enable secure communication between applications running in
+different processes. These security features at the OS level ensure that even
+native code is constrained by the Application Sandbox.  Whether that code is
+the result of included application behavior or a exploitation of an application
+vulnerability, the system would prevent the rogue application from harming
+other applications, the Android system, or the device itself.</p>
+<h2 id="linux-security">Linux Security</h2>
+<p>The foundation of the Android platform is the Linux kernel. The Linux kernel
+itself has been in widespread use for years, and is used in millions of
+security-sensitive environments. Through its history of constantly being
+researched, attacked, and fixed by thousands of developers, Linux has become a
+stable and secure kernel trusted by many corporations and security
+professionals.</p>
+<p>As the base for a mobile computing environment, the Linux kernel provides
+Android with several key security features, including:</p>
+<ul>
+<li>A user-based permissions model</li>
+<li>Process isolation</li>
+<li>Extensible mechanism for secure IPC</li>
+<li>The ability to remove unnecessary and potentially insecure parts of the kernel</li>
+</ul>
+<p>As a multiuser operating system, a fundamental security objective of the Linux
+kernel is to isolate user resources from one another.  The Linux security
+philosophy is to protect user resources from one another. Thus, Linux:</p>
+<ul>
+<li>Prevents user A from reading user B's files</li>
+<li>Ensures that user A does not exhaust user B's memory</li>
+<li>Ensures that user A does not exhaust user B's CPU resources</li>
+<li>Ensures that user A does not exhaust user B's devices (e.g. telephony, GPS,
+bluetooth)</li>
+</ul>
+
+<h2 id="the-application-sandbox">The Application Sandbox</h2>
+<p>The Android platform takes advantage of the Linux user-based protection as a
+means of identifying and isolating application resources.  The Android system
+assigns a unique user ID (UID) to each Android application and runs it as that user
+in a separate process.  This approach is different from other operating systems
+(including the traditional Linux configuration), where multiple applications
+run with the same user permissions.</p>
+<p>This sets up a kernel-level Application Sandbox. The kernel enforces security
+between applications and the system at the process level through standard Linux
+facilities, such as user and group IDs that are assigned to applications.  By
+default, applications cannot interact with each other and applications have
+limited access to the operating system. If application A tries to do something
+malicious like read application B's data or dial the phone without permission
+(which is a separate application), then the operating system protects against
+this because application A does not have the appropriate user privileges. The
+sandbox is simple, auditable, and based on decades-old UNIX-style user
+separation of processes and file permissions.</p>
+<p>Since the Application Sandbox is in the kernel, this security model extends to
+native code and to operating system applications. All of the software above the
+kernel in <em>Figure 1</em>, including operating system libraries, application
+framework, application runtime, and all applications run within the Application
+Sandbox. On some platforms, developers are constrained to a specific
+development framework, set of APIs, or language in order to enforce security.
+On Android, there are no restrictions on how an application can be written that
+are required to enforce security; in this respect, native code is just as
+secure as interpreted code.</p>
+<p>In some operating systems, memory corruption errors generally lead to
+completely compromising the security of the device. This is not the case in
+Android due to all applications and their resources being sandboxed at the OS
+level. A memory corruption error will only allow arbitrary code execution in
+the context of that particular application, with the permissions established by
+the operating system.</p>
+<p>Like all security features, the Application Sandbox is not unbreakable.
+However, to break out of the Application Sandbox in a properly configured
+device, one must compromise the security of the the Linux kernel.</p>
+<h2 id="system-partition-and-safe-mode">System Partition and Safe Mode</h2>
+<p>The system partition contains Android's kernel as well as the operating system
+libraries, application runtime, application framework, and applications.  This
+partition is set to read-only. When a user boots the device into Safe Mode,
+only core Android applications are available. This ensures that the user can
+boot their phone into an environment that is free of third-party software.</p>
+
+<h2 id="filesystem-permissions">Filesystem Permissions</h2>
+<p>In a UNIX-style environment, filesystem permissions ensure that one user cannot
+alter or read another user's files. In the case of Android, each application
+runs as its own user. Unless the developer explicitly exposes files to other
+applications, files created by one application cannot be read or altered by
+another application.</p>
+
+<h2 id="se-linux">Security-Enhanced Linux</h2>
+
+<p>Android uses Security-Enhanced
+Linux (SELinux) to apply access control policies and establish an environment of
+mandatory access control (mac). See <a
+href="{@docRoot}devices/tech/security/se-linux.html">Validating
+Security-Enhanced Linux in
+Android</a> for details.</p>
+
+<h2 id="crypto">Cryptography</h2>
+
+<p>
+Android provides a set of cryptographic APIs for use by applications. These
+include  implementations of standard and commonly used cryptographic primitives
+such as AES, RSA, DSA, and SHA. Additionally, APIs are provided for higher level
+protocols such as SSL and HTTPS.
+</p>
+
+<p>
+Android 4.0 introduced the
+<a href="http://developer.android.com/reference/android/security/KeyChain.html">KeyChain</a>
+class to allow applications to use the system credential storage for private
+keys and certificate chains.
+</p>
+
+<h2 id="memory-mgmt">Memory Management Security Enhancements</h2>
+
+Android includes many features that make common security issues harder to
+exploit. The Android SDK, compilers, and OS use tools to make common memory
+corruption issues significantly harder to exploit, including:
+
+<dl>
+<dt><strong>Android 1.5</strong></dt>
+<dd><ul>
+<li>ProPolice to prevent stack buffer overruns (-fstack-protector)</li>
+<li>safe_iop to reduce integer overflows</li>
+<li>Extensions to OpenBSD dlmalloc to prevent double free() vulnerabilities and
+to prevent chunk consolidation attacks.  Chunk consolidation attacks are a
+common way to exploit heap corruption.</li>
+<li>OpenBSD calloc to prevent integer overflows during memory allocation</li>
+</ul>
+</dd>
+
+<dt><strong>Android 2.3</strong></dt>
+<dd><ul>
+<li>Format string vulnerability protections (-Wformat-security -Werror=format-security)</li>
+<li>Hardware-based No eXecute (NX) to prevent code execution on the stack and heap</li>
+<li>Linux mmap_min_addr to mitigate null pointer dereference privilege
+escalation (further enhanced in Android 4.1)</li>
+</ul>
+</dd>
+
+<dt><strong>Android 4.0</strong></dt>
+<dd>Address Space Layout Randomization (ASLR) to randomize key locations in memory
+</dd>
+
+<dt><strong>Android 4.1</strong></dt>
+<dd><ul>
+<li>PIE (Position Independent Executable) support</li>
+<li>Read-only relocations / immediate binding (-Wl,-z,relro -Wl,-z,now)</li>
+<li>dmesg_restrict enabled (avoid leaking kernel addresses)</li>
+<li>kptr_restrict enabled (avoid leaking kernel addresses)</li>
+</ul>
+</dd>
+
+<dt><strong>Android 4.2</strong></dt>
+<dd><code>FORTIFY_SOURCE</code> for system code</dd>
+
+</dl>
+
+<h2 id="rooting">Rooting of Devices</h2>
+<p>
+By default, on Android only the kernel and a small subset of the core
+applications run with root permissions. Android does not prevent a user or
+application with root permissions from modifying the operating system, kernel,
+and any other application.  In general, root has full access to all
+applications and all application data. Users that change the permissions on an
+Android device to grant root access to applications increase the security
+exposure to malicious applications and potential application flaws.
+</p>
+<p>
+The ability to modify an Android device they own is important to developers
+working with the Android platform. On many Android devices users have the
+ability to unlock the bootloader in order to allow installation of an alternate
+operating system. These alternate operating systems may allow an owner to gain
+root access for purposes of debugging applications and system components or to
+access features not presented to applications by Android APIs.
+</p>
+<p>
+On some devices, a person with physical control of a device and a USB cable is
+able to install a new operating system that provides root privileges to the
+user. To protect any existing user data from compromise the bootloader unlock
+mechanism requires that the bootloader erase any existing user data as part of
+the unlock step. Root access gained via exploiting a kernel bug or security
+hole can bypass this protection.
+</p>
+<p>
+Encrypting data with a key stored on-device does not protect the application
+data from root users. Applications can add a layer of data protection using
+encryption with a key stored off-device, such as on a server or a user
+password.  This approach can provide temporary protection while the key is not
+present, but at some point the key must be provided to the application and it
+then becomes accessible to root users.
+</p>
+<p>
+A more robust approach to protecting data from root users is through the use of
+hardware solutions. OEMs may choose to implement hardware solutions that limit
+access to specific types of content such as DRM for video playback, or the
+NFC-related trusted storage for Google wallet.
+</p>
+<p>
+In the case of a lost or stolen device, full filesystem encryption on Android
+devices uses the device password to protect the encryption key, so modifying
+the bootloader or operating system is not sufficient to access user data
+without the user’s device password.
+</p>
+<h2 id="user-sec">User Security Features</h2>
+
+<h3 id="filesystem-encryption">Filesystem Encryption</h3>
+
+<p>Android 3.0 and later provides full filesystem encryption, so all user data can
+be encrypted in the kernel using the dmcrypt implementation of AES128 with CBC
+and ESSIV:SHA256. The encryption key is protected by AES128 using a key
+derived from the user password, preventing unauthorized access to stored data
+without the user device password. To provide resistance against systematic
+password guessing attacks (e.g. “rainbow tables” or brute force), the
+password is combined with a random salt and hashed repeatedly with SHA1 using
+the standard PBKDF2 algorithm prior to being used to decrypt the filesystem
+key. To provide resistance against dictionary password guessing attacks,
+Android provides password complexity rules that can be set by the device
+administrator and enforced by the operating system. Filesystem encryption
+requires the use of a user password, pattern-based screen lock is not supported.</p>
+<p>More details on implementation of filesystem encryption are available at
+<a href="{@docRoot}devices/tech/encryption/index.html">Encryption</a>.</p>
+
+<h2 id="password-protection">Password Protection</h2>
+<p>Android can be configured to verify a user-supplied password prior to providing
+access to a device. In addition to preventing unauthorized use of the device,
+this password protects the cryptographic key for full filesystem encryption.</p>
+<p>Use of a password and/or password complexity rules can be required by a device
+administrator.</p>
+
+<h2 id="device-administration">Device Administration</h2>
+<p>Android 2.2 and later provide the Android Device Administration API, which
+provides device administration features at the system level. For example, the
+built-in Android Email application uses the APIs to improve Exchange support.
+Through the Email application, Exchange administrators can enforce password
+policies — including alphanumeric passwords or numeric PINs — across
+devices. Administrators can also remotely wipe (that is, restore factory
+defaults on) lost or stolen handsets.</p>
+<p>In addition to use in applications included with the Android system, these APIs
+are available to third-party providers of Device Management solutions. Details
+on the API are provided here:
+<a href="https://devel
+oper.android.com/guide/topics/admin/device-admin.html">https://developer.android.com/guide/topics/admin/device-admin.html</a>.</p>
+
+<h1 id="android-application-security">Android Application Security</h1>
+<h2 id="elements-of-applications">Elements of Applications</h2>
+<p>Android provides an open source platform and application environment for mobile
+devices. The core operating system is based on the Linux kernel. Android
+applications are most often written in the Java programming language and run in
+the ART runtime. However, applications can also be written in native
+code. Applications are installed from a single file with the .apk file
+extension.</p>
+<p>The main Android application building blocks are:</p>
+<ul>
+<li>
+<p><strong>AndroidManifest.xml</strong>: The
+<a href="https://developer.android.com/guide/topics/manifest/manifes
+t-intro.html">AndroidManifest.xml</a> file is the control file that tells the system what to do with
+all the top-level components (specifically activities, services, broadcast
+receivers, and content providers described below) in an application. This also
+specifies which permissions are required.</p>
+</li>
+<li>
+<p><strong>Activities</strong>: An
+<a href="https://developer.android.com/guide/topics/fundamentals/activities.htm
+l">Activity</a> is, generally, the code for a single, user-focused task.  It usually
+includes displaying a UI to the user, but it does not have to -- some
+Activities never display UIs.  Typically, one of the application's Activities
+is the entry point to an application.</p>
+</li>
+<li>
+<p><strong>Services</strong>: A
+<a href="https://developer.android.com/guide/topics/fundamentals/services.html">Service</a>
+is a body of code that runs in the background. It can run in its own process,
+or in the context of another application's process. Other components "bind" to
+a Service and invoke methods on it via remote procedure calls. An example of a
+Service is a media player: even when the user quits the media-selection UI, the
+user probably still intends for music to keep playing. A Service keeps the
+music going even when the UI has completed.</p>
+</li>
+<li>
+<p><strong>Broadcast Receiver</strong>: A
+<a href="https://developer.android.com/reference/android/content/Broad
+castReceiver.html">BroadcastReceiver</a> is an object that is instantiated when an IPC mechanism
+known as an
+<a href="https://developer.android.com/reference/android/content/Intent.html">Intent</a>
+is issued by the operating system or another application.  An application may
+register a receiver for the low battery message, for example, and change its
+behavior based on that information.</p>
+</li>
+</ul>
+
+<h2 id="the-android-permission-model-accessing-protected-apis">The Android Permission Model: Accessing Protected APIs</h2>
+<p>All applications on Android run in an Application Sandbox, described earlier in this document.
+By default, an Android application can only access a limited range of system
+resources. The system manages Android application access to resources that, if
+used incorrectly or maliciously, could adversely impact the user experience,
+the network, or data on the device.</p>
+<p>These restrictions are implemented in a variety of different forms.  Some
+capabilities are restricted by an intentional lack of APIs to the sensitive
+functionality (e.g. there is no Android API for directly manipulating the SIM
+card).  In some instances, separation of roles provides a security measure, as
+with the per-application isolation of storage. In other instances, the
+sensitive APIs are intended for use by trusted applications and protected
+through a security mechanism known as Permissions.</p>
+<p>These protected APIs include:</p>
+<ul>
+<li>Camera functions</li>
+<li>Location data (GPS)</li>
+<li>Bluetooth functions</li>
+<li>Telephony functions</li>
+<li>SMS/MMS functions</li>
+<li>Network/data connections</li>
+</ul>
+<p>These resources are only accessible through the operating system.  To make use
+of the protected APIs on the device, an application must define the
+capabilities it needs in its manifest.  When preparing to install an
+application, the system displays a dialog to the user that indicates the
+permissions requested and asks whether to continue the installation.  If the
+user continues with the installation, the system accepts that the user has
+granted all of the requested permissions. The user can not grant or deny
+individual permissions -- the user must grant or deny all of the requested
+permissions as a block.</p>
+<p>Once granted, the permissions are applied to the application as long as it is
+installed.  To avoid user confusion, the system does not notify the user again
+of the permissions granted to the application, and applications that are
+included in the core operating system or bundled by an OEM do not request
+permissions from the user. Permissions are removed if an application is
+uninstalled, so a subsequent re-installation will again result in display of
+permissions.</p>
+<p>Within the device settings, users are able to view permissions for applications
+they have previously installed. Users can also turn off some functionality
+globally when they choose, such as disabling GPS, radio, or wi-fi.</p>
+<p>In the event that an application attempts to use a protected feature which has
+not been declared in the application's manifest, the permission failure will
+typically result in a security exception being thrown back to the application.
+Protected API permission checks are enforced at the lowest possible level to
+prevent circumvention. An example of the user messaging when an application is
+installed while requesting access to protected APIs is shown in <em>Figure 2</em>.</p>
+<p>The system default permissions are described at
+<a href="https://developer.android.com/reference/android/Manifest.permission.html">https://developer.android.com/reference/android/Manifest.permission.html</a>.
+Applications may declare their own permissions for other applications to use.
+Such permissions are not listed in the above location.</p>
+<p>When defining a permission a protectionLevel attribute tells the system how the
+user is to be informed of applications requiring the permission, or who is
+allowed to hold a permission. Details on creating and using application
+specific permissions are described at
+<a href="https://develo
+per.android.com/guide/topics/security/security.html">https://developer.android.com/guide/topics/security/security.html</a>.</p>
+<p>There are some device capabilities, such as the ability to send SMS broadcast
+intents, that are not available to third-party applications, but that may be
+used by applications pre-installed by the OEM. These permissions use the
+signatureOrSystem permission.</p>
+<h2 id="how-users-understand-third-party-applications">How Users Understand Third-Party Applications</h2>
+<p>Android strives to make it clear to users when they are interacting with
+third-party applications and inform the user of the capabilities those
+applications have.  Prior to installation of any application, the user is shown
+a clear message about the different permissions the application is requesting.
+After install, the user is not prompted again to confirm any permissions.</p>
+<p>There are many reasons to show permissions immediately prior to installation
+time. This is when user is actively reviewing information about the
+application, developer, and functionality to determine whether it matches their
+needs and expectations.  It is also important that they have not yet
+established a mental or financial commitment to the app, and can easily compare
+the application to other alternative applications.</p>
+<p>Some other platforms use a different approach to user notification, requesting
+permission at the start of each session or while applications are in use. The
+vision of Android is to have users switching seamlessly between applications at
+will. Providing confirmations each time would slow down the user and prevent
+Android from delivering a great user experience. Having the user review
+permissions at install time gives the user the option to not install the
+application if they feel uncomfortable.</p>
+<p>Also, many user interface studies have shown that over-prompting the user
+causes the user to start saying "OK" to any dialog that is shown. One of
+Android's security goals is to effectively convey important security
+information to the user, which cannot be done using dialogs that the user will
+be trained to ignore. By presenting the important information once, and only
+when it is important, the user is more likely to think about what they are
+agreeing to.</p>
+<p>Some platforms choose not to show any information at all about application
+functionality. That approach prevents users from easily understanding and
+discussing application capabilities. While it is not possible for all users to
+always make fully informed decisions, the Android permissions model makes
+information about applications easily accessible to a wide range of users.  For
+example, unexpected permissions requests can prompt more sophisticated users to
+ask critical questions about application functionality and share their concerns
+in places such as <a href="htts://play.google.com">Google Play</a> where they
+are visible to all users.</p>
+<table>
+<tr>
+<td><strong>Permissions at Application Install -- Google Maps</strong></td>
+<td><strong>Permissions of an Installed Application -- gMail</strong></td>
+</tr>
+<tr>
+<td>
+<img alt="Permissions at Application Install -- Google Maps" width=250
+src="images/image_install.png"/>
+</td>
+<td>
+<img alt="Permissions of an Installed Application -- gMail" width=250
+src="images/image_gmail_installed.png"/>
+</td>
+</tr>
+</table>
+
+<p><em>Figure 2: Display of permissions for applications</em></p>
+<h2 id="interprocess-communication">Interprocess Communication</h2>
+<p>Processes can communicate using any of the traditional UNIX-type mechanisms.
+Examples include the filesystem, local sockets, or signals. However, the Linux
+permissions still apply.</p>
+<p>Android also provides new IPC mechanisms:</p>
+<ul>
+<li>
+<p><strong>Binder</strong>: A lightweight capability-based remote procedure call mechanism
+designed for high performance when performing in-process and cross-process
+calls. Binder is implemented using a custom Linux driver. See
+<a href="https://developer
+.android.com/reference/android/os/Binder.html">https://developer.android.com/reference/android/os/Binder.html</a>.</p>
+</li>
+<li>
+<p><strong>Services</strong>: Services (discussed above) can provide interfaces directly
+accessible using binder.</p>
+</li>
+<li>
+<p><strong>Intents</strong>: An Intent is a simple message object that represents an
+"intention" to do something. For example, if your application wants to display
+a web page, it expresses its "Intent" to view the URL by creating an Intent
+instance and handing it off to the system. The system locates some other piece
+of code (in this case, the Browser) that knows how to handle that Intent, and
+runs it. Intents can also be used to broadcast interesting events (such as a
+notification) system-wide. See
+<a href="https://developer.android.com/reference/android/content/Intent.html">https://developer.android.com/reference/android/content/Intent.html</a>.</p>
+</li>
+<li>
+<p><strong>ContentProviders</strong>: A ContentProvider is a data storehouse that provides
+access to data on the device; the classic example is the ContentProvider that
+is used to access the user's list of contacts. An application can access data
+that other applications have exposed via a ContentProvider, and an application
+can also define its own ContentProviders to expose data of its own. See
+<a href="https://developer.android.com/reference/android/content/ContentProvider.html">https://developer.android.com/reference/android/content/ContentProvider.html</a>.</p>
+</li>
+</ul>
+<p>While it is possible to implement IPC using other mechanisms such as network
+sockets or world-writable files, these are the recommended Android IPC
+frameworks. Android developers will be encouraged to use best practices around
+securing users' data and avoiding the introduction of security vulnerabilities.</p>
+<h2 id="cost-sensitive-apis">Cost-Sensitive APIs</h2>
+<p>A cost sensitive API is any function that might generate a cost for the user or
+the network. The Android platform has placed cost sensitive APIs in the list of
+protected APIs controlled by the OS. The user will have to grant explicit
+permission to third-party applications requesting use of cost sensitive APIs.
+These APIs include:</p>
+<ul>
+<li>Telephony</li>
+<li>SMS/MMS</li>
+<li>Network/Data</li>
+<li>In-App Billing</li>
+<li>NFC Access</li>
+</ul>
+
+<p> Android 4.2 adds further control on the use of SMS. Android will provide a
+notification if an application attempts to send SMS to a short code that uses
+premium services which might cause additional charges.  The user can choose
+whether to allow the application to send the message or block it.
+</p>
+
+<h2 id="sim-card-access">SIM Card Access</h2>
+<p>Low level access to the SIM card is not available to third-party apps. The OS
+handles all communications with the SIM card including access to personal
+information (contacts) on the SIM card memory. Applications also cannot access
+AT commands, as these are managed exclusively by the Radio Interface Layer
+(RIL). The RIL provides no high level APIs for these commands.</p>
+<h2 id="personal-information">Personal Information</h2>
+<p>Android has placed APIs that provide access to user data into the set of
+protected APIs.  With normal usage, Android devices will also accumulate user
+data within third-party applications installed by users.   Applications that
+choose to share this information can use Android OS permission checks to
+protect the data from third-party applications.</p>
+<p><img alt="Figure 3: Access to sensitive user data is only available through protected
+APIs" src="images/image03.png" /></p>
+<p><em>Figure 3: Access to sensitive user data is only available through protected
+APIs</em></p>
+<p>System content providers that are likely to contain personal or personally
+identifiable information such as contacts and calendar have been created with
+clearly identified permissions. This granularity provides the user with clear
+indication of the types of information that may be provided to the application.
+ During installation, a third-party application may request permission to
+access these resources.  If permission is granted, the application can be
+installed and will have access to the data requested at any time when it is
+installed.</p>
+<p>Any applications which collect personal information will, by default, have that
+data restricted only to the specific application.  If an application chooses to
+make the data available to other applications though IPC, the application
+granting access can apply permissions to the IPC mechanism that are enforced by
+the operating system.</p>
+<h2 id="sensitive-data-input-devices">Sensitive Data Input Devices</h2>
+<p>Android devices frequently provide sensitive data input devices that allow
+applications to interact with the surrounding environment, such as camera,
+microphone or GPS.  For a third-party application to access these devices, it
+must first be explicitly provided access by the user through the use of Android
+OS Permissions.  Upon installation, the installer will prompt the user
+requesting permission to the sensor by name.</p>
+<p>If an application wants to know the user's location, the application requires a
+permission to access the user's location. Upon installation, the installer will
+prompt the user asking if the application can access the user's location. At
+any time, if the user does not want any application to access their location,
+then the user can run the "Settings" application, go to "Location &amp; Security",
+and uncheck the "Use wireless networks" and "Enable GPS satellites". This will
+disable location based services for all applications on the user's device.</p>
+<h2 id="device-metadata">Device Metadata</h2>
+<p>Android also strives to restrict access to data that is not intrinsically
+sensitive, but may indirectly reveal characteristics about the user, user
+preferences, and the manner in which they use a device.</p>
+<p>By default applications do not have access to operating system logs,
+browser history, phone number, or hardware / network identification
+information.  If an application requests access to this information at install
+time, the installer will prompt the user asking if the application can access
+the information. If the user does not grant access, the application will not be
+installed.</p>
+<h2 id="application-signing">Application Signing</h2>
+<p>Code signing allows developers to identify the author of the application and to
+update their application without creating complicated interfaces and
+permissions. Every application that is run on the Android platform must be
+signed by the developer.  Applications that attempt to install without being
+signed will rejected by either Google Play or the package installer on
+the Android device.</p>
+<p>On Google Play, application signing bridges the trust Google has with the
+developer and the trust the developer has with their application.  Developers
+know their application is provided, unmodified to the Android device; and
+developers can be held accountable for behavior of their application.</p>
+<p>On Android, application signing is the first step to placing an application in
+its Application Sandbox. The signed application certificate defines which user
+id is associated with which application; different applications run under
+different user IDs. Application signing ensures that one application cannot
+access any other application except through well-defined IPC.</p>
+<p>When an application (APK file) is installed onto an Android device, the Package
+Manager verifies that the APK has been properly signed with the certificate
+included in that APK.  If the certificate (or, more accurately, the public key
+in the certificate) matches the key used to sign any other APK on the device,
+the new APK has the option to specify in the manifest that it will share a UID
+with the other similarly-signed APKs.</p>
+<p>Applications can be signed by a third-party (OEM, operator, alternative market)
+or self-signed. Android provides code signing using self-signed certificates
+that developers can generate without external assistance or permission.
+Applications do not have to be signed by a central authority. Android currently
+does not perform CA verification for application certificates.</p>
+<p>Applications are also able to declare security permissions at the Signature
+protection level, restricting access only to applications signed with the same
+key while maintaining distinct UIDs and Application Sandboxes. A closer
+relationship with a shared Application Sandbox is allowed via the
+<a href="https://developer.android.com/guide/topics/manifest/manifest-element.html#uid">shared UID
+feature</a> where two or more applications signed with same developer key can
+declare a shared UID in their manifest.</p>
+
+<h2 id="app-verification">Application Verification</h2>
+<p>
+Android 4.2 and later support application verification. Users can choose to
+enable “Verify Apps" and have applications evaluated by an application verifier
+prior to installation.  App verification can alert the user if they try to
+install an app that might be harmful; if an application is especially bad, it
+can block installation.
+</p>
+
+<h2 id="digital-rights-management">Digital Rights Management</h2>
+<p>The Android platform provides an extensible DRM framework that lets
+applications manage rights-protected content according to the license
+constraints that are associated with the content. The DRM framework supports
+many DRM schemes; which DRM schemes a device supports is left to the device
+manufacturer.</p>
+<p>The <a href="https://developer.android.com/reference/android/drm/package-summary.html">Android DRM
+framework</a>
+is implemented in two architectural layers (see figure below):</p>
+<ul>
+<li>
+<p>A DRM framework API, which is exposed to applications through the Android
+application framework and runs through the ART runtime for standard applications.</p>
+</li>
+<li>
+<p>A native code DRM manager, which implements the DRM framework and exposes an
+interface for DRM plug-ins (agents) to handle rights management and decryption
+for various DRM schemes</p>
+</li>
+</ul>
+<p><img alt="Figure 4: Architecture of Digital Rights Management on Android
+platform" src="images/image02.png" /></p>
+<p><em>Figure 4: Architecture of Digital Rights Management on Android platform</em></p>
+<h1 id="android-updates">Android Updates</h1>
+<p>Android provides system updates for both security and feature related purposes.</p>
+<p>There are two ways to update the code on most Android devices: over-the-air
+(OTA updates) or side-loaded updates. OTA updates can be rolled out over a
+defined time period or be pushed to all devices at once, depending on how the
+OEM and/or carrier would like to push the updates. Side-loaded updates can be
+provided from a central location for users to download as a zip file to their
+local desktop machine or directly to their handset. Once the update is copied
+or downloaded to the SD card on the device, Android will recognize the update,
+verify its integrity and authenticity, and automatically update the device.</p>
+<p>If a dangerous vulnerability is discovered internally or responsibly reported
+to Google or the Android Open Source Project, the Android security team will
+start the following process.</p>
+<ol>
+<li>The Android team will notify companies who have signed NDAs regarding the
+problem and begin discussing the solution.</li>
+<li>The owners of code will begin the fix.</li>
+<li>The Android team will fix Android-related security issues.</li>
+<li>When a patch is available, the fix is provided to the NDA companies.</li>
+<li>The Android team will publish the patch in the Android Open Source Project</li>
+<li>OEM/carrier will push an update to customers.</li>
+</ol>
+<p>The NDA is required to ensure that the security issue does not become public
+prior to availabilty of a fix and put users at risk. Many OHA members run their
+own code on Android devices such as the bootloader, wifi drivers, and the
+radio. Once the Android Security team is notified of a security issue in this
+partner code, they will consult with OHA partners to quickly find a fix for the
+problem at hand and similar problems. However, the OHA member who wrote the
+faulty code is ultimately responsible for fixing the problem.</p>
+<p>If a dangerous vulnerability is not responsibly disclosed (e.g., if it is
+posted to a public forum without warning), then Google and/or the Android Open
+Source Project will work as quickly as possible to create a patch. The patch
+will released to the public (and any partners) when the patch is tested and
+ready for use.</p>
+<p>At Google I/O 2011, many of the largest OHA partners committed to providing
+updates to devices for 18 months after initial shipment. This will provide
+users with access to the most recent Android features, as well as security
+updates.</p>
+<p>Any developer, Android user, or security researcher can notify the Android
+security team of potential security issues by sending email to
+security@android.com. If desired, communication can be encrypted using the
+Android security team PGP key available here:
+<a href="https://developer.android.com/security_at_android_dot_com.txt">https://developer.android.com/security_at_android_dot_com.txt</a>.</p>
+<h1 id="other-resources">Other Resources</h1>
+<p>Information about the Android Open Source Project is available at
+<a href="https://source.android.com">https://source.android.com</a>.</p>
+<p>Information for Android application developers is here:
+<a href="https://developer.android.com">https://developer.android.com</a>.</p>
+<p>The Android Security team can be reached at
+<a href="mailto:security@android.com">security@android.com</a>.</p>
+<p>Security information exists throughout the Android Open Source and Developer
+Sites. A good place to start is here:
+<a href="https://developer.android.com/guide/topics/security/security.html">https://developer.android.com/guide/topics/security/security.html</a>.</p>
+<p>A Security FAQ for developers is located here:
+<a href="https://developer.android.com/resources/faq/security.html">https://developer.android.com/resources/faq/security.html</a>.</p>
+<p>Security Best Practices for developers is located here:
+<a href="https://developer.android.com/guide/practices/security.html">https://developer.android.com/guide/practices/security.html</a>.</p>
+<p>A community resource for discussion about Android security exists here:
+<a href="https://groups.google.com/forum/?fromgroups#!forum/android-security-discuss">https://groups.google.com/forum/?fromgroups#!forum/android-security-discuss</a>.</p>

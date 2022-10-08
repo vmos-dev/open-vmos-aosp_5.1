@@ -1,0 +1,133 @@
+page.title=Brand Guidelines
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>The "Android" name, the <img src="{@docRoot}assets/images/sac_logo.png"
+alt="Android" style="margin:0;padding:0 2px;vertical-align:baseline" /> logo,
+the "Google Play" brand and other trademarks are property of Google Inc. and
+thus not part of the assets we make available through the Android Open Source
+Project.</p>
+
+<p>
+If you are interested in using these brands to indicate their association with your
+device, you should adhere to the guidelines on this page. Please note, these
+guidelines correspond to and complement the <a
+href="http://developer.android.com/distribute/tools/promote/brand.html">Brand
+Guidelines for Android App Developers</a> and <a
+href="http://www.google.com/permissions/">Google Brand Permissions</a>.
+</p>
+
+<h2 id="brand-android">Android</h2>
+
+<p>Here are manufacturer guidelines for the Android brand and related
+assets.</p>
+
+  <h3 id="text-android" style="clear:right">Android in text</h3>
+    <ul>
+    <li>Android&trade; should have a trademark symbol the first time it appears in a creative.</li>
+    <li>"Android" should always be capitalized and is never plural or possessive.</li>
+    <li>The use of “Android” on hardware, packaging or marketing materials of a
+        device is restricted to <a
+        href="{@docRoot}compatibility/index.html">Android-compatible</a> devices
+        only.</li>
+    <li>“Android” should never be used in the name of your product or as
+the primary or dominant mark on your packaging or device.</li>
+    <li>"Android” should be used only as a term to refer to the operating
+system (OS) of your device. If you are unsure whether your use meets our
+guidelines, please follow this simple test: If you can replace "Android" with
+"the Android platform" and the text still makes sense, then you may use this
+term.
+      <ul>
+        <li><span style="color:red">Incorrect</span>: "Android XBrand Phone"</li>
+        <li><span style="color:green">Correct</span>: "XBrand phone on Android"</li>
+      </ul>
+    </li>
+   <li>You may use “with Android” in plain black text with your logo.
+If used with your logo, "with Android" should be no larger than 90% of your logo’s size.
+First or most prominent instance of this use should be followed by a
+&trade; symbol.</li>
+    <li>Android may be used <em>only as a descriptor</em>, as long as it is
+followed by a proper generic term. It cannot be framed as the product name or
+brand of your device.
+      <ul>
+        <li><span style="color:red">Incorrect</span>: "Android XBrand Phone"</li>
+        <li><span style="color:green">Correct</span>: "Android mobile device"</li>
+      </ul>
+
+    <p><strong>Any use of the Android name needs to include this attribution in your
+communication</strong>:</p>
+    <blockquote><em>Android is a trademark of Google Inc.</em></blockquote></p>
+
+    <p>Here are acceptable examples:</p>
+<img src="{@docRoot}images/JB-TM-example.png" alt="Jelly Bean trademark example" />
+<img src="{@docRoot}images/8100-TM-example.png" alt="8100 series trademark example" />
+<img src="{@docRoot}images/XBrand-TM-example.jpg" alt="XBrand trademark example" />
+    </li>
+    </ul>
+
+  <div style="float:right;width:200px;margin-left:30px">
+    <img alt="" src="{@docRoot}images/Android_Robot_100.png"
+      style="margin-left:50px">
+    <p style="text-align:center">
+       <a href="http://developer.android.com/images/brand/Android_Robot_100.png">100x118</a> |
+       <a href="http://developer.android.com/images/brand/Android_Robot_200.png">200x237</a><br>
+       <a href="http://developer.android.com/downloads/brand/Android_Robot_outlined.ai">Illustrator (.ai)</a></p>
+  </div>
+
+ <h3 id="robot-android">Android robot</h3>
+
+    <p>The Android robot can be used, reproduced, and modified freely in marketing
+    communications with proper attribution. See the <a
+href="http://developer.android.com/distribute/tools/promote/brand.html">App Developers Brand
+Guidelines</a> and the <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons license</a>
+for additional details.</p>
+
+<h3 id="logo-android" style="clear:right">Android logo</h3>
+
+<div style="float:right;width:210px;margin-left:30px;margin-top:-10px">
+  <img alt="No Logo" src="http://developer.android.com/images/brand/android_logo_no.png">
+</div>
+
+<p>Unless expressly authorized by Google through written agreement, the Android
+logo and custom typeface may not be used. Nor can these images be used with the
+Android robot.</p>
+
+<h2 id="brand-google_play">Google Play</h2>
+
+<p>Use of the “Google Play” name and the Google Play Store icon on the
+packaging of the hardware, marketing materials of the hardware, or the hardware
+itself is allowed only on devices <a
+href="{@docRoot}source/faqs.html#if-my-device-is-compatible-does-it-automatically-have-access-to-google-play-and-branding">licensed to access Google Play</a>.</p>
+
+<p>See the <a
+href="https://support.google.com/googleplay/answer/1727131">Supported
+devices</a> list for devices licensed to use Google Play.</p>
+
+<h2 id="Questions">Questions</h2>
+
+<p>For additional brand usage information, please contact our Android Partner
+Marketing team by submitting the <a
+href="https://support.google.com/googleplay/contact/brand_developer">Partner
+Brand Inquiry Form</a>.</p>

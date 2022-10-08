@@ -1,0 +1,46 @@
+# CPU governor (root process)
+type mpdecision, domain;
+type mpdecision_exec, exec_type, file_type;
+
+# DAC overrides
+allow mpdecision self:capability dac_override;
+auditallow mpdecision self:capability dac_override;
+
+# Started by init
+init_daemon_domain(mpdecision)
+
+# CPU hotplug uevent to manage cores
+allow mpdecision self:netlink_kobject_uevent_socket { create setopt bind read };
+allow mpdecision self:capability net_admin;
+
+# Create under /dev/socket/mpdecision
+allow mpdecision mpdecision_socket:dir w_dir_perms;
+allow mpdecision mpdecision_socket:sock_file create_file_perms;
+
+# Also support mpdecision creating the /dev/socket/pb socket
+type_transition mpdecision socket_device:sock_file mpdecision_socket;
+allow mpdecision self:capability chown;
+allow mpdecision socket_device:dir w_dir_perms;
+
+# By-product of setting owner on sock_file (don't allow)
+dontaudit mpdecision self:capability fsetid;
+
+allow mpdecision sysfs_devices_system_cpu:file rw_file_perms;
+allow mpdecision sysfs_mpdecision:dir r_dir_perms;
+allow mpdecision sysfs_mpdecision:file rw_file_perms;
+
+# Some files in /sys/devices/system/cpu may pop in and out of existance,
+# defeating our attempt to label them. As a result, they could have the
+# sysfs label, not the sysfs_devices_system_cpu label.
+# Allow write access for now until we figure out a better solution.
+# For example, the following files pop in and out of existance:
+# /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_min_freq
+# /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+allow mpdecision sysfs:file write;
+
+# This is needed to allow mpdecision to look at system_server's
+# /proc/PID/status file.
+r_dir_file(mpdecision, system_server)
+r_dir_file(mpdecision, mediaserver)
+
+allow mpdecision self:capability sys_nice;

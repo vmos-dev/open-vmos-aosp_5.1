@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="basicJar3" default="compile">
+    <target name="compile">
+        <mkdir dir="${basedir}/bin" />
+        <mkdir dir="${basedir}/bin/classes" />
+        <javac encoding="ascii" target="1.5" source="1.5" debug="true" extdirs=""
+                srcdir="src" destdir="${basedir}/bin/classes" />
+        <jar destfile="${basedir}/bin/${ant.project.name}.jar">
+            <fileset dir="${basedir}/bin/classes" />
+            <fileset dir="src" excludes="**/*.java"/>
+        </jar>
+    </target>
+    <target name="clean">
+        <delete dir="bin" />
+    </target>
+</project>

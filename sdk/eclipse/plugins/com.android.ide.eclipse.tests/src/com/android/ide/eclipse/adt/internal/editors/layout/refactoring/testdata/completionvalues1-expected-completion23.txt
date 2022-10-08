@@ -1,0 +1,7 @@
+Code completion in completionvalues1.xml for android:textS^ize:
+android:textScaleX : Sets the horizontal scaling factor for the text.  [float]
+android:textSelectHandle : Reference to a drawable that will be used to display a text selection  anchor for positioning the cursor within text.  [reference]
+android:textSelectHandleLeft : Reference to a drawable that will be used to display a text selection  anchor on the left side of a selection region.  [reference]
+android:textSelectHandleRight : Reference to a drawable that will be used to display a text selection  anchor on the right side of a selection region.  [reference]
+android:textSize : Size of the text.  [dimension]
+android:textStyle : Style (bold, italic, bolditalic) for the text.  [flag]

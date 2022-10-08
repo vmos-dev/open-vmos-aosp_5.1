@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * Copyright (C) 2010 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<resources>
+    <!-- WARNING !!! THIS IS A MOCK FILE. DO NOT USE FOR DOCUMENTATION PURPOSES.
+         This file has been trimmed down to only extract a number of interesting cases
+         for unit tests.
+
+    -->
+
+    <!-- **************************************************************** -->
+    <!-- These are the attributes used in AndroidManifest.xml. -->
+    <!-- **************************************************************** -->
+    <eat-comment />
+
+    <!-- The overall theme to use for an activity.  Use with either the
+         application tag (to supply a default theme for all activities) or
+         the activity tag (to supply a specific theme for that activity).
+
+         <p>This automatically sets
+         your activity's Context to use this theme, and may also be used
+         for "starting" animations prior to the activity being launched (to
+         better match what the activity actually looks like).  It is a reference
+         to a style resource defining the theme.  If not set, the default
+         system theme will be used. -->
+    <attr name="theme" format="reference" />
+
+    <!-- A user-legible name for the given item.  Use with the
+         application tag (to supply a default label for all application
+         components), or with the activity, receiver, service, or instrumentation
+         tag (to supply a specific label for that component).  It may also be
+         used with the intent-filter tag to supply a label to show to the
+         user when an activity is being selected based on a particular Intent.
+
+         <p>The given label will be used wherever the user sees information
+         about its associated component; for example, as the name of a
+         main activity that is displayed in the launcher.  You should
+         generally set this to a reference to a string resource, so that
+         it can be localized, however it is also allowed to supply a plain
+         string for quick and dirty programming. -->
+    <attr name="label" format="reference|string" />
+
+    <!-- A Drawable resource providing a graphical representation of its
+         associated item.  Use with the
+         application tag (to supply a default icon for all application
+         components), or with the activity, receiver, service, or instrumentation
+         tag (to supply a specific icon for that component).  It may also be
+         used with the intent-filter tag to supply an icon to show to the
+         user when an activity is being selected based on a particular Intent.
+
+         <p>The given icon will be used to display to the user a graphical
+         representation of its associated component; for example, as the icon
+         for main activity that is displayed in the launcher.  This must be
+         a reference to a Drawable resource containing the image definition. -->
+    <attr name="icon" format="reference" />
+
+    <!-- A unique name for the given item.  This must use a Java-style naming
+         convention to ensure the name is unique, for example
+         "com.mycompany.MyName". -->
+    <attr name="name" format="string" />
+
+    <!-- Internal version code.  This is the number used to determine whether
+         one version is more recent than another: it has no other meaning than
+         that higher numbers are more recent.  You could use this number to
+         encode a "x.y" in the lower and upper 16 bits, make it a build
+         number, simply increase it by one each time a new version is
+         released, or define it however else you want, as long as each
+         successive version has a higher number.  This is not a version
+         number generally shown to the user, that is usually supplied
+         with {@link android.R.attr#versionName}. -->
+    <attr name="versionCode" format="integer" />
+
+    <!-- The text shown to the user to indicate the version they have.  This
+         is used for no other purpose than display to the user; the actual
+         significant version number is given by {@link android.R.attr#versionCode}. -->
+    <attr name="versionName" format="string" />
+
+    <!-- .............. -->
+
+    <!-- The <code>manifest</code> tag is the root of an
+         <code>AndroidManifest.xml</code> file,
+         describing the contents of an Android package (.apk) file.  One
+         attribute must always be supplied: <code>package</code> gives a
+         unique name for the package, using a Java-style naming convention
+         to avoid name collisions.  For example, applications published
+         by Google could have names of the form
+         <code>com.google.app.<em>appname</em></code> -->
+    <declare-styleable name="AndroidManifest">
+        <attr name="versionCode" />
+        <attr name="versionName" />
+    </declare-styleable>
+
+    <!-- The <code>application</code> tag describes application-level components
+         contained in the package, as well as general application
+         attributes.  Many of the attributes you can supply here (such
+         as theme, label, icon, permission, process, taskAffinity,
+         and allowTaskReparenting) serve
+         as default values for the corresponding attributes of components
+         declared inside of the application.
+
+         <p>Inside of this element you specify what the application contains,
+         using the elements {@link #AndroidManifestProvider provider},
+         {@link #AndroidManifestService service},
+         {@link #AndroidManifestReceiver receiver},
+         {@link #AndroidManifestActivity activity},
+         {@link #AndroidManifestActivityAlias activity-alias}, and
+         {@link #AndroidManifestUsesLibrary uses-library}.  The application tag
+         appears as a child of the root {@link #AndroidManifest manifest} tag. -->
+    <declare-styleable name="AndroidManifestApplication" parent="AndroidManifest">
+        <attr name="name" />
+        <attr name="theme" />
+        <attr name="label" />
+        <attr name="icon" />
+        <attr name="cantSaveState" format="boolean" />
+    </declare-styleable>
+
+    <!-- The <code>permission</code> tag declares a security permission that can be
+         used to control access from other packages to specific components or
+         features in your package (or other packages).  See the
+         <a href="{@docRoot}guide/topics/security/security.html">Security and Permissions</a>
+         document for more information on permissions.
+
+         <p>This appears as a child tag of the root
+         {@link #AndroidManifest manifest} tag. -->
+    <declare-styleable name="AndroidManifestPermission" parent="AndroidManifest">
+        <!-- Required public name of the permission, which other components and
+        packages will use when referring to this permission.  This is a string using
+        Java-style scoping to ensure it is unique.  The prefix will often
+        be the same as our overall package name, for example
+        "com.mycompany.android.myapp.SomePermission". -->
+        <attr name="name" />
+        <attr name="label" />
+        <attr name="icon" />
+    </declare-styleable>
+
+
+    <!-- The <code>activity-alias</code> tag declares a new
+         name for an existing {@link #AndroidManifestActivity activity}
+         tag.
+
+         <p>Zero or more {@link #AndroidManifestIntentFilter intent-filter}
+         tags can be included inside of an activity-alias, to specify the Intents
+         that it can handle.  If none are specified, the activity can
+         only be started through direct specification of its class name.
+         The activity-alias tag appears as a child tag of the
+         {@link #AndroidManifestApplication application} tag. -->
+    <declare-styleable name="AndroidManifestActivityAlias" parent="AndroidManifestApplication">
+        <!-- Required name of the class implementing the activity, deriving from
+            {@link android.app.Activity}.  This is a fully
+            qualified class name (for example, com.mycompany.myapp.MyActivity); as a
+            short-hand if the first character of the class
+            is a period then it is appended to your package name. -->
+        <attr name="name" />
+        <attr name="label" />
+        <attr name="icon" />
+    </declare-styleable>
+
+    <declare-styleable name="AndroidManifestNewParentNewElement"
+            parent="AndroidManifest.AndroidManifestNewParent">
+        <attr name="name" />
+        <attr name="label" />
+        <attr name="icon" />
+    </declare-styleable>
+
+</resources>

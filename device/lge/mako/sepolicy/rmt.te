@@ -1,0 +1,26 @@
+# remote storage process (runs as nobody)
+type rmt, domain;
+type rmt_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(rmt)
+
+# Drop (user, group) to (nobody, nobody)
+allow rmt self:capability { setuid setgid };
+
+# opens and reads /dev/block/mmcblk0
+allow rmt root_block_device:blk_file r_file_perms;
+allow rmt root_block_device:dir r_dir_perms;
+
+# Allow shared memory logging access
+allow rmt shared_log_device:chr_file rw_file_perms;
+
+allow rmt self:socket create_socket_perms;
+allow rmt cgroup:dir { create add_name };
+
+# Wake lock access
+wakelock_use(rmt)
+
+# Access property service to set ctl.rmt_storage
+unix_socket_connect(rmt, property, init)
+allow rmt ctl_rmt_prop:property_service set;

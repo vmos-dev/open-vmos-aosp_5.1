@@ -1,0 +1,317 @@
+page.title=dm-verity on boot
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Android 4.4 supports verified boot through the optional device-mapper-verity 
+(dm-verity) kernel feature, which provides transparent integrity checking of 
+block devices. dm-verity helps prevent persistent rootkits that can hold onto 
+root privileges and compromise devices. This experimental feature helps Android 
+users be sure when booting a device it is in the same state as when it was last 
+used.</p>
+
+<p>Clever malware with root privileges can hide from detection programs and 
+otherwise mask themselves. The rooting software can do this because it is often 
+more privileged than the detectors, enabling the software to "lie" to to the 
+detection programs.</p>
+
+<p>The dm-verity feature lets you look at a block device, the underlying storage 
+layer of the file system, and determine if it matches its expected 
+configuration. It does this using a cryptographic hash tree. For every block 
+(typically 4k), there is a SHA256 hash.</p>
+
+<p>And since the hash values are stored in a tree of pages, only the top-level 
+"root" hash must be trusted to verify the rest of the tree. The ability to 
+modify any of the blocks would be equivalent to breaking the cryptographic hash. 
+See the following diagram for a depiction of this structure.</p>
+
+<p><img src="images/dm-verity-hash-table.png" alt="dm-verity-hash-table"/><br/>
+A public key is included on the boot partition, which must be verified 
+externally by the OEM. That key is used to verify the signature for that hash 
+and confirm the device's system partition is protected and unchanged.</p>
+
+<h2 id="operation">Operation</h2>
+
+<p>dm-verity protection lives in the kernel. So if rooting software compromises the 
+system before the kernel comes up, it will retain that access. To mitigate this 
+risk, most manufacturers verify the kernel using a key burned into the device. 
+That key is not changeable once the device leaves the factory.</p>
+
+<p>Manufacturers use that key to verify the signature on the first-level 
+bootloader, which in turn verifies the signature on subsequent levels, the 
+application bootloader and eventually the kernel. Each manufacturer wishing to 
+take advantage of verified boot should have a method for verifying the integrity 
+of the kernel. Assuming the kernel has been verified, the kernel can look at a 
+block device and verify it as it is mounted.</p>
+
+<p>One way of verifying a block device is to directly hash its contents and compare 
+them to a stored value. However, attempting to verify an entire block device can 
+take an extended period and consume much of a device's power. Devices would take 
+long periods to boot and then be significantly drained prior to use.</p>
+
+<p>Instead, dm-verity verifies blocks individually and only when each one is 
+accessed. When read into memory, the block is hashed in parallel. The hash is 
+then verified up the tree. And since reading the block is such an expensive 
+operation, the latency introduced by this block-level verification is 
+comparatively nominal.</p>
+
+<p>If verification fails, the device generates an I/O error indicating the block 
+cannot be read. It will appear as if the filesystem has been corrupted, as is 
+expected.</p>
+
+<p>Applications may choose to proceed without the resulting data, such as when 
+those results are not required to the application's primary function. However, 
+if the application cannot continue without the data, it will fail.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<h3 id="block-otas">Switching to block-oriented OTAs</h3>
+
+<p>To enable dm-verity on your devices, you <strong>must</strong> move from file-based "over the 
+air" (OTA) updates to block-oriented OTAs. This is needed because during OTA, 
+Android attempts to change the contents of the system partition at the 
+filesystem layer.<br/>
+And since OTA works on a file-by-file basis, it is not guaranteed to write files 
+in a consistent order, have a consistent last modified time or superblock, or 
+even place the blocks in the same location on the block device. For this reason, 
+<em>file-based OTAs will fail on a dm-verity-enabled device.</em><strong>The device will 
+not boot after OTA.</strong></p>
+
+<p>So you must use block-oriented OTAs. With block-oriented OTAs, you serve the 
+device the difference between the two block images rather than the two sets of 
+files. Many manufacturers have already moved to block-oriented OTAs to make them 
+more reproducible and predictable.</p>
+
+<p>A block-oriented OTA checks a device build against the corresponding build 
+server at the block device level, below the filesystem. This can be done in a 
+couple of different ways, each with their own benefits and drawbacks:</p>
+
+<ul>
+<li><em>Copy the full system image to the device</em> - This is simple and makes patch 
+generation easy. But it also makes the application of those patches quite 
+expensive as the resulting images are large.</li>
+<li><em>Employ a binary differ</em> -  These tools, such as <code>bsdiff</code>, simplify patch 
+application as images are much smaller. But these tools tend to be memory 
+intensive and therefore expensive in generating the patches themselves.</li>
+</ul>
+
+<h3 id="config-dm-verity">Configuring dm-verity</h3>
+
+<p>After switching to block-oriented OTAs, incorporate the latest Android kernel or 
+use a stock upstream kernel and enable dm-verity support by including the 
+relevant configuration option:<br/>
+<code>CONFIG_DM_VERITY
+</code></p>
+<p>When using the Android kernel, dm-verity is turned on when the kernel is built.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<h3 id="summary">Summary</h3>
+
+<ol>
+<li>Generate an ext4 system image.</li>
+<li><a href="#heading=h.wiiuowe37q8h">Generate a hash tree</a> for that image.</li>
+<li><a href="#heading=h.cw7mesnrerea">Build a dm-verity table</a> for that hash tree.</li>
+<li><a href="#heading=h.maq6jfk4vx92">Sign that dm-verity table</a> to produce a table 
+signature.</li>
+<li><a href="#heading=h.tkceh5wnx7z2">Bundle the table signature</a> and dm-verity table 
+into verity metadata.</li>
+<li>Concatenate the system image, the verity metadata, and the hash tree.</li>
+</ol>
+
+<p>See the <a href="http://www.chromium.org/chromium-os/chromiumos-design-docs/verified-boot">The Chromium Projects - Verified 
+Boot</a> 
+for a detailed description of the hash tree and dm-verity table.</p>
+
+<h3 id="hash-tree">Generating the hash tree</h3>
+
+<p>As described in the <a href="#heading=h.q4z3ftrhbehy">Introduction</a>, the hash tree is 
+integral to dm-verity. The 
+<a href="https://code.google.com/p/cryptsetup/wiki/DMVerity">cryptsetup</a> tool will 
+generate a hash tree for you. Alternatively, a compatible one is defined here:</p>
+
+<pre>
+&lt;your block device name&gt; &lt;your block device name&gt; &lt;block size&gt; &lt;block size&gt; &lt;image size in blocks&gt; &lt;image size in blocks + 8&gt; &lt;root hash&gt; &lt;salt&gt;
+</pre>
+
+<p>To form the hash, the system image is split at layer 0 into 4k blocks, each 
+assigned a SHA256 hash. Layer 1 is formed by joining only those SHA256 hashes 
+into 4k blocks, resulting in a much smaller image. Layer 2 is formed 
+identically, with the SHA256 hashes of Layer 1.</p>
+
+<p>This is done until the SHA256 hashes of the previous layer can fit in a single 
+block. When get the SHA256 of that block, you have the root hash of the tree. </p>
+
+<p>The size of the hash tree (and corresponding disk space usage) varies with the 
+size of the verified partition. In practice, the size of hash trees tends to be 
+small, often less than 30 MB.</p>
+
+<p>If you have a block in a layer that isn't completely filled naturally by the 
+hashes of the previous layer, you should pad it with zeroes to achieve the 
+expected 4k. This allows you to know the hash tree hasn't been removed and is 
+instead completed with blank data.</p>
+
+<p>To generate the hash tree, concatenate the layer 2 hashes onto those for layer 
+1, the layer 3 the hashes onto those of layer 2, and so on. Write all of this 
+out to disk. Note that this doesn't reference layer 0 of the root hash.</p>
+
+<p>To recap, the general algorithm to construct the hash tree is as follows:</p>
+
+<ol>
+<li>Choose a random salt (hexadecimal encoding).</li>
+<li>Unsparse your system image into 4k blocks.</li>
+<li>For each block, get its (salted) SHA256 hash.</li>
+<li>Concatenate these hashes to form a level</li>
+<li>Pad the level with 0s to a 4k block boundary.</li>
+<li>Concatenate the level to your hash tree.</li>
+<li>Repeat steps 2-6 using the previous level as the source for the next until 
+you have only a single hash.</li>
+</ol>
+
+<p>The result of this is a single hash, which is your root hash. This and your salt 
+are used during the construction of your dm-verity mapping hash table.</p>
+
+<h3 id="mapping-table">Building the dm-verity mapping table</h3>
+
+<p>Build the dm-verity mapping table, which identifies the block device (or target) 
+for the kernel and the location of the hash tree (which is the same value.) This 
+mapping is used for <code>fstab</code> generation and booting. The table also identifies 
+the size of the blocks and the hash_start, or the offset in hash size blocks 
+(length of layer 0).</p>
+
+<p>See <a href="https://code.google.com/p/cryptsetup/wiki/DMVerity">cryptsetup</a> for a 
+detailed description of the verity target mapping table fields.</p>
+
+<h3 id="signing">Signing the dm-verity table</h3>
+
+<p>Sign the dm-verity table to produce a table signature. When verifying a 
+partition, the table signature is validated first. This is done against a key on 
+your boot image in a fixed location. Keys are typically included in the 
+manufacturers' build systems for automatic inclusion on devices in a fixed 
+location.</p>
+
+<p>To verify the partition with this signature and key combination:</p>
+
+<ol>
+<li>Add an RSA-2048 key in libmincrypt-compatible format to the /boot partition 
+at /verity_key. Identify the location of the key used to verify the hash 
+tree.</li>
+<li>In the fstab for the relevant entry, add 'verify' to the fs_mgr flags.</li>
+</ol>
+
+<h3 id="metadata">Bundling the table signature into metadata</h3>
+
+<p>Bundle the table signature and dm-verity table into verity metadata. The entire 
+block of metadata is versioned so it may be extended, such as to add a second 
+kind of signature or change some ordering.</p>
+
+<p>As a sanity check, a magic number is associated with each set of table metadata 
+that helps identify the table. Since the length is included in the ext4 system 
+image header, this provides a way to search for the metadata without knowing the 
+contents of the data itself.</p>
+
+<p>This makes sure you haven't elected to verify an unverified partition. If so, 
+the absence of this magic number will halt the verification process. This number 
+resembles:<br/>
+0xb001b001</p>
+
+<p>The byte values in hex are:</p>
+
+<ul>
+<li>first byte = b0</li>
+<li>second byte = 01</li>
+<li>third byte = b0</li>
+<li>fourth byte = 01</li>
+</ul>
+
+<p>The following diagram depicts the breakdown of the verity metadata:</p>
+
+<pre>&lt;magic number&gt;|&lt;version&gt;|&lt;signature&gt;|&lt;table length&gt;|&lt;table&gt;|&lt;padding&gt;
+\-------------------------------------------------------------------/
+\----------------------------------------------------------/   |
+                            |                                  |
+                            |                                 32K
+                       block content
+</pre>
+
+<p>And this table describes those metadata fields.</p>
+
+<table>
+<tr>
+<th>Field</th>
+<th>Purpose</th>
+<th>Size</th>
+<th>Value</th>
+</tr>
+<tr>
+<td>magic number</td>
+<td>used by fs_mgr as a sanity check</td>
+<td>4 bytes</td>
+<td>0xb001b001</td>
+</tr>
+<tr>
+<td>version</td>
+<td>used to version the metadata block</td>
+<td>4 bytes</td>
+<td>currently 0</td>
+</tr>
+<tr>
+<td>signature</td>
+<td>the signature of the table in PKCS1.5 padded form</td>
+<td>256 bytes</td>
+<td></td>
+</tr>
+<tr>
+<td>table length</td>
+<td>the length of the dm-verity table in bytes</td>
+<td>4 bytes</td>
+<td></td>
+</tr>
+<tr>
+<td>table</td>
+<td>the dm-verity table described earlier</td>
+<td>`table length` bytes</td>
+<td></td>
+</tr>
+<tr>
+<td>padding</td>
+<td>this structure is 0-padded to 32k in length</td>
+<td></td>
+<td>0</td>
+</tr>
+</table>
+
+<p>For additional assistance, contact security@android.com.</p>
+
+<h2 id="supporting-docs">Supporting documentation</h2>
+
+<p><a href="https://code.google.com/p/cryptsetup/wiki/DMVerity">cryptsetup - dm-verity: device-mapper block integrity checking 
+target</a><br/>
+<a href="http://www.chromium.org/chromium-os/chromiumos-design-docs/verified-boot">The Chromium Projects - Verified 
+Boot</a><br/>
+<a
+href="http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/device-mapper/verity.txt">Linux Kernel Documentation: 
+verity.txt</a></p>

@@ -1,0 +1,4 @@
+Code completion in completion3.xml for <EditText ^/> selecting android:textColorHighlight:
+@@ -3 +3
+-     <EditText ^/>
++     <EditText android:textColorHighlight="^"/>

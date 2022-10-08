@@ -1,0 +1,19 @@
+type adspd, domain;
+type adspd_exec, file_type, exec_type;
+
+init_daemon_domain(adspd)
+
+#Access /dev/ttyHS3
+allow adspd adspd_device:chr_file rw_file_perms;
+
+#Access /dev/input/event4 - headphone jack
+allow adspd input_device:dir search;
+allow adspd input_device:chr_file rw_file_perms;
+
+# /data/adspd
+allow adspd adspd_data_file:file create_file_perms;
+allow adspd adspd_data_file:dir rw_dir_perms;
+
+# For now, allow writes to all of /sys.
+# TODO: scope down this access.
+allow adspd sysfs:file write;

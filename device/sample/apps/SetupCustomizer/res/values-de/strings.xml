@@ -1,0 +1,4 @@
+<resources>
+    <!-- Welcome message -->
+    <string name="welcome_message">a really really long welcome message, because german</string>
+</resources>

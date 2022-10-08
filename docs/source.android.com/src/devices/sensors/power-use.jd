@@ -1,0 +1,67 @@
+page.title=Power consumption
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="low_power_sensors">Low-power sensors</h2>
+<p>Some sensor types are defined as being low power. Low-power sensors must
+  function at low power, with their processing done in the hardware. This means
+  they should not require the SoC to be running. Here are some low-power sensor
+  types:</p>
+<ul>
+  <li> Geomagnetic rotation vector </li>
+  <li> Significant motion </li>
+  <li> Step counter </li>
+  <li> Step detector </li>
+  <li> Tilt detector </li>
+</ul>
+<p>They are accompanied by a low-power (<img src="images/battery_icon.png"
+width="20" height="20" alt="Low power sensor" />) icon in the <a
+href="sensor-types.html#composite_sensor_type_summary">Composite sensor type
+summary</a> table.</p>
+<p>These sensor types cannot be implemented at high power as their primary benefit
+  is low battery use. These sensors are expected to be activated for very long
+  periods, possibly 24/7. It is better to not implement a low-power sensor at all
+  rather than implement it as high power, as it would cause dramatic battery
+  drain.</p>
+<p>Composite low-power sensor types, such as the step detector, must have their
+  processing conducted in the hardware.</p>
+<p>See the CDD for specific power requirements, and expect tests in CTS to
+  verify those power requirements.</p>
+<h2 id="power_measurement_process">Power measurement process</h2>
+<p>The power is measured at the battery. For values in milliWatts, we use the
+  nominal voltage of the battery, meaning a 1mA current at 4V must be counted as
+  4mW.</p>
+<p>The power is measured when the SoC is asleep, and averaged over a few seconds
+  of the SoC being asleep, so that periodic spikes in power from the sensor chips
+  are taken into account.</p>
+<p>For one-shot wake-up sensors, the power is measured while the sensor doesn’t
+  trigger (so it doesn’t wake the SoC up). Similarly, for other sensors, the
+  power is measured while the sensor data is stored in the hardware FIFO, so the
+  SoC is not woken up.</p>
+<p>The power normally is measured as a delta with when no sensor is activated.
+  When several sensors are activated, the delta in power must be no greater than
+  the sum of the power of each activated sensor. If an accelerometer consumes
+  0.5mA and a step detector consumes 0.5mA, then activating both at the same time
+  must consume less than 0.5+0.5=1mA.</p>

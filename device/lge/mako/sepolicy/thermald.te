@@ -1,0 +1,38 @@
+# Temperature sensor daemon (root process)
+type thermald, domain;
+type thermald_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(thermald)
+
+# DAC overrides
+allow thermald self:capability dac_override;
+auditallow thermald self:capability dac_override;
+
+allow thermald self:socket create_socket_perms;
+
+# CPU hotplug uevent
+allow thermald self:netlink_kobject_uevent_socket { create setopt bind read };
+allow thermald self:capability net_admin;
+
+# Talk to qmuxd (/dev/socket/qmux_radio)
+qmux_socket(thermald)
+
+# Access shared logger (/dev/smem_log)
+allow thermald shared_log_device:chr_file rw_file_perms;
+
+# Access /sys/devices/system/cpu/
+allow thermald sysfs_devices_system_cpu:file rw_file_perms;
+
+# Some files in /sys/devices/system/cpu may pop in and out of existance,
+# defeating our attempt to label them. As a result, they could have the
+# sysfs label, not the sysfs_devices_system_cpu label.
+# Allow write access for now until we figure out a better solution.
+# For example, the following files pop in and out of existance:
+# /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_min_freq
+# /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+allow thermald sysfs:file write;
+
+# Connect to mpdecision.
+allow thermald mpdecision_socket:dir r_dir_perms;
+unix_socket_connect(thermald, mpdecision, mpdecision)

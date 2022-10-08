@@ -1,0 +1,10 @@
+# Grant access to Qualcomm MSM Interface (QMI) radio sockets to system services
+# (e.g., LocationManager)
+qmux_socket(system_server)
+
+allow system_server fingerprint_device:chr_file rw_file_perms;
+allow system_server mpdecision_socket:dir r_dir_perms;
+unix_socket_send(system_server, mpdecision, mpdecision)
+
+unix_socket_connect(system_server, sensors, sensors)
+allow system_server sensors_socket:sock_file r_file_perms;

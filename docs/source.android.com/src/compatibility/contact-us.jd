@@ -1,0 +1,54 @@
+page.title=Contact Us
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project     
+
+    Licensed under the Apache License, Version 2.0 (the "License");    
+    you may not use this file except in compliance with the License.   
+    You may obtain a copy of the License at    
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software    
+    distributed under the License is distributed on an "AS IS" BASIS,    
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   
+    See the License for the specific language governing permissions and    
+    limitations under the License.   
+-->
+<p>Thanks for your interest in Android compatibility! This page describes the
+contact methods for inquiries regarding the Android compatibility program,
+including the Compatibility Definition Document (CDD) and Compatibility Test
+Suite (CTS). See the <a href="{@docRoot}community/index.html">Community</a>
+page for communication channels regarding other topics.</p>
+
+<h2
+id="for-android-compatibility-definition-and-compatibility-test-suite-technical-questions">For
+CDD and CTS technical questions</h2>
+<p>If you have technical questions about Android compatibility that aren't covered in
+this site, you can seek help from your peers on the <a
+href="https://groups.google.com/forum/?fromgroups#!forum/android-compatibility">android-compatibility</a>
+list.</p>
+
+<ul>
+<li>Subscribe using Google Groups: <a
+href="https://groups.google.com/forum/?fromgroups#!forum/android-compatibility">android-compatibility</a></li>
+<li>Subscribe via email: <a
+href="mailto:android-compatibility+subscribe@googlegroups.com">android-compatibility</a></li>
+</ul>
+
+<p>To make best use of this list, please first read <em>Getting the Most from
+Our Lists</em> on the <a href="{@docRoot}community/index.html">Community</a>
+page. Users looking for help with Android devices should contact their carrier
+or manufacturer for help.</p>
+
+<h2 id="for-business-inquiries">For business inquiries</h2>
+<p>Finally, business inquiries about the compatibility program, including
+requests to use branding elements and similar, can be sent to the address <a
+href="mailto:android-partnerships@google.com">android-partnerships@google.com</a>.
+This address is for specific, private inquiries; general questions will be
+directed back to the android-compatibility list.</p>
+
+<p>While we read every email that
+is received at the android-partnerships alias, we cannot respond to each of them.
+Please note, we will be in contact if we can help you.</p>

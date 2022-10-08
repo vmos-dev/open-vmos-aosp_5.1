@@ -1,0 +1,63 @@
+This directory contains tools to profile the sdcard performance.
+
+There are 2 parts to the tool:
+* A binary that runs on the device, exercises the sdcard and send
+  measurment data back to the host (sdcard_perf_test).
+* A host python script to plot the data.
+
+Additionally, there is script 'profile_sdcard.sh' that allows you
+to check how the sdcard scale with the number of processes.
+
+INSTALLATION
+============
+Build, install and mount debugfs. In this directory with a properly
+configured enviroment:
+
+  mm SDCARD_TESTS=1
+  adb remount
+  adb push $ANDROID_PRODUCT_OUT/system/bin/sdcard_perf_test /system/bin/sdcard_perf_test
+  adb shell mount -t debugfs none /sys/kernel/debug
+
+If you want to graph the results you need gnuplot and numpy:
+
+  sudo apt-get install gnuplot python-numpy python-numeric
+
+You need Gnuplot.py version 1.8 (not the one coming with ubuntu).
+Download it from the Gnuplot.py web site.  Extract to a temp
+directory, chdir and run:
+
+  sudo python setup.py install
+
+
+INVOCATION
+==========
+
+Run a simple test:
+
+  adb shell sdcard_perf_test --test=write --size=1000 --chunk-size=100 --procnb=1 --iterations=100
+
+This test will write 1000kbyte (1M) files using writes of 100kbytes (so 10 writes per file) using
+only 1 process for 100 times (100 files will be written on the sdcard).
+The test will not call sync to flush the writes.
+At the end of the test, some stats for the 'open' and 'write' system calls are written.
+
+If you want to plot the data, you need to use the --dump option and provide a file:
+
+  adb shell sdcard_perf_test --test=write --size=1000 --chunk-size=100 --procnb=1 --iterations=100 --dump >/tmp/data.txt
+
+PLOTTING
+========
+
+To plot the result using the iter number of the x axis:
+
+  plot_sdcard.py -i /tmp/data.txt
+
+To plot the result using time for the x axis:
+
+  plot_sdcard.py -t /tmp/data.txt
+
+To plot the result from the profiler:
+
+    profile_sdcard.sh
+    plot_sdcard.py -p
+

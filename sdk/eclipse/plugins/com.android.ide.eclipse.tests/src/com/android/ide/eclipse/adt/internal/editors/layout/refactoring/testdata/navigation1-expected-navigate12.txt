@@ -1,0 +1,6 @@
+Go To Declaration in navigation1.xml for <my.Cust^omView></my.CustomView>:
+Open XML Declaration :  [my.CustomView]
+
+
+After open, the selected text is:
+^<?xml version="1.0" encoding="utf-8"?>

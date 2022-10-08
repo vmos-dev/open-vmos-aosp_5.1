@@ -1,0 +1,22 @@
+# wifi connection service
+type conn_init, domain;
+type conn_init_exec, exec_type, file_type;
+
+init_daemon_domain(conn_init)
+
+# Runs init.mako.wifi.sh
+allow conn_init shell_exec:file { entrypoint read };
+allow conn_init conn_init_exec:file rx_file_perms;
+
+# Allow /persist/wifi access
+allow conn_init { persist_file persist_wifi_file }:dir search;
+allow conn_init persist_wifi_file:file r_file_perms;
+
+# Allow /data/misc/wifi access for firmware files
+allow conn_init wifi_data_file:dir w_dir_perms;
+allow conn_init wifi_data_file:file create_file_perms;
+
+allow conn_init wlan_device:chr_file rw_file_perms;
+
+# init.mako.wifi.sh runs toolbox
+allow conn_init system_file:file execute_no_trans;

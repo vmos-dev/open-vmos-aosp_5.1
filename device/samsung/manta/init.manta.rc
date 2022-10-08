@@ -1,0 +1,207 @@
+import init.manta.usb.rc
+
+on init
+    start watchdogd
+
+    # See storage config details at http://source.android.com/tech/storage/
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
+
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+
+    # Support legacy paths
+    symlink /storage/emulated/legacy /sdcard
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+
+# KSM
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+#    write /sys/kernel/mm/ksm/run 1
+
+on post-fs-data
+    mkdir /data/media 0770 media_rw media_rw
+
+    setprop vold.post_fs_data_done 1
+
+# permissions for bluetooth.
+	setprop ro.bt.bdaddr_path "/factory/bluetooth/bt_addr"
+	chown bluetooth net_bt_stack ro.bt.bdaddr_path
+	chown bluetooth net_bt_stack /dev/ttySAC0
+	chmod 0660 /dev/ttySAC0
+	chmod 0660 /sys/class/rfkill/rfkill0/state
+	chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+	chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+
+on boot
+    # override init.rc to keep plenty of large order chunks around
+    # to improve allocation times
+    write /proc/sys/vm/min_free_order_shift 1
+
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
+    setprop ro.radio.noril yes
+
+    # Set up kernel tracing, but disable it by default
+    chmod 0222 /sys/kernel/debug/tracing/trace_marker
+    write /sys/kernel/debug/tracing/tracing_on 0
+
+    chmod 0444 /sys/kernel/debug/smb347-regs
+
+# Set Mali power policy as Coarse demand
+    write /sys/devices/platform/mali.0/power_policy coarse_demand
+
+on fs
+    mkdir /factory 0775 radio radio
+
+    mount_all /fstab.manta
+    restorecon_recursive /factory
+    mount ext4 /dev/block/platform/dw_mmc.0/by-name/efs /factory ro remount
+    setprop ro.crypto.fuse_sdcard true
+
+# Permissions for backlight
+    chmod 0660 /sys/class/backlight/pwm-backlight.0/brightness
+    chown system system /sys/class/backlight/pwm-backlight.0/brightness
+
+# create data/gps for GPS daemon
+    chown root system /sys/class/gps/bcm475x/GPS_PWR_EN/value
+    chmod 0664 /sys/class/gps/bcm475x/GPS_PWR_EN/value
+    chown root system /sys/class/gps/bcm475x/GPS_nRST/value
+    chmod 0664 /sys/class/gps/bcm475x/GPS_nRST/value
+    mkdir /data/gps 771 gps system
+    chown gps system /data/gps
+
+# NFC: create data/nfc for nv storage
+    mkdir /data/nfc 770 nfc nfc
+    mkdir /data/nfc/param 770 nfc nfc
+
+# audio: permissions for voice processing
+    # global switch for voice processing effects
+    chown root audio /sys/class/i2c-dev/i2c-4/device/4-003e/voice_processing
+    chmod 0660 /sys/class/i2c-dev/i2c-4/device/4-003e/voice_processing
+    # voice processing chip sleep
+    chown root audio /sys/class/i2c-dev/i2c-4/device/4-003e/sleep
+    chmod 0660 /sys/class/i2c-dev/i2c-4/device/4-003e/sleep
+    # voice processing usecase preset
+    chown root audio /sys/class/i2c-dev/i2c-4/device/4-003e/preset
+    chmod 0660 /sys/class/i2c-dev/i2c-4/device/4-003e/preset
+    # voice processing noise suppression level
+    chown root audio /sys/class/i2c-dev/i2c-4/device/4-003e/tx_ns_level
+    chmod 0660 /sys/class/i2c-dev/i2c-4/device/4-003e/tx_ns_level
+    # voice processing AGC enable (TX)
+    chown root audio /sys/class/i2c-dev/i2c-4/device/4-003e/tx_agc_enable
+    chmod 0660 /sys/class/i2c-dev/i2c-4/device/4-003e/tx_agc_enable
+    # voice processing AEC enable
+    chown root audio /sys/class/i2c-dev/i2c-4/device/4-003e/aec_enable
+    chmod 0660 /sys/class/i2c-dev/i2c-4/device/4-003e/aec_enable
+
+# virtual sdcard daemon running as media_rw (1023)
+service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
+    class late_start
+
+service p2p_supplicant /system/bin/wpa_supplicant \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf -N \
+    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
+    -I/system/etc/wifi/p2p_supplicant_overlay.conf \
+    -puse_p2p_group_interface=1 \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service wpa_supplicant /system/bin/wpa_supplicant \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -aABDKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -aABKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_eth0 /system/bin/dhcpcd -ABDKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_eth0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_bt-pan /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service battery_charger /charger
+    class charger
+    critical
+    seclabel u:r:healthd:s0
+
+# Set watchdog timer to 30 seconds and pet it every 10 seconds to get a 20 second margin
+service watchdogd /sbin/watchdogd 10 20
+    class core
+    seclabel u:r:watchdogd:s0
+
+service gpsd /system/vendor/bin/gpsd -c /system/vendor/etc/gps.xml
+    class main
+    socket gps seqpacket 0660 gps system
+    user gps
+    group system inet
+
+# MobiCore startup
+service mobicore /system/bin/mcDriverDaemon -r /system/vendor/secapp/020a0000000000000000000000000000.drbin
+    setenv MC_REGISTRY_PATH /system/vendor/secapp
+    user drmrpc
+    group drmrpc
+    class main
+
+# on userdebug and eng builds, enable kgdb on the serial console
+on property:ro.debuggable=1
+    write /sys/module/kgdboc/parameters/kgdboc ttyFIQ2
+    write /sys/module/fiq_debugger/parameters/kgdb_enable 1
+
+# bugreport is triggered by holding down volume down, volume up and power
+service bugreport /system/bin/dumpstate -d -p -B \
+        -o /data/data/com.android.shell/files/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116

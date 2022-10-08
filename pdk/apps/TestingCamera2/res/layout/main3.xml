@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2014 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:custom="http://schemas.android.com/apk/res/com.android.testingcamera2"
+    android:id="@+id/main_list"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:divider="?android:attr/listDivider"
+    android:dividerPadding="0dip"
+    android:showDividers="middle"
+    tools:context="com.android.testingcamera2.TestingCamera21" >
+
+    <ScrollView
+        android:id="@+id/output_view_scroller"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:layout_weight="@dimen/output_view_list_weight" >
+
+        <LinearLayout
+            android:id="@+id/output_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="?android:attr/listDivider"
+            android:dividerPadding="2dip"
+            android:orientation="vertical"
+            android:showDividers="middle" >
+
+            <TextView
+                android:id="@+id/output_view_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/output_view_label"
+                android:textSize="@dimen/section_title_text" />
+            <view
+                class="com.android.testingcamera2.PaneLayout$TargetPaneLayout"
+                android:id="@+id/target_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:dividerPadding="4dip"
+                android:orientation="vertical"
+                android:showDividers="middle"
+                custom:headerTitle="@string/target_list_label" />
+            <com.android.testingcamera2.LogPane
+                android:id="@+id/log_pane"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout> <!-- output_view_list -->
+    </ScrollView>
+    <View
+        android:id="@+id/main_section_divider"
+        android:layout_width="@dimen/main_section_divider_thickness"
+        android:layout_height="match_parent"
+        android:background="@color/main_section_divider_color" />
+    <ScrollView
+        android:id="@+id/control_scroller"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:layout_weight="@dimen/control_list_weight" >
+
+        <LinearLayout
+            android:id="@+id/control_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="?android:attr/listDivider"
+            android:dividerPadding="2dip"
+            android:orientation="vertical"
+            android:showDividers="middle" >
+
+            <TextView
+                android:id="@+id/control_list_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/control_list_label"
+                android:textSize="@dimen/section_title_text" />
+            <view
+                class="com.android.testingcamera2.PaneLayout$CameraPaneLayout"
+                android:id="@+id/camera_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:dividerPadding="4dip"
+                android:orientation="vertical"
+                android:showDividers="middle"
+                custom:headerTitle="@string/camera_list_label" />
+            <view
+                class="com.android.testingcamera2.PaneLayout$RequestPaneLayout"
+                android:id="@+id/request_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:dividerPadding="4dip"
+                android:orientation="vertical"
+                android:showDividers="middle"
+                custom:headerTitle="@string/request_list_label" />
+            <view
+                class="com.android.testingcamera2.PaneLayout$BurstPaneLayout"
+                android:id="@+id/burst_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:dividerPadding="4dip"
+                android:orientation="vertical"
+                android:showDividers="middle"
+                custom:headerTitle="@string/burst_list_label" />
+            <view
+                class="com.android.testingcamera2.PaneLayout$UtilPaneLayout"
+                android:id="@+id/util_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:dividerPadding="4dip"
+                android:orientation="vertical"
+                android:showDividers="middle"
+                custom:headerTitle="@string/util_list_label" />
+        </LinearLayout> <!-- control_list -->
+    </ScrollView>
+</LinearLayout>

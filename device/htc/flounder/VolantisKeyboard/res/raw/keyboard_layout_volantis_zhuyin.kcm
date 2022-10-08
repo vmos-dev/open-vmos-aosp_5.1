@@ -1,0 +1,351 @@
+# Copyright (C) 2014 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#
+# Zhuyin keyboard layout
+#
+
+
+type OVERLAY
+
+### Row 1
+
+key GRAVE {
+    label:                              '`'
+    base:                               '`'
+    shift:                              '~'
+}
+
+key 1 {
+    label:                              '\u3105'
+    base:                               '\u3105'
+    capslock, ralt:                     '1'
+    shift, shift+capslock, shift+ralt:  '!'
+}
+
+key 2 {
+    label:                              '\u3109'
+    base:                               '\u3109'
+    capslock, ralt:                     '2'
+    shift, shift+capslock, shift+ralt:  '@'
+}
+
+key 3 {
+    label:                              '\u02c7'
+    base:                               '\u02c7'
+    capslock, ralt:                     '3'
+    shift, shift+capslock, shift+ralt:  '#'
+}
+
+key 4 {
+    label:                              '\u02cb'
+    base:                               '\u02cb'
+    capslock, ralt:                     '4'
+    shift, shift+capslock, shift+ralt:  '$'
+}
+
+key 5 {
+    label:                              '\u3113'
+    base:                               '\u3113'
+    capslock, ralt:                     '5'
+    shift, shift+capslock, shift+ralt:  '%'
+}
+
+key 6 {
+    label:                              '\u02ca'
+    base:                               '\u02ca'
+    capslock, ralt:                     '6'
+    shift, shift+capslock, shift+ralt:  '^'
+}
+
+key 7 {
+    label:                              '\u00b7'
+    base:                               '\u00b7'
+    capslock, ralt:                     '7'
+    shift, shift+capslock, shift+ralt:  '&'
+}
+
+key 8 {
+    label:                              '\u311a'
+    base:                               '\u311a'
+    capslock, ralt:                     '8'
+    shift, shift+capslock, shift+ralt:  '*'
+}
+
+key 9 {
+    label:                              '\u311e'
+    base:                               '\u311e'
+    capslock, ralt:                     '9'
+    shift, shift+capslock, shift+ralt:  '('
+}
+
+key 0 {
+    label:                              '\u3122'
+    base:                               '\u3122'
+    capslock, ralt:                     '0'
+    shift, shift+capslock, shift+ralt:  ')'
+}
+
+key MINUS {
+    label:                              '\u3126'
+    base:                               '\u3126'
+    capslock, ralt:                     '-'
+    shift, shift+capslock, shift+ralt:  '_'
+}
+
+key EQUALS {
+    label:                              '='
+    base:                               '='
+    shift:                              '+'
+}
+
+### Row 2
+
+key Q {
+    label:                              '\u3106'
+    base:                               '\u3106'
+    capslock, ralt:                     'q'
+    shift, shift+capslock, shift+ralt:  'Q'
+}
+
+key W {
+    label:                              '\u310a'
+    base:                               '\u310a'
+    capslock, ralt:                     'w'
+    shift, shift+capslock, shift+ralt:  'W'
+}
+
+key E {
+    label:                              '\u310d'
+    base:                               '\u310d'
+    capslock, ralt:                     'e'
+    shift, shift+capslock, shift+ralt:  'E'
+}
+
+key R {
+    label:                              '\u3110'
+    base:                               '\u3110'
+    capslock, ralt:                     'r'
+    shift, shift+capslock, shift+ralt:  'R'
+}
+
+key T {
+    label:                              '\u3114'
+    base:                               '\u3114'
+    capslock, ralt:                     't'
+    shift, shift+capslock, shift+ralt:  'T'
+}
+
+key Y {
+    label:                              '\u3117'
+    base:                               '\u3117'
+    capslock, ralt:                     'y'
+    shift, shift+capslock, shift+ralt:  'Y'
+}
+
+key U {
+    label:                              '\u3127'
+    base:                               '\u3127'
+    capslock, ralt:                     'u'
+    shift, shift+capslock, shift+ralt:  'U'
+}
+
+key I {
+    label:                              '\u311b'
+    base:                               '\u311b'
+    capslock, ralt:                     'i'
+    shift, shift+capslock, shift+ralt:  'I'
+}
+
+key O {
+    label:                              '\u311f'
+    base:                               '\u311f'
+    capslock, ralt:                     'o'
+    shift, shift+capslock, shift+ralt:  'O'
+}
+
+key P {
+    label:                              '\u3123'
+    base:                               '\u3123'
+    capslock, ralt:                     'p'
+    shift, shift+capslock, shift+ralt:  'P'
+}
+
+key LEFT_BRACKET {
+    label:                              '['
+    base:                               '['
+    shift:                              '{'
+}
+
+key RIGHT_BRACKET {
+    label:                              ']'
+    base:                               ']'
+    shift:                              '}'
+}
+
+key BACKSLASH {
+    label:                              '\\'
+    base:                               '\\'
+    shift:                              '|'
+}
+
+### Row 3
+
+key A {
+    label:                              '\u3107'
+    base:                               '\u3107'
+    capslock, ralt:                     'a'
+    shift, shift+capslock, shift+ralt:  'A'
+}
+
+key S {
+    label:                              '\u310b'
+    base:                               '\u310b'
+    capslock, ralt:                     's'
+    shift, shift+capslock, shift+ralt:  'S'
+}
+
+key D {
+    label:                              '\u310e'
+    base:                               '\u310e'
+    capslock, ralt:                     'd'
+    shift, shift+capslock, shift+ralt:  'D'
+}
+
+key F {
+    label:                              '\u3111'
+    base:                               '\u3111'
+    capslock, ralt:                     'f'
+    shift, shift+capslock, shift+ralt:  'F'
+}
+
+key G {
+    label:                              '\u3115'
+    base:                               '\u3115'
+    capslock, ralt:                     'g'
+    shift, shift+capslock, shift+ralt:  'G'
+}
+
+key H {
+    label:                              '\u3118'
+    base:                               '\u3118'
+    capslock, ralt:                     'h'
+    shift, shift+capslock, shift+ralt:  'H'
+}
+
+key J {
+    label:                              '\u3128'
+    base:                               '\u3128'
+    capslock, ralt:                     'j'
+    shift, shift+capslock, shift+ralt:  'J'
+}
+
+key K {
+    label:                              '\u311c'
+    base:                               '\u311c'
+    capslock, ralt:                     'k'
+    shift, shift+capslock, shift+ralt:  'K'
+}
+
+key L {
+    label:                              '\u3120'
+    base:                               '\u3120'
+    capslock, ralt:                     'l'
+    shift, shift+capslock, shift+ralt:  'L'
+}
+
+key SEMICOLON {
+    label:                              '\u3124'
+    base:                               '\u3124'
+    capslock, ralt:                     ';'
+    shift, shift+capslock, shift+ralt:  ':'
+}
+
+key APOSTROPHE {
+    label:                              '\''
+    base:                               '\''
+    shift:                              '\u201d'
+}
+
+### Row 4
+
+key Z {
+    label:                              '\u3108'
+    base:                               '\u3108'
+    capslock, ralt:                     'z'
+    shift, shift+capslock, shift+ralt:  'Z'
+}
+
+key X {
+    label:                              '\u310c'
+    base:                               '\u310c'
+    capslock, ralt:                     'x'
+    shift, shift+capslock, shift+ralt:  'X'
+}
+
+key C {
+    label:                              '\u310f'
+    base:                               '\u310f'
+    capslock, ralt:                     'c'
+    shift, shift+capslock, shift+ralt:  'C'
+}
+
+key V {
+    label:                              '\u3112'
+    base:                               '\u3112'
+    capslock, ralt:                     'v'
+    shift, shift+capslock, shift+ralt:  'V'
+}
+
+key B {
+    label:                              '\u3116'
+    base:                               '\u3116'
+    capslock, ralt:                     'b'
+    shift, shift+capslock, shift+ralt:  'B'
+}
+
+key N {
+    label:                              '\u3119'
+    base:                               '\u3119'
+    capslock, ralt:                     'n'
+    shift, shift+capslock, shift+ralt:  'N'
+}
+
+key M {
+    label:                              '\u3129'
+    base:                               '\u3129'
+    capslock, ralt:                     'm'
+    shift, shift+capslock, shift+ralt:  'M'
+}
+
+key COMMA {
+    label:                              '\u311d'
+    base:                               '\u311d'
+    capslock, ralt:                     ','
+    shift, shift+capslock, shift+ralt:  '<'
+}
+
+key PERIOD {
+    label:                              '\u3121'
+    base:                               '\u3121'
+    capslock, ralt:                     '.'
+    shift, shift+capslock, shift+ralt:  '>'
+}
+
+key SLASH {
+    label:                              '\u3125'
+    base:                               '\u3125'
+    capslock, ralt:                     '/'
+    shift, shift+capslock, shift+ralt:  '?'
+}

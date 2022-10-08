@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.android.launcher.layouts.volantis">
+
+    <application android:label="@string/app_label">
+
+        <!-- This isn't a real receiver, it's only used as a marker interface. -->
+        <receiver android:name=".PartnerCustomizationReceiver">
+            <intent-filter>
+                <action android:name="com.android.launcher3.action.PARTNER_CUSTOMIZATION" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

@@ -1,0 +1,5 @@
+allow mediaserver system_server:unix_stream_socket { read write setopt };
+
+# Playback DRM protected content
+allow mediaserver secmem_device:chr_file rw_file_perms;
+r_dir_file(mediaserver, efs_file)

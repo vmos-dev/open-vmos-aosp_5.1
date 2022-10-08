@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="Makefile|resources/" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+    <classpathentry exported="true" kind="lib" path="libs/ninepatch.jar" sourcepath="/ninepatch"/>
+    <classpathentry exported="true" kind="lib" path="libs/sdkuilib.jar" sourcepath="/sdkuilib"/>
+    <classpathentry exported="true" kind="lib" path="libs/rule-api.jar" sourcepath="/rule-api"/>
+    <classpathentry exported="true" kind="lib" path="libs/lint-api.jar" sourcepath="/lint-api"/>
+    <classpathentry exported="true" kind="lib" path="libs/lint-checks.jar" sourcepath="/lint-checks"/>
+    <classpathentry exported="true" kind="lib" path="libs/asset-studio.jar" sourcepath="/asset-studio"/>
+    <classpathentry exported="true" kind="lib" path="libs/ant-glob.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/freemarker-2.3.20.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/manifest-merger.jar" sourcepath="/ManifestMerger"/>
+    <classpathentry exported="true" kind="lib" path="libs/lombok-ast-0.2.2.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/propertysheet.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/asm-4.0.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/asm-analysis-4.0.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/asm-tree-4.0.jar"/>
+    <classpathentry exported="true" kind="lib" path="libs/swtmenubar.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

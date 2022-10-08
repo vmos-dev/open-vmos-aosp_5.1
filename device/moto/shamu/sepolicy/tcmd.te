@@ -1,0 +1,29 @@
+
+type tcmd, domain;
+type tcmd_exec, exec_type, file_type;
+
+init_daemon_domain(tcmd)
+
+# Uses network sockets.
+net_domain(tcmd)
+
+# Set property.
+unix_socket_connect(tcmd, property, init)
+
+# Allow restart, fastboot, power off
+allow tcmd powerctl_prop:property_service set;
+
+# Uses /dev/ttydiag2
+allow tcmd diag_device:chr_file rw_file_perms;
+
+# Uses raw socket
+allow tcmd self:capability net_raw;
+
+# To allow read telephony.db
+allow tcmd radio_data_file:dir r_dir_perms;
+allow tcmd radio_data_file:file r_file_perms;
+
+# To allow read/write /persist
+allow tcmd persist_file:dir search;
+allow tcmd persist_hiddenmenu_file:dir rw_dir_perms;
+allow tcmd persist_hiddenmenu_file:file create_file_perms;

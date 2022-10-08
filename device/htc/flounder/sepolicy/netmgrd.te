@@ -1,0 +1,40 @@
+# Network utilities (radio process)
+type netmgrd, domain;
+type netmgrd_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(netmgrd)
+
+# Triggers a sys_module denial, but kernel has CONFIG_MODULES=n.
+dontaudit netmgrd self:capability sys_module;
+
+# Starts as (root,radio) changes to (radio,radio)
+allow netmgrd self:capability { setuid setgid net_admin net_raw };
+
+allow netmgrd self:udp_socket { create ioctl };
+# rawip_socket for iptables
+allow netmgrd self:rawip_socket create_socket_perms;
+allow netmgrd self:netlink_socket create_socket_perms;
+allow netmgrd self:netlink_route_socket { create_socket_perms nlmsg_write nlmsg_read };
+
+# Talk to qmuxd (qmux_radio)
+qmux_socket(netmgrd)
+
+# Runs commands via sh.
+allow netmgrd shell_exec:file rx_file_perms;
+
+# Runs /system/bin/ip addr flush dev <device> commands.
+allow netmgrd system_file:file rx_file_perms;
+
+# Talk to init over the property socket
+unix_socket_connect(netmgrd, property, init)
+# Set net.rmnet0.* values
+allow netmgrd radio_prop:property_service set;
+auditallow netmgrd radio_prop:property_service set;
+allow netmgrd net_radio_prop:property_service set;
+
+# Access to /proc/sys/net/*
+allow netmgrd proc_net:file write;
+
+# Let netmgrd access /dev/mdm node (modem driver)
+allow netmgrd radio_device:chr_file r_file_perms;

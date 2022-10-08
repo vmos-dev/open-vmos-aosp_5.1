@@ -1,0 +1,87 @@
+page.title=Security Enhancements in Android 4.3
+@jd:body
+
+<p>
+Every Android release includes dozens of security enhancements to protect
+users. The following are some of the security enhancements available
+in Android 4.3:
+</p>
+
+<ul>
+  <li><strong>Android sandbox reinforced with SELinux.</strong>
+  This release strengthens the Android sandbox using the SELinux
+  mandatory access control system (MAC) in the Linux kernel. SELinux
+  reinforcement is invisible to users and developers, and adds robustness
+  to the existing Android security model while maintaining compatibility
+  with existing applications. To ensure continued compatibility this release
+  allows the use of SELinux in a permissive mode. This mode logs any policy
+  violations, but will not break applications or affect system behavior.</li>
+
+  <li><strong>No setuid/setgid programs.</strong>
+  Added support for filesystem capabilities
+  to Android system files and removed all setuid/setguid programs.  This
+  reduces root attack surface and the likelihood of potential security
+  vulnerabilities.</li>
+
+  <li><strong>ADB Authentication.</strong>
+  Since Android 4.2.2, connections to ADB are
+  authenticated with an RSA keypair. This prevents unauthorized use of
+  ADB where the attacker has physical access to a device.</li>
+
+  <li><strong>Restrict Setuid from Android Apps.</strong>
+  The /system partition is now mounted
+  nosuid for zygote-spawned processes, preventing Android applications
+  from executing setuid programs. This reduces root attack surface and
+  the likelihood of potential security vulnerabilities.</li>
+
+  <li><strong>Capability bounding.</strong>
+  Android zygote and ADB now use prctl(PR_CAPBSET_DROP) to drop
+  unnecessary capabilities prior to executing applications.
+  This prevents Android applications and applications launched from
+  the shell from acquiring privileged capabilities.</li>
+
+  <li><strong>AndroidKeyStore Provider.</strong>
+  Android now has a keystore provider that allows
+  applications to create exclusive use keys. This provides applications
+  with an API to create or store private keys that cannot be used by
+  other applications.</li>
+
+  <li><strong>KeyChain isBoundKeyAlgorithm.</strong>
+  Keychain API now provides a method
+  (isBoundKeyType) that allows applications to confirm that system-wide keys
+  are bound to a hardware root of trust for the device. This provides
+  a place to create or store private keys that cannot be exported off the
+  device, even in the event of a root compromise.</li>
+
+  <li><strong>NO_NEW_PRIVS.</strong>
+  Android zygote now uses prctl(PR_SET_NO_NEW_PRIVS) to block addition
+  of new privileges prior to execution application code. This
+  prevents Android applications from performing operations which can
+  elevate privileges via execve. (This requires Linux kernel version 3.5
+  or greater).</li>
+
+  <li><strong>FORTIFY_SOURCE enhancements.</strong>
+  Enabled FORTIFY_SOURCE on Android x86 and MIPS
+  and fortified strchr(), strrchr(), strlen(), and umask() calls. This
+  can detect potential memory corruption vulnerabilities or unterminated
+  string constants.</li>
+
+  <li><strong>Relocation protections.</strong>
+  Enabled read only relocations (relro) for
+  statically linked executables and removed all text relocations in Android
+  code. This provides defense in depth against potential memory corruption
+  vulnerabilities.</li>
+
+  <li><strong>Improved EntropyMixer.</strong>
+  EntropyMixer now writes entropy at shutdown /
+  reboot, in addition to periodic mixing. This allows retention of all
+  entropy generated while devices are powered on, and is especially useful
+  for devices that are rebooted immediately after provisioning.</li>
+
+  <li><strong>Security Fixes.</strong>
+  Android 4.3 also includes fixes for Android-specific
+  vulnerabilities. Information about these vulnerabilities has been provided
+  to Open Handset Alliance members and fixes are available in Android Open
+  Source Project. To improve security, some devices with earlier versions
+  of Android may also include these fixes.</li>
+</ul>

@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for android:textS^ize selecting android:textSelectHandleLeft:
+@@ -4 +4
+-         <item name="android:textS^ize">17sp</item>
++         <item name="android:textSelectHandleLeft"^>17sp</item>

@@ -1,0 +1,183 @@
+page.title=HAL version deprecation
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>In the L release of Android, we are halting support for some sensor HAL
+versions. The only supported versions are <code>SENSORS_DEVICE_API_VERSION_1_0
+</code>and <code>SENSORS_DEVICE_API_VERSION_1_3</code>.</p>
+
+<p>In the next releases, we are likely to drop support for 1_0 as well.</p>
+
+<p>1_0 has no concept of batching. If possible, all devices using 1_0 SHOULD
+upgrade to 1_3.</p>
+
+<p>1_1 and 1_2 suffer from poor definition of the batching concept, and are not
+supported anymore</p>
+
+<p>All devices currently using 1_1 or 1_2 MUST upgrade to 1_3.</p>
+
+<p>In 1_3, we simplified the notion of batching, and we introduced wake up
+sensors.</p>
+
+<p>To upgrade to 1_3, follow the changes listed below.</p>
+
+<h2>Implement the batch function</h2>
+
+<p>Even if you do not implement batching (your hardware has no FIFO), you must
+implement the <code>batch</code> function. <code>batch</code> is used to set
+the sampling period and the maximum reporting latency for a given sensor. It
+replaces <code>setDelay</code>. <code>setDelay</code> will not be called
+anymore.</p>
+
+<p>If you do not implement batching, you can implement <code>batch</code> by
+simply calling your existing <code>setDelay</code> function with the provided
+<code>sampling_period_ns</code> parameter.</p>
+
+<h2>Implement the flush function</h2>
+
+<p>Even if you do not implement batching, you must implement the
+<code>flush</code> function.</p>
+
+<p>If you do not implement batching, <code>flush</code> must generate one
+<code>META_DATA_FLUSH_COMPLETE</code> event and return 0 (success).</p>
+
+<h2>Change your sensors_poll_device_t.common.version</h2>
+
+<pre class=prettyprint>
+your_poll_device.common.version = SENSORS_DEVICE_API_VERSION_1_3
+</pre>
+
+<h2>Add the new fields to the definition of your sensors</h2>
+
+<p>When defining each sensor, in addition to the usual <a
+href="{@docRoot}devices/sensors/hal-interface.html#sensor_t">sensor_t</a>
+fields:</p>
+
+<pre class=prettyprint>
+.name =       "My magnetic field Sensor",
+.vendor =     "My company",
+.version
+=    1,
+.handle =     mag_handle,
+.type =       SENSOR_TYPE_MAGNETIC_FIELD,
+.maxRange =   200.0f,
+.resolution = CONVERT_M,
+.power =      5.0f,
+.minDelay =
+ 16667,
+</pre>
+
+<p>you also must set the new fields, defined between 1_0 and 1_3:</p>
+
+<pre class=prettyprint>
+.fifoReservedEventCount = 0,
+.fifoMaxEventCount =   0,
+.stringType =         0,
+.requiredPermission = 0,
+.maxDelay =      200000
+.flags =
+SENSOR_FLAG_CONTINUOUS_MODE,
+</pre>
+
+<p><em>fifoReservedEventCount</em>: If not implementing batching, set this one to 0.</p>
+
+<p><em>fifoMaxEventCount</em>: If not implementing batching, set this one to 0</p>
+
+<p><em>stringType</em>: Set to 0 for all official android sensors (those that are defined in
+sensors.h), as this value will be overwritten by the framework. For
+non-official sensors, see <a
+href="{@docRoot}devices/sensors/hal-interface.html#sensor_t">sensor_t</a> for
+details on how to set it.</p>
+
+<p><em>requiredPermission</em>: This is the permission that applications will be required to have to get
+access to your sensor. You can usually set this to 0 for all of your sensors,
+but sensors with type <code>HEART_RATE</code> must set this to <code>SENSOR_PERMISSION_BODY_SENSORS.</code></p>
+
+<p><em>maxDelay</em>: This value is important and you will need to set it according to the
+capabilities of the sensor and of its driver.</p>
+
+<p>This value is defined only for continuous and on-change sensors. It is the
+delay between two sensor events corresponding to the lowest frequency that this
+sensor supports. When lower frequencies are requested through the
+<code>batch</code> function, the events will be generated at this frequency
+instead. It can be used by the framework or applications to estimate when the
+batch FIFO may be full. If this value is not set properly, CTS will fail.
+For one-shot and special reporting mode sensors, set <code>maxDelay</code> to 0.</p>
+
+<p>For continuous sensors, set it to the maximum sampling period allowed in
+microseconds.</p>
+
+<p>Note:</p>
+<ul>
+<li><code>period_ns</code> is in nanoseconds whereas
+<code>maxDelay</code>/<code>minDelay</code> are in microseconds.</li>
+<li><code>maxDelay </code>should always fit within a 32-bit signed integer. It
+is declared as 64 bit on 64 bit architectures only for binary compatibility reasons.</li>
+</ul>
+
+<p><em>flags</em>: This field defines the reporting mode of the sensor and whether the sensor is
+a wake up sensor.</p>
+
+<p>If you do not implement batching, and are just moving from 1.0 to 1.3, set this
+to:</p>
+
+<p><code>SENSOR_FLAG_WAKE_UP | SENSOR_FLAG_ONE_SHOT_MODE</code> for <a
+href="{@docRoot}devices/sensors/report-modes.html#one-shot">one-shot</a>
+sensors</p>
+
+<p><code>SENSOR_FLAG_CONTINUOUS_MODE</code> for <a
+href="{@docRoot}devices/sensors/report-modes.html#continuous">continuous</a>
+sensors <code>SENSOR_FLAG_ON_CHANGE_MODE</code> for <a
+href="{@docRoot}devices/sensors/report-modes.html#on-change">on-change</a>
+sensors except <a href="#proximity">proximity</a>
+<code>SENSOR_FLAG_SPECIAL_REPORTING_MODE</code> for sensors with <a
+href="{@docRoot}devices/sensors/report-modes.html#special">special</a>
+reporting mode except for the <a
+href="{@docRoot}devices/sensors/sensor-types.html#tilt_detector">tilt
+detector</a>.</p>
+
+<p><code>SENSOR_FLAG_WAKE_UP | SENSOR_FLAG_ON_CHANGE_MODE</code> for the <a
+href="{@docRoot}devices/sensors/sensor-types.html#proximity">proximity</a> sensor and the Android official <a
+href="{@docRoot}devices/sensors/sensor-types.html#tilt_detector">tilt detector</a> sensor.</p>
+
+<h2>Notes when upgrading from 1_1 or 1_2</h2>
+<ul>
+  <li> The <code>batch</code> function now nearly-always succeeds, even for sensors that do not support
+batching, independently of the value of the timeout argument. The only cases
+where the <code>batch </code>function might fail are internal errors, or a bad
+<code>sensor_handle,</code> or negative <code>sampling_period_ns </code>or
+negative <code>max_report_latency_ns</code>.
+  <li> Whether a sensor supports batching is defined by whether it has a
+<code>fifoMaxEventCount </code>greater than 0. (In previous versions, it was
+based on the return value of <code>batch()</code>.
+  <li> Sensors that support batching are always in what we called the “batch
+mode” in previous versions: even if the <code>max_report_latency_ns</code> parameter is 0, the sensor must still be batched, meaning the events must be
+stored in the FIFO when the SoC goes to suspend mode.
+  <li> The <code>flags </code>parameter of the <code>batch</code> function is
+not used anymore. <code>DRY_RUN</code> and <code>WAKE_UPON_FIFO_FULL</code> are
+both deprecated, and will never be passed to the <code>batch</code> function.
+  <li> The batch timeout argument is now referred to as the
+<code>max_report_latency</code> argument.
+</ul>

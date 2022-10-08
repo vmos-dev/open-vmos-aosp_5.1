@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description url="https://android.corp.google.com/adt/">
+      Update Site for Android Development Toolkit
+   </description>
+   <feature url="features/com.android.ide.eclipse.adt_23.0.2.qualifier.jar" id="com.android.ide.eclipse.adt" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.ddms_23.0.2.qualifier.jar" id="com.android.ide.eclipse.ddms" version="23.0.2.qualifier">
+      <category name="developer"/>
+      <category name="platform"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.hierarchyviewer_23.0.2.qualifier.jar" id="com.android.ide.eclipse.hierarchyviewer" version="23.0.2.qualifier">
+      <category name="developer"/>
+      <category name="platform"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.tests_23.0.2.qualifier.jar" id="com.android.ide.eclipse.tests" version="23.0.2.qualifier">
+      <category name="test"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.pdt_23.0.2.qualifier.jar" id="com.android.ide.eclipse.pdt" version="23.0.2.qualifier">
+      <category name="platform"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.traceview_23.0.2.qualifier.jar" id="com.android.ide.eclipse.traceview" version="23.0.2.qualifier">
+      <category name="developer"/>
+      <category name="platform"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.gldebugger_23.0.2.qualifier.jar" id="com.android.ide.eclipse.gldebugger" version="23.0.2.qualifier">
+      <category name="developer"/>
+      <category name="platform"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.ndk_23.0.2.qualifier.jar" id="com.android.ide.eclipse.ndk" version="23.0.2.qualifier">
+      <category name="developer"/>
+      <category name="platform"/>
+   </feature>
+   <category-def name="developer" label="Application Developer Tools">
+      <description>
+         Features that add Android support to Eclipse for application developers.
+      </description>
+   </category-def>
+   <category-def name="test" label="Plugin Developer Tests">
+      <description>
+         Tests for the other Android plugins
+      </description>
+   </category-def>
+   <category-def name="platform" label="Platform Tools">
+      <description>
+         Features that add Android support to Eclipse for platform developers.
+      </description>
+   </category-def>
+</site>

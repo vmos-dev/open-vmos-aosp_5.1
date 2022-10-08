@@ -1,0 +1,265 @@
+page.title=Repo command reference
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+<p>Repo usage takes the following form: </p>
+<pre><code>repo COMMAND OPTIONS
+</code></pre>
+<p>Optional elements are shown in brackets [ ]. Once Repo is installed, you can get information about any command by running   </p>
+<pre><code>repo help COMMAND
+</code></pre>
+<p>Many commands take a project list as an argument. You can specify project-list as a list of names or a list of paths to local source directories for the projects:</p>
+<pre><code>repo sync [PROJECT0 PROJECT1 ... PROJECTN]
+repo sync [/PATH/TO/PROJECT0 ... /PATH/TO/PROJECTN]
+</code></pre>
+
+<h2 id="init">init</h2>
+<pre><code>$ repo init -u URL [OPTIONS]
+</code></pre>
+<p>Installs Repo in the current directory. This creates a <code>.repo/</code> directory that contains Git repositories for the Repo source code and the standard Android manifest files. The <code>.repo/</code> directory also contains <code>manifest.xml</code>, which is a symlink to the selected manifest in the <code>.repo/manifests/</code> directory.</p>
+<p>Options:</p>
+<ul>
+<li>
+<p><code>-u</code>: specify a URL from which to retrieve a manifest repository. The common manifest can be found at <code>https://android.googlesource.com/platform/manifest</code></p>
+</li>
+<li>
+<p><code>-m</code>: select a manifest file within the repository. If no manifest name is selected, the default is default.xml. </p>
+</li>
+<li>
+<p><code>-b</code>: specify a revision, i.e., a particular manifest-branch.</p>
+</li>
+</ul>
+<p><em>Note: For all remaining Repo commands, the current working directory must either be the parent directory of <code>.repo/</code> or a subdirectory of the parent directory.</em></p>
+<h2 id="sync">sync</h2>
+<pre><code>repo sync [PROJECT_LIST]
+</code></pre>
+<p>Downloads new changes and updates the working files in your local environment. If you run <code>repo sync</code> without any arguments, it will synchronize the files for all the projects.</p>
+<p>When you run <code>repo sync</code>, this is what happens:</p>
+<ul>
+<li>
+<p>If the project has never been synchronized, then <code>repo sync</code> is equivalent to <code>git clone</code>. All branches in the remote repository are copied to the local project directory.</p>
+</li>
+<li>
+<p>If the project has already been synchronized once, then <code>repo sync</code> is equivalent to:</p>
+<pre><code>git remote update 
+git rebase origin/BRANCH
+</code></pre>
+<p>where <code>BRANCH</code> is the currently checked-out branch in the local project directory. If the local branch is not tracking a branch in the remote repository, then no synchronization will occur for the project.</p>
+</li>
+<li>
+<p>If the git rebase operation results in merge conflicts, you will need to use the normal Git commands (for example, <code>git rebase --continue</code>) to resolve the conflicts.</p>
+</li>
+</ul>
+<p>After a successful <code>repo sync</code>, the code in specified projects will be up to date with the code in the remote repository.</p>
+<p>Options:</p>
+<ul>
+<li>
+<p><code>-d</code>: switch specified projects back to the manifest revision.  Helpful if the project is currently on a topic branch, but the manifest revision is temporarily needed.</p>
+</li>
+<li>
+<p><code>-s</code>: sync to a known good build as specified by the manifest-server element in the current manifest.</p>
+</li>
+<li>
+<p><code>-f</code>: proceed with syncing other projects even if a project fails to sync.</p>
+</li>
+</ul>
+<h2 id="upload">upload</h2>
+<pre><code>repo upload [PROJECT_LIST]
+</code></pre>
+<p>For the specified projects, Repo compares the local branches to the remote branches updated during the last repo sync. Repo will prompt you to select one or more of the branches that have not yet been uploaded for review.</p>
+<p>After you select one or more branches, all commits on the selected branches
+are transmitted to Gerrit over an HTTPS connection. You will need to
+configure an HTTPS password to enable upload authorization. Visit the
+<a href="https://android-review.googlesource.com/new-password">Password Generator</a>
+to generate a new username/password pair to use over HTTPS.</p>
+<p>When Gerrit receives the object data over its server, it will turn each
+commit into a change so that reviewers can comment on each commit
+individually. To combine several "checkpoint" commits together into a
+single commit, use git rebase -i before you run repo upload.</p>
+<p>If you run repo upload without any arguments, it will search all the projects for changes to upload.</p>
+<p>To make edits to changes after they have been uploaded, you should use a tool like <code>git rebase -i</code> or <code>git commit --amend</code> to update your local commits.  After your edits are complete:</p>
+<ul>
+<li>
+<p>Make sure the updated branch is the currently checked out branch.</p>
+</li>
+<li>
+<p>Use <code>repo upload --replace PROJECT</code> to open the change matching editor.</p>
+</li>
+<li>
+<p>For each commit in the series, enter the Gerrit change ID inside the brackets:</p>
+<pre><code># Replacing from branch foo 
+[ 3021 ] 35f2596c Refactor part of GetUploadableBranches to lookup one specific...
+[ 2829 ] ec18b4ba Update proto client to support patch set replacments 
+[ 3022 ] c99883fe Teach 'repo upload --replace' how to add replacement patch se...
+# Insert change numbers in the brackets to add a new patch set.
+# To create a new change record, leave the brackets empty.
+</code></pre>
+</li>
+</ul>
+<p>After the upload is complete the changes will have an additional Patch Set.</p>
+<h2 id="diff">diff</h2>
+<pre><code>repo diff [PROJECT_LIST]
+</code></pre>
+<p>Shows outstanding changes between commit and working tree using <code>git diff</code>. </p>
+<h2 id="download">download</h2>
+<pre><code>repo download TARGET CHANGE
+</code></pre>
+<p>Downloads the specified change from the review system and makes it available in your project's local working directory.</p>
+<p>For example, to download <a href="https://android-review.googlesource.com/23823">change 23823</a> into your platform/frameworks/base directory:</p>
+<pre><code>$ repo download platform/build 23823
+</code></pre>
+<p>A <code>repo sync</code> should effectively remove any commits retrieved via <code>repo download</code>. Or, you can check out the remote branch; e.g., <code>git checkout m/master</code>.</p>
+<p>*Note: There is a slight mirroring lag between when a change is visible on
+the web in <a href="https://android-review.googlesource.com/">Gerrit</a> and when
+<code>repo download</code> will be able to find it for all users, because of replication
+delays to all servers worldwide.</p>
+<h2 id="forall">forall</h2>
+<pre><code>repo forall [PROJECT_LIST] -c COMMAND
+</code></pre>
+<p>Executes the given shell command in each project.  The following additional environment variables are made available by <code>repo forall</code>:</p>
+<ul>
+<li>
+<p><code>REPO_PROJECT</code> is set to the unique name of the project.</p>
+</li>
+<li>
+<p><code>REPO_PATH</code> is the path relative to the root of the client.</p>
+</li>
+<li>
+<p><code>REPO_REMOTE</code> is the name of the remote system from the manifest.</p>
+</li>
+<li>
+<p><code>REPO_LREV</code> is the name of the revision from the manifest, translated to a local tracking branch.  Used if you need to pass the manifest revision to a locally executed git command.</p>
+</li>
+<li>
+<p><code>REPO_RREV</code> is the name of the revision from the manifest, exactly as written in the manifest.</p>
+</li>
+</ul>
+<p>Options:</p>
+<ul>
+<li>
+<p><code>-c</code>: command and arguments to execute. The command is evaluated through <code>/bin/sh</code> and any arguments after it are passed through as shell positional parameters.</p>
+</li>
+<li>
+<p><code>-p</code>: show project headers before output of the specified command.  This is achieved by binding pipes to the command's stdin, stdout, and sterr streams, and piping all output into a continuous stream that is displayed in a single pager session.</p>
+</li>
+<li>
+<p><code>-v</code>: show messages the command writes to stderr.  </p>
+</li>
+</ul>
+<h2 id="prune">prune</h2>
+<pre><code>repo prune [PROJECT_LIST]
+</code></pre>
+<p>Prunes (deletes) topics that are already merged.</p>
+<h2 id="start">start</h2>
+<pre><code>repo start BRANCH_NAME [PROJECT_LIST]
+</code></pre>
+<p>Begins a new branch for development, starting from the revision specified in the manifest.</p>
+<p>The <code>BRANCH_NAME</code> argument should provide a short description of the change you are trying to make to the projects.If you don't know, consider using the name default.</p>
+<p>The <code>PROJECT_LIST</code> specifies which projects will participate in this topic branch. </p>
+<p><em>Note: "." is a useful shorthand for the project in the current working directory.</em></p>
+<h2 id="status">status</h2>
+<pre><code>repo status [PROJECT_LIST]
+</code></pre>
+<p>Compares the working tree to the staging area (index) and the most recent commit on this branch (HEAD) in each project specified.  Displays a summary line for each file where there is a difference between these three states.</p>
+<p>To see the status for only the current branch, run <code>repo status</code>. The status information will be listed by project. For each file in the project, a two-letter code is used:</p>
+<p>In the first column, an uppercase letter indicates how the staging area differs from the last committed state.</p>
+<table>
+<thead>
+<tr>
+<th>letter</th>
+<th>meaning</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-</td>
+<td>no change</td>
+<td>same in HEAD and index</td>
+</tr>
+<tr>
+<td>A</td>
+<td>added</td>
+<td>not in HEAD, in index</td>
+</tr>
+<tr>
+<td>M</td>
+<td>modified</td>
+<td>in HEAD, modified in index</td>
+</tr>
+<tr>
+<td>D</td>
+<td>deleted</td>
+<td>in HEAD, not in index</td>
+</tr>
+<tr>
+<td>R</td>
+<td>renamed</td>
+<td>not in HEAD, path changed in index</td>
+</tr>
+<tr>
+<td>C</td>
+<td>copied</td>
+<td>not in HEAD, copied from another in index</td>
+</tr>
+<tr>
+<td>T</td>
+<td>mode changed</td>
+<td>same content in HEAD and index, mode changed</td>
+</tr>
+<tr>
+<td>U</td>
+<td>unmerged</td>
+<td>conflict between HEAD and index; resolution required</td>
+</tr>
+</tbody>
+</table>
+<p>In the second column, a lowercase letter indicates how the working directory differs from the index.</p>
+<table>
+<thead>
+<tr>
+<th>letter</th>
+<th>meaning</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-</td>
+<td>new/unknown</td>
+<td>not in index, in work tree</td>
+</tr>
+<tr>
+<td>m</td>
+<td>modified</td>
+<td>in index, in work tree, modified</td>
+</tr>
+<tr>
+<td>d</td>
+<td>deleted</td>
+<td>in index, not in work tree</td>
+</tr>
+</tbody>
+</table>

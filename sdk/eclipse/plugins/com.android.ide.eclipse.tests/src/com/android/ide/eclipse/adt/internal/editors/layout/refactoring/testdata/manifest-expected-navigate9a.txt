@@ -1,0 +1,6 @@
+Go To Declaration in manifest.xml for <activity android:name=".Test^Activity":
+Open XML Declaration :  [.TestActivity]
+
+
+After open, the selected text is:
+^<?xml version="1.0" encoding="utf-8"?>

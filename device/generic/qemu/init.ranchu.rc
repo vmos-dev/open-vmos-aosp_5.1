@@ -1,0 +1,46 @@
+on fs
+        mount_all /fstab.ranchu
+
+on early-init
+    mount debugfs debugfs /sys/kernel/debug
+
+on init
+    # See storage config details at http://source.android.com/tech/storage/
+    mkdir /storage/sdcard 0555 root root
+
+    export EXTERNAL_STORAGE /storage/sdcard
+
+    # Support legacy paths
+    #symlink /storage/sdcard /sdcard
+    #symlink /storage/sdcard /mnt/sdcard
+
+on boot
+    setprop ARGH ARGH
+    setprop net.eth0.gw 10.0.2.2
+    setprop net.eth0.dns1 10.0.2.3
+    setprop net.gprs.local-ip 10.0.2.15
+    setprop ro.radio.use-ppp no
+    setprop ro.build.product generic
+    setprop ro.product.device generic
+
+# fake some battery state
+    setprop status.battery.state Slow
+    setprop status.battery.level 5
+    setprop status.battery.level_raw  50
+    setprop status.battery.level_scale 9
+
+# Disable GPU support
+    setprop ro.kernel.qemu 1
+    setprop ro.kernel.qemu.gles 0
+
+# disable RenderScript
+    setprop config.disable_renderscript 1
+
+# disable some daemons the emulator doesn't want
+    stop dund
+    stop akmd
+
+# enable Google-specific location features,
+# like NetworkLocationProvider and LocationCollector
+    setprop ro.com.google.locationfeatures 1
+

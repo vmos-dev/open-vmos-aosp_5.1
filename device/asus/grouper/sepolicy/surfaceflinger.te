@@ -1,0 +1,9 @@
+allow surfaceflinger { knv_device }:chr_file rw_file_perms;
+allow surfaceflinger { sysfs_devices_system_cpu sysfs_devices_tegradc }:file rw_file_perms;
+allow surfaceflinger sysfs_devices_tegradc:dir r_dir_perms;
+allow surfaceflinger sysfs_devices_tegradc:lnk_file { open getattr read };
+allow surfaceflinger sysfs_devices_system_cpu:dir w_dir_perms;
+
+# Kernel bug for Linux < 3.3: sysfs inodes can lose their security context
+# and revert to the base sysfs type.
+allow surfaceflinger sysfs:file write;

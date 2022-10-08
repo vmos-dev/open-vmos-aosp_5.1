@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/JoyContainer"
+	android:layout_width="fill_parent" android:orientation="vertical"
+	android:layout_height="wrap_content" android:paddingLeft="5dip">
+	<TextView android:text="Joystick" android:id="@+id/joystickLabel"
+		android:layout_width="wrap_content" android:layout_height="fill_parent"
+		style="@style/DemoKitControlLabel" android:gravity="center"
+		android:layout_marginTop="10dp" android:layout_marginBottom="-40dp"></TextView>
+	<com.google.android.DemoKit.JoystickView
+		android:id="@+id/joystickView" android:layout_height="wrap_content"
+		android:src="@drawable/joystick_background" android:layout_width="match_parent"
+		android:layout_gravity="center_horizontal|bottom"></com.google.android.DemoKit.JoystickView>
+</LinearLayout>
+

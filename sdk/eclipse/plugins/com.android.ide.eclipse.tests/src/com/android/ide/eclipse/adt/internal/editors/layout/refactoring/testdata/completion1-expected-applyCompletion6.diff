@@ -1,0 +1,4 @@
+Code completion in completion1.xml for style="@android:^style/Widget.Button" selecting @android:drawable/:
+@@ -14 +14
+-         style="@android:^style/Widget.Button"
++         style="@android:drawable/^"

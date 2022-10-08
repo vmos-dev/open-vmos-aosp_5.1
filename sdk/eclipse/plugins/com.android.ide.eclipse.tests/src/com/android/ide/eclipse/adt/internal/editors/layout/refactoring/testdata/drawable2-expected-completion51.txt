@@ -1,0 +1,10 @@
+Code completion in drawable2.xml for ^android:innerRadiusRatio="2":
+android:visible : Indicates whether the drawable should intially be visible.  [boolean]
+android:dither : Enables or disables dithering.  [boolean]
+android:shape : Indicates what shape to fill with a gradient.  [enum]
+android:innerRadiusRatio : Inner radius of the ring expressed as a ratio of the ring's width.  [float]
+android:thicknessRatio : Thickness of the ring expressed as a ratio of the ring's width.  [float]
+android:innerRadius : Inner radius of the ring.  [dimension]
+android:thickness : Thickness of the ring.  [dimension]
+android:useLevel : Indicates whether the drawable's level affects the way the gradient  is drawn.
+xmlns:android

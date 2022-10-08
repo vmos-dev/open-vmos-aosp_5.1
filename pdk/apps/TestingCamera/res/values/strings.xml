@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (C) 2012 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+    <string name="app_name">TestingCam</string>
+
+    <string name="preview_on_label">Preview On</string>
+    <string name="preview_off_label">Preview Off</string>
+    <string name="take_picture_label">Take picture</string>
+    <string name="preview_resolution_prompt">Preview size</string>
+    <string name="preview_frame_rate_prompt">Preview Frame Rate</string>
+    <string name="camera_selection_prompt">Active camera</string>
+    <string name="default_camera_entry">No cameras found</string>
+    <string name="snapshot_text_default">Save to view EXIF.</string>
+    <string name="snapshot_size_prompt">Still capture size</string>
+    <string name="record_on_label">Recording on</string>
+    <string name="record_off_label">Recording off</string>
+    <string name="record_stabilization_on_label">Video Stabilization on</string>
+    <string name="record_stabilization_off_label">Video Stabilization off</string>
+    <string name="record_hint_on_label">Recording Hint on</string>
+    <string name="record_hint_off_label">Recording Hint off</string>
+    <string name="lock_camera_on_label">Lock on</string>
+    <string name="lock_camera_off_label">Lock off</string>
+    <string name="camcorder_profile_prompt">Camcorder profile</string>
+    <string name="video_record_size_prompt">Video Record size</string>
+    <string name="video_frame_rate_prompt">Video Frame Rate</string>
+    <string name="horiz_rule_color">#777777</string>
+    <string name="show_info">Info</string>
+    <string name="info_ok_button_label">OK</string>
+    <string name="snapshot_ok_label">OK</string>
+    <string name="still_image_description">Captured still image</string>
+    <string name="af_mode_prompt">Autofocus mode</string>
+    <string name="flash_mode_label">Flash mode</string>
+    <string name="trigger_autofocus">Trigger autofocus</string>
+    <string name="cancel_autofocus">Cancel Autofocus</string>
+    <string name="snapshot_save_label">Save</string>
+    <string name="snapshot_view_label">Save and view</string>
+    <string name="exposure_label">Exposure</string>
+    <string name="exposure_lock_on_label">Auto-Exposure Locked</string>
+    <string name="exposure_lock_off_label">Auto-Exposure Unlocked</string>
+    <string name="callback_format_prompt">Preview callback format</string>
+    <string name="callbacks_on_label">Callbacks on</string>
+    <string name="callbacks_off_label">Callbacks off</string>
+    <string name="keep_open_prompt">Keep open on exit</string>
+    <string name="record_handoff_prompt">No camera recording handoff</string>
+    <string name="color_effect_prompt">Color Effect</string>
+    <string name="zoom_label">Zoom</string>
+</resources>

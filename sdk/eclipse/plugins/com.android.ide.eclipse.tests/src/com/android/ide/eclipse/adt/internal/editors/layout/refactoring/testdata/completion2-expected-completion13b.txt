@@ -1,0 +1,4 @@
+Code completion in completion2.xml for gravity="left|bottom|cen^:
+center_vertical
+center_horizontal
+center

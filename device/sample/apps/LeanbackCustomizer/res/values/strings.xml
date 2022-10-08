@@ -1,0 +1,20 @@
+<resources>
+
+    <string name="app_label">LeanbackCustomizer</string>
+
+    <string name="partner_row_title">Google\'s Top Picks</string>
+    <string name="apps_row_title">My Apps</string>
+    <string name="games_row_title">My Games</string>
+    <string name="inputs_row_title">My Inputs</string>
+    <string name="settings_row_title">My Settings</string>
+
+    <!-- Content description for Netflix App -->
+    <string name="ted">Ted</string>
+    <!-- Content description for banner to encourage users to download the Netflix App -->
+    <string name="try_ted">Try Ted</string>
+    <!-- Content description for Google Play Movies App -->
+    <string name="play_movies">Play Movies</string>
+    <!-- Content description for banner to encourage users to download Google Play Movies App -->
+    <string name="try_play_movies">Try Play Movies</string>
+
+</resources>

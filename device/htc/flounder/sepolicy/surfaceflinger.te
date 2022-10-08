@@ -1,0 +1,2 @@
+allow surfaceflinger device:dir r_dir_perms;
+allow surfaceflinger sysfs_didim:file rw_file_perms;

@@ -1,0 +1,11 @@
+<LinearLayout xmlns:foo="http://schemas.android.com/apk/res/android"
+    foo:layout_width="wrap_content" foo:layout_height="match_parent" foo:orientation="vertical">
+    <Button foo:text="Button"
+        foo:layout_width="wrap_content" foo:layout_height="wrap_content"
+        foo:textColor="#FF0000" foo:textSize="20pt"
+        foo:id="@+id/button1" foo:layout_alignParentBottom="true"></Button>
+    <Button foo:text="Button"
+        foo:layout_width="wrap_content" foo:layout_height="fill_parent"
+        foo:textColor="#00FF00" foo:textSize="20pt"
+        foo:id="@+id/button2" foo:layout_alignParentBottom="true"></Button>
+</LinearLayout>

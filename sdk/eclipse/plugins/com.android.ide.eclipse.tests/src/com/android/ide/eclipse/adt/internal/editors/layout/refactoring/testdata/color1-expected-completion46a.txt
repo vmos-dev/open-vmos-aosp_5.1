@@ -1,0 +1,2 @@
+Code completion in color1.xml for ^<item android:
+<item /> : Drawable states.

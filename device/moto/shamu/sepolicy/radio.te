@@ -1,0 +1,15 @@
+# Talk to qmuxd (/dev/socket/qmux_radio)
+qmux_socket(radio)
+
+# Grant access to qmux socket that is created by rild
+allow radio rild_qmuxd_socket:sock_file rw_file_perms;
+
+# Grant access to ims socket that is created by ims_qmid, ims_datad
+allow radio ims_socket:sock_file write;
+
+allow radio persist_file:dir search;
+allow radio persist_hiddenmenu_file:dir rw_dir_perms;
+allow radio persist_hiddenmenu_file:file create_file_perms;
+
+# Connect to ims service.
+allow radio ims:unix_stream_socket connectto;

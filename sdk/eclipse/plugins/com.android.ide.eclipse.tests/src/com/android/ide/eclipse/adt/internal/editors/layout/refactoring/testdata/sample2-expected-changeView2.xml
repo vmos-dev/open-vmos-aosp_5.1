@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+    <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+    <RelativeLayout android:layout_height="match_parent" android:id="@+id/relativeLayout1" android:layout_width="match_parent">
+        <Button android:layout_width="wrap_content" android:layout_alignParentLeft="true" android:id="@+id/button2" android:layout_height="wrap_content" android:text="Button"></Button>
+        <ImageButton android:layout_width="wrap_content" android:id="@+id/ImageButton1" android:layout_below="@+id/button2" android:layout_height="wrap_content" android:text="Button" android:layout_toRightOf="@+id/button2"></ImageButton>
+        <Button android:layout_width="wrap_content" android:id="@+id/button4" android:layout_below="@+id/ImageButton1" android:layout_height="wrap_content" android:text="Button" android:layout_toRightOf="@+id/ImageButton1"></Button>
+        <CheckBox android:layout_width="wrap_content" android:layout_below="@+id/button4" android:id="@+id/checkBox1" android:layout_height="wrap_content" android:text="CheckBox" android:layout_toLeftOf="@+id/button4"></CheckBox>
+        <ImageButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Button" android:id="@+id/ImageButton2" android:layout_alignParentRight="true"></ImageButton>
+    </RelativeLayout>
+</LinearLayout>
+
+

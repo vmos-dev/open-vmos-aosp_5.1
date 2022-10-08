@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:customprefix="http://schemas.android.com/apk/res/android" customprefix:id="@+id/newlinear" customprefix:orientation="vertical" customprefix:layout_width="match_parent" customprefix:layout_height="match_parent">
+    <ImageView customprefix:id="@+id/android_logo" customprefix:layout_width="wrap_content" 
+         customprefix:layout_height="wrap_content" customprefix:src="@drawable/android_button" customprefix:focusable="false" customprefix:clickable="false" customprefix:layout_weight="1.0" />
+    <Button customprefix:text="Button" customprefix:id="@+id/button1" customprefix:layout_width="wrap_content" customprefix:layout_height="wrap_content"></Button>
+    <Button customprefix:text="Button" customprefix:id="@+id/button2" customprefix:layout_width="wrap_content" customprefix:layout_height="wrap_content"></Button>
+</LinearLayout>
+

@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for [^false] selecting true:
+@@ -13 +13
+-         <item name="android:alwaysDrawnWithCache">  ^false  </item>
++         <item name="android:alwaysDrawnWithCache">  true^</item>

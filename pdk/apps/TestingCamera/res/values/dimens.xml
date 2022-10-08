@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="horiz_rule_top_margin">8dp</dimen>
+    <dimen name="horiz_rule_btm_margin">4dp</dimen>
+    <item format="integer" name="preview_only_weight" type="integer">6</item>
+    <item format="integer" name="preview_with_callback_weight" type="integer">3</item>
+</resources>

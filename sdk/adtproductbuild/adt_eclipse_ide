@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Placeholder launcher script for the ADT Eclipse IDE."
+exit 1

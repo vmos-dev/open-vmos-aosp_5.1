@@ -1,0 +1,44 @@
+/dev/mali0              u:object_r:gpu_device:s0
+
+/dev/bcm2079x           u:object_r:nfc_device:s0
+/dev/ttySAC0            u:object_r:hci_attach_dev:s0
+/dev/ttySAC1            u:object_r:gps_device:s0
+/dev/s5p-smem           u:object_r:secmem_device:s0
+/dev/ump                u:object_r:ump_device:s0
+
+/dev/mobicore           u:object_r:tee_device:s0
+/dev/mobicore-user      u:object_r:tee_device:s0
+
+/dev/v4l-subdev[0-9]*   u:object_r:video_device:s0
+/dev/media0             u:object_r:video_device:s0
+/dev/media1             u:object_r:video_device:s0
+
+/dev/video16            u:object_r:video_device:s0
+/dev/video17            u:object_r:video_device:s0
+/dev/video18            u:object_r:video_device:s0
+/dev/video19            u:object_r:video_device:s0
+
+/dev/fimg2d             u:object_r:video_device:s0
+
+/dev/video40            u:object_r:camera_device:s0
+/dev/video41            u:object_r:camera_device:s0
+/dev/video42            u:object_r:camera_device:s0
+/dev/video43            u:object_r:camera_device:s0
+/dev/video44            u:object_r:camera_device:s0
+/dev/media2             u:object_r:camera_device:s0
+
+/data/\.gps\.interface\.pipe\.to_gpsd	u:object_r:gps_data_file:s0
+/data/\.gps\.interface\.pipe\.to_jni	u:object_r:gps_data_file:s0
+
+/data/app/tlcd_sock     u:object_r:drmserver_socket:s0
+
+/data/nfc(/.*)?         u:object_r:nfc_data_file:s0
+
+/factory(/.*)?          u:object_r:efs_file:s0
+/factory/bluetooth(/.*)?        u:object_r:bluetooth_efs_file:s0
+
+/system/bin/mcDriverDaemon  --  u:object_r:tee_exec:s0
+
+/sys/devices/platform/bcm43241_bluetooth/rfkill/rfkill0/state -- u:object_r:sysfs_bluetooth_writable:s0
+/sys/devices/platform/bcm43241_bluetooth/rfkill/rfkill0/type -- u:object_r:sysfs_bluetooth_writable:s0
+/sys/devices/virtual/power_supply/manta-battery/charge_enabled u:object_r:sysfs_charge_enabled:s0

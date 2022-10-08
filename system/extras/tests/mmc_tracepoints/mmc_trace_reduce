@@ -1,0 +1,152 @@
+#!/bin/bash
+
+# TO DO
+#   This should be re-written in python.
+
+# Complain about dereferencing unset variables
+set -u
+typeset -i STARTTIME ENDTIME DURATION START_SEC START_USEC DUR_SEC DUR_USEC
+
+if [ "$#" -ne 1 ]
+then
+    echo "Usage: mmc_trace_reduce <trace_file>" >&2
+    exit 1
+fi
+
+exec < "$1"
+
+SAVED_START_LINE=""
+
+while read LINE
+do
+    # Skip comment lines
+    if [ -z "${LINE###*}" ]
+    then
+        continue
+    fi
+
+    # Fix up lines with nuisance spaces
+    LINE=${LINE/AsyncTask /AsyncTask-}
+
+    set $LINE
+
+    if [ "${5##*mmc_blk_*_}" = "start:" ]
+    then
+        if [ ! -z "$SAVED_START_LINE" ]
+        then
+            echo "Ignoring consecutive start line" >&2
+            continue
+        fi
+        SAVED_START_LINE="$LINE"
+
+        # Found a start line.  Extract the interesting bits
+        TMP=${4%:}
+        START_SEC="10#${TMP%%.*}"
+        STARTTIME=START_SEC*1000000
+        START_USEC="10#${TMP##*.}"
+        STARTTIME=STARTTIME+START_USEC
+
+        STARTPARMS="$6"
+        STARTCMD=${STARTPARMS%%,addr=*}
+        STARTCMD=${STARTCMD##*cmd=}
+        STARTADDR=${STARTPARMS%%,size=*}
+        STARTADDR=${STARTADDR##*addr=}
+        STARTSIZE=${STARTPARMS##*size=}
+
+    elif [ "${5##*mmc_blk_*_}" = "end:" ]
+    then
+        # Found an end line. Extract the interesting bits,
+        # then make sure it matches with the saved start line,
+        # Finally, do the math and emit a single reduced line
+        TMP=${4%:}
+        ENDTIME="${TMP%%.*}"
+        ENDTIME=ENDTIME*1000000
+        ENDTIME=ENDTIME+10#${TMP##*.}
+
+        ENDPARMS="$6"
+        ENDCMD=${ENDPARMS%%,addr=*}
+        ENDCMD=${ENDCMD##*cmd=}
+        ENDADDR=${ENDPARMS%%,size=*}
+        ENDADDR=${ENDADDR##*addr=}
+        ENDSIZE=${ENDPARMS##*size=}
+
+        if [ "$ENDCMD" != "$STARTCMD" ]
+        then
+            echo "End cmd doesn't match start cmd, ignoring both" >&2
+            SAVED_START_LINE=""
+            continue
+        fi
+        if [ "$ENDADDR" != "$STARTADDR" ]
+        then
+            echo "End addr doesn't match start addr, ignoring both" >&2
+            SAVED_START_LINE=""
+            continue
+        fi
+        if [ "$ENDSIZE" != "$STARTSIZE" ]
+        then
+            echo "End size doesn't match start size, ignoring both" >&2
+            SAVED_START_LINE=""
+            continue
+        fi
+
+        # Turn the command number into a command the flash analysis tool
+        # understands.  The tool doesn't differentiate between the different
+        # forms erase, so just emit "discard" for all of them.  Also, ignore
+        # the secure_trim2 and sanitize commands as the tool doesn't know
+        # about them either.
+        if [ "$ENDCMD" -eq 18 ]
+        then
+            ENDCMD="read"
+        elif [ "$ENDCMD" -eq 25 ]
+        then
+            ENDCMD="write"
+        elif [ "$ENDCMD" -eq 32 ]
+        then
+            ENDCMD="flush"
+            continue
+        elif [ "$ENDCMD" -eq 0 ]
+        then
+            ENDCMD="discard"
+        elif [ "$ENDCMD" -eq 1 ]
+        then
+            ENDCMD="discard"
+        elif [ "$ENDCMD" -eq 3 ]
+        then
+            ENDCMD="discard"
+        elif [ "$ENDCMD" -eq 2147483648 ] # 0x80000000
+        then
+            ENDCMD="discard"
+        elif [ "$ENDCMD" -eq 2147483649 ] # 0x80000001
+        then
+            ENDCMD="discard"
+        elif [ "$ENDCMD" -eq 2147516416 ] # 0x80008000
+        then
+            # Ignore, as the analysis tool doesn't deal with this
+            # ENDCMD="secure_trim2"
+            SAVED_START_LINE=""
+            continue
+        elif [ "$ENDCMD" -eq 165 ]
+        then
+            # Ignore, as the analysis tool doesn't deal with this
+            # ENDCMD="sanitize"
+            SAVED_START_LINE=""
+            continue
+        else
+            echo "Unrecognized command $ENDCMD, ignoring" >&2
+            SAVED_START_LINE=""
+            continue
+        fi
+
+        DURATION=ENDTIME-STARTTIME
+        DUR_SEC=DURATION/1000000
+        DUR_USEC=DURATION%1000000
+
+        printf "$%s,%s,%s,%d.%06d,%d.%06d\n" "$ENDCMD" "$ENDADDR" "$ENDSIZE" "$START_SEC" "$START_USEC" "$DUR_SEC" "$DUR_USEC"
+
+        SAVED_START_LINE=""
+    fi
+
+    # Ignore unknown lines and continue
+
+done
+

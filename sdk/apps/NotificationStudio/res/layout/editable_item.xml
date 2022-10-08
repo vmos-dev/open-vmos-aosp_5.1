@@ -1,0 +1,111 @@
+<!--
+  Copyright 2012 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_item_text"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/editor_inset" >
+
+    <TextView
+        android:id="@+id/caption"
+        android:layout_width="@dimen/editor_caption_width"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/caption_padding_bottom"
+        android:paddingTop="@dimen/caption_padding_top"
+        android:textSize="@dimen/editor_text_size" />
+
+    <EditText
+        android:id="@+id/text_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/caption"
+        android:layout_toRightOf="@id/caption"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:paddingTop="0dp"
+        android:textSize="@dimen/editor_text_size"
+        android:visibility="gone" />
+
+    <View
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+    <ViewStub
+        android:id="@+id/boolean_editor_stub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/caption"
+        android:layout_toRightOf="@id/caption"
+        android:textSize="@dimen/editor_text_size"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/drop_down_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/caption"
+        android:layout_toRightOf="@id/caption"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:visibility="gone" />
+
+    <HorizontalScrollView
+        android:id="@+id/icon_editor_scroller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/caption"
+        android:scrollbars="none"
+        android:visibility="gone" >
+
+        <LinearLayout
+            android:id="@+id/icon_editor_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/date_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/caption"
+        android:layout_toRightOf="@id/caption"
+        android:textSize="@dimen/editor_text_size"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/time_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/caption"
+        android:layout_toRightOf="@id/date_button"
+        android:textSize="@dimen/editor_text_size"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/reset_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/caption"
+        android:layout_toRightOf="@id/time_button"
+        android:text="@string/now"
+        android:textSize="@dimen/editor_text_size"
+        android:visibility="gone" />
+
+</RelativeLayout>

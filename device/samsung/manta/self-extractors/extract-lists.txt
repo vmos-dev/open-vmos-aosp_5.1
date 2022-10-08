@@ -1,0 +1,33 @@
+  audience)
+    TO_EXTRACT="\
+            system/vendor/firmware/es305_fw.bin \
+            "
+    ;;
+  broadcom)
+    TO_EXTRACT="\
+            system/vendor/firmware/bcm2079x_firmware.ncd \
+            system/vendor/firmware/bcm2079x_pre_firmware.ncd \
+            system/vendor/firmware/bcm43241.hcd \
+            "
+    ;;
+  samsung)
+    TO_EXTRACT="\
+            system/vendor/firmware/fimc_is_fw.bin \
+            system/vendor/firmware/fimc_is_fw2.bin \
+            system/vendor/firmware/maxtouch.fw \
+            system/vendor/firmware/mfc_fw.bin \
+            system/vendor/firmware/setfile.bin \
+            system/vendor/firmware/setfile_4e5.bin \
+            system/vendor/firmware/setfile_6a3.bin \
+            system/vendor/lib/egl/libGLES_mali.so \
+            system/vendor/lib/libdrmdecrypt.so \
+            system/vendor/lib/libmalicore.bc \
+            system/vendor/lib/libRSDriverArm.so \
+            system/vendor/lib/libbccArm.so \
+            system/vendor/lib/libstagefright_hdcp.so \
+            system/vendor/secapp/00060308060501020000000000000000.tlbin \
+            system/vendor/secapp/020a0000000000000000000000000000.drbin \
+            system/vendor/secapp/07060000000000000000000000000000.tlbin \
+            system/vendor/secapp/ffffffff000000000000000000000005.tlbin \
+            "
+    ;;

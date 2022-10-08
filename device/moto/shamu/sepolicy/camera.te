@@ -1,0 +1,31 @@
+# Qualcomm MSM camera
+type camera, domain;
+type camera_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(camera)
+
+allow camera self:process execmem;
+
+# Interact with other media devices
+allow camera camera_device:dir search;
+allow camera { gpu_device video_device camera_device }:chr_file rw_file_perms;
+allow camera { surfaceflinger mediaserver }:fd use;
+
+# Connect to sensor socket (/dev/sensor/sensor_ctl_socket)
+unix_socket_connect(camera, sensors, sensors)
+allow camera sensors_socket:sock_file read;
+
+allow camera sensors_device:chr_file rw_file_perms;
+
+# Create front and back camera sockets (/data/cam_socket[23])
+# TODO: create these sockets elsewhere, apps shouldn't be putting sockets
+# directly under /data.
+type_transition camera system_data_file:sock_file camera_socket "cam_socket2";
+type_transition camera system_data_file:sock_file camera_socket "cam_socket3";
+allow camera camera_socket:sock_file { create unlink };
+allow camera system_data_file:dir w_dir_perms;
+allow camera system_data_file:sock_file unlink;
+
+# TODO b/17015082
+allow camera shell_data_file:dir search;

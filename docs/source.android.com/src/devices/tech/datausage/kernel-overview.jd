@@ -1,0 +1,51 @@
+page.title=Overview
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>The per-application/delegated data usage monitoring and tracking
+functionality relies on the xt_qtaguid module in the android-3.0 Linux
+kernel (<code>kernel/net/netfilter/xt_qtaguid</code>). The socket tagging
+functionality in the framework (<code>system/core/libcutils/qtaguid.c</code>)
+relies mainly on the existence of <code>/proc/net/xt_qtaguid/ctrl</code>
+interface exported by the <code>xt_qtaguid</code> kernel module.</p>
+<p>The <code>quota2</code> netfilter module (originally part of <code>xtables-addons</code>)
+allows the functionality to set named quota limits and was extended to
+support notifying userspace when certain limits are reached. Once the
+quota limit is reached, the <code>quota2</code> module discards all subsequent
+network traffic. The framework can also specify additional rules to
+restrict background data traffic for an application (refer to
+<code>com.android.server.NetworkManagementSocketTagger.setKernelCounterSet</code>
+and
+<code>android.net.NetworkPolicyManager.POLICY_REJECT_METERED_BACKGROUND</code>).</p>
+<h1 id="how-does-it-work">How does it work?</h1>
+<p>The <code>qtaguid</code> netfilter module tracks the network traffic on a
+per-socket basis for every application using the unique UID of the
+owning application.  There are two tag components associated with any
+socket in the system. The first is the UID which uniquely identifies
+the application which is responsible for the data transfer (Linux
+allows the ability to ascribe the ownership of each network socket to
+the UID of the calling application). The second tag component is used
+to support additional characterization of the traffic into application
+developer specified categories. Using these application level tags, an
+application can profile the traffic into several sub-categories.</p>
+<p>In the case of applications that provide network data transfer as a
+service, such as the download manager, media streaming service, etc,
+it is possible to attribute the ownership of the network data transfer
+to the UID of the requesting application using the
+<code>TrafficStats.setThreadStatsUid()</code> function call. The caller must hold
+the “<code>android.permission.MODIFY_NETWORK_ACCOUNTING</code>” permission to
+re-assign the ownership of the network traffic.</p>

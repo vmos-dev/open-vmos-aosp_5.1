@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/GridLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="4"
+    android:orientation="horizontal" >
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_gravity="left"
+        android:text="FirstButton" >
+    </Button>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_column="0"
+        android:layout_gravity="left"
+        android:text="SecondButton" >
+    </Button>
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_gravity="left"
+        android:text="ThirdButton" >
+    </Button>
+
+    <CheckBox
+        android:id="@+id/checkBox1"
+        android:layout_gravity="left"
+        android:text="CheckBox" >
+    </CheckBox>
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_gravity="fill_horizontal"
+        android:text="FourthButton" >
+    </Button>
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_column="0"
+        android:layout_gravity="right"
+        android:text="FifthButton" >
+    </Button>
+
+    <Button
+        android:id="@+id/button6"
+        android:layout_column="0"
+        android:layout_gravity="left"
+        android:text="Button" >
+    </Button>
+
+    <Space
+        android:layout_column="3"
+        android:layout_gravity="fill_vertical"
+        android:layout_row="5" />
+
+</GridLayout>

@@ -1,0 +1,4 @@
+Code completion in fragmentlayout.xml for class="^com selecting android.app.ListFragment:
+@@ -16 +16
+-         <fragment class="^com.android.eclipse.tests.TestFragment"
++         <fragment class="android.app.ListFragment^"

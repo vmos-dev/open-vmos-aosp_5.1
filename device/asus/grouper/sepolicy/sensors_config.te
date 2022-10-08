@@ -1,0 +1,33 @@
+##########
+# sensors_config: load calibration files.
+##########
+type sensors_config, domain;
+type sensors_config_exec, exec_type, file_type;
+type sensors_data_file, file_type, data_file_type;
+init_daemon_domain(sensors_config)
+file_type_auto_trans(sensors_config, system_data_file, sensors_data_file)
+
+# Execute toolbox commands
+allow sensors_config shell_exec:file rx_file_perms;
+allow sensors_config system_file:file execute_no_trans;
+
+# Mount /dev/block/platform/sdhci-tegra.3/by-name/PER
+allow sensors_config sensors_data_file:dir mounton;
+allow sensors_config sdcard_external:filesystem { mount unmount };
+allow sensors_config { sdcard_external block_device }:dir search;
+
+# Read from the mounted PER partition
+allow sensors_config sdcard_external:file r_file_perms;
+
+# Need to chmod and chown files (/data/lightsensor, /data/sensors)
+allow sensors_config self:capability { chown fowner };
+
+# Checked as a side effect on the chmod (don't allow)
+dontaudit sensors_config self:capability { fsetid };
+
+# Needed for mount/umount
+allow sensors_config self:capability sys_admin;
+
+# Tries to delete /data/calibration (don't allow)
+dontaudit sensors_config system_data_file:dir remove_name;
+dontaudit sensors_config self:capability dac_override;

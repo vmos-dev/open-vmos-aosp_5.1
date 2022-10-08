@@ -1,0 +1,549 @@
+# com.android.ide.eclipse.gltrace.glentries, v1
+# This file is a slightly processed version of $ANDROID_SRC/frameworks/base/opengl/libs/entries.in
+# The only differences are that the GL_ENTRY() text is removed, and all pointers are associated
+# with the data type as opposed to the variable name. e.g. "void *data" will is converted to
+# "void* data".
+void, eglCreateContext, int version, int context
+void, eglMakeCurrent, int context
+void, glActiveShaderProgramEXT, GLuint pipeline, GLuint program
+void, glActiveTexture, GLenum texture
+void, glAlphaFunc, GLenum func, GLclampf ref
+void, glAlphaFuncQCOM, GLenum func, GLclampf ref
+void, glAlphaFuncx, GLenum func, GLclampx ref
+void, glAlphaFuncxOES, GLenum func, GLclampx ref
+void, glAttachShader, GLuint program, GLuint shader
+void, glBeginPerfMonitorAMD, GLuint monitor
+void, glBeginQuery, GLenum target, GLuint id
+void, glBeginQueryEXT, GLenum target, GLuint id
+void, glBeginTransformFeedback, GLenum primitiveMode
+void, glBindAttribLocation, GLuint program, GLuint index, const GLchar* name
+void, glBindBuffer, GLenum target, GLuint buffer
+void, glBindBufferBase, GLenum target, GLuint index, GLuint buffer
+void, glBindBufferRange, GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size
+void, glBindFramebuffer, GLenum target, GLuint framebuffer
+void, glBindFramebufferOES, GLenum target, GLuint framebuffer
+void, glBindProgramPipelineEXT, GLuint pipeline
+void, glBindRenderbuffer, GLenum target, GLuint renderbuffer
+void, glBindRenderbufferOES, GLenum target, GLuint renderbuffer
+void, glBindSampler, GLuint unit, GLuint sampler
+void, glBindTexture, GLenum target, GLuint texture
+void, glBindTransformFeedback, GLenum target, GLuint id
+void, glBindVertexArray, GLuint array
+void, glBindVertexArrayOES, GLuint array
+void, glBlendColor, GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha
+void, glBlendEquation,  GLenum mode
+void, glBlendEquationOES, GLenum mode
+void, glBlendEquationSeparate, GLenum modeRGB, GLenum modeAlpha
+void, glBlendEquationSeparateOES, GLenum modeRGB, GLenum modeAlpha
+void, glBlendFunc, GLenum sfactor, GLenum dfactor
+void, glBlendFuncSeparate, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha
+void, glBlendFuncSeparateOES, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha
+void, glBlitFramebuffer, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter
+void, glBlitFramebufferANGLE, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter
+void, glBufferData, GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage
+void, glBufferSubData, GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data
+GLenum, glCheckFramebufferStatus, GLenum target
+GLenum, glCheckFramebufferStatusOES, GLenum target
+void, glClear, GLbitfield mask
+void, glClearBufferfi, GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil
+void, glClearBufferfv, GLenum buffer, GLint drawbuffer, const GLfloat* value
+void, glClearBufferiv, GLenum buffer, GLint drawbuffer, const GLint* value
+void, glClearBufferuiv, GLenum buffer, GLint drawbuffer, const GLuint* value
+void, glClearColor, GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha
+void, glClearColorx, GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha
+void, glClearColorxOES, GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha
+void, glClearDepthf, GLclampf depth
+void, glClearDepthfOES, GLclampf depth
+void, glClearDepthx, GLclampx depth
+void, glClearDepthxOES, GLclampx depth
+void, glClearStencil, GLint s
+void, glClientActiveTexture, GLenum texture
+GLenum, glClientWaitSync, GLsync sync, GLbitfield flags, GLuint64 timeout
+void, glClipPlanef, GLenum plane, const GLfloat* equation
+void, glClipPlanefIMG, GLenum p, const GLfloat* eqn
+void, glClipPlanefOES, GLenum plane, const GLfloat* equation
+void, glClipPlanex, GLenum plane, const GLfixed* equation
+void, glClipPlanexIMG, GLenum p, const GLfixed* eqn
+void, glClipPlanexOES, GLenum plane, const GLfixed* equation
+void, glColor4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha
+void, glColor4ub, GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha
+void, glColor4x, GLfixed red, GLfixed green, GLfixed blue, GLfixed alpha
+void, glColor4xOES, GLfixed red, GLfixed green, GLfixed blue, GLfixed alpha
+void, glColorMask, GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha
+void, glColorPointer, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glCompileShader, GLuint shader
+void, glCompressedTexImage2D, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data
+void, glCompressedTexImage3D, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid* data
+void, glCompressedTexImage3DOES, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid* data
+void, glCompressedTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid* data
+void, glCompressedTexSubImage3D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid* data
+void, glCompressedTexSubImage3DOES, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid* data
+void, glCopyBufferSubData, GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size
+void, glCopyTexImage2D, GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border
+void, glCopyTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height
+void, glCopyTexSubImage3D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height
+void, glCopyTexSubImage3DOES, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height
+void, glCoverageMaskNV, GLboolean mask
+void, glCoverageOperationNV, GLenum operation
+GLuint, glCreateProgram, void
+GLuint, glCreateShader, GLenum type
+GLuint, glCreateShaderProgramvEXT, GLenum type, GLsizei count, const GLchar** strings
+void, glCullFace, GLenum mode
+void, glCurrentPaletteMatrixOES, GLuint matrixpaletteindex
+void, glDeleteBuffers, GLsizei n, const GLuint* buffers
+void, glDeleteFencesNV, GLsizei n, const GLuint* fences
+void, glDeleteFramebuffers, GLsizei n, const GLuint* framebuffers
+void, glDeleteFramebuffersOES, GLsizei n, const GLuint* framebuffers
+void, glDeletePerfMonitorsAMD, GLsizei n, GLuint* monitors
+void, glDeleteProgram, GLuint program
+void, glDeleteProgramPipelinesEXT, GLsizei n, const GLuint* pipelines
+void, glDeleteQueries, GLsizei n, const GLuint* ids
+void, glDeleteQueriesEXT, GLsizei n, const GLuint* ids
+void, glDeleteRenderbuffers, GLsizei n, const GLuint* renderbuffers
+void, glDeleteRenderbuffersOES, GLsizei n, const GLuint* renderbuffers
+void, glDeleteSamplers, GLsizei count, const GLuint* samplers
+void, glDeleteShader, GLuint shader
+void, glDeleteSync, GLsync sync
+void, glDeleteTextures, GLsizei n, const GLuint* textures
+void, glDeleteTransformFeedbacks, GLsizei n, const GLuint* ids
+void, glDeleteVertexArrays, GLsizei n, const GLuint* arrays
+void, glDeleteVertexArraysOES, GLsizei n, const GLuint* arrays
+void, glDepthFunc, GLenum func
+void, glDepthMask, GLboolean flag
+void, glDepthRangef, GLclampf zNear, GLclampf zFar
+void, glDepthRangefOES, GLclampf zNear, GLclampf zFar
+void, glDepthRangex, GLclampx zNear, GLclampx zFar
+void, glDepthRangexOES, GLclampx zNear, GLclampx zFar
+void, glDetachShader, GLuint program, GLuint shader
+void, glDisable, GLenum cap
+void, glDisableClientState, GLenum array
+void, glDisableDriverControlQCOM, GLuint driverControl
+void, glDisableVertexAttribArray, GLuint index
+void, glDiscardFramebufferEXT, GLenum target, GLsizei numAttachments, const GLenum* attachments
+void, glDrawArrays, GLenum mode, GLint first, GLsizei count
+void, glDrawArraysInstanced, GLenum mode, GLint first, GLsizei count, GLsizei instanceCount
+void, glDrawBuffers, GLsizei n, const GLenum* bufs
+void, glDrawBuffersNV, GLsizei n, const GLenum* bufs
+void, glDrawElements, GLenum mode, GLsizei count, GLenum type, const GLvoid* indices
+void, glDrawElementsInstanced, GLenum mode, GLsizei count, GLenum type, const GLvoid* indices, GLsizei instanceCount
+void, glDrawRangeElements, GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid* indices
+void, glDrawTexfOES, GLfloat x, GLfloat y, GLfloat z, GLfloat width, GLfloat height
+void, glDrawTexfvOES, const GLfloat* coords
+void, glDrawTexiOES, GLint x, GLint y, GLint z, GLint width, GLint height
+void, glDrawTexivOES, const GLint* coords
+void, glDrawTexsOES, GLshort x, GLshort y, GLshort z, GLshort width, GLshort height
+void, glDrawTexsvOES, const GLshort* coords
+void, glDrawTexxOES, GLfixed x, GLfixed y, GLfixed z, GLfixed width, GLfixed height
+void, glDrawTexxvOES, const GLfixed* coords
+void, glEGLImageTargetRenderbufferStorageOES, GLenum target, GLeglImageOES image
+void, glEGLImageTargetTexture2DOES, GLenum target, GLeglImageOES image
+void, glEnable, GLenum cap
+void, glEnableClientState, GLenum array
+void, glEnableDriverControlQCOM, GLuint driverControl
+void, glEnableVertexAttribArray, GLuint index
+void, glEndPerfMonitorAMD, GLuint monitor
+void, glEndQuery, GLenum target
+void, glEndQueryEXT, GLenum target
+void, glEndTilingQCOM, GLbitfield preserveMask
+void, glEndTransformFeedback, void
+void, glExtGetBufferPointervQCOM, GLenum target, GLvoid** params
+void, glExtGetBuffersQCOM, GLuint* buffers, GLint maxBuffers, GLint* numBuffers
+void, glExtGetFramebuffersQCOM, GLuint* framebuffers, GLint maxFramebuffers, GLint* numFramebuffers
+void, glExtGetProgramBinarySourceQCOM, GLuint program, GLenum shadertype, GLchar* source, GLint* length
+void, glExtGetProgramsQCOM, GLuint* programs, GLint maxPrograms, GLint* numPrograms
+void, glExtGetRenderbuffersQCOM, GLuint* renderbuffers, GLint maxRenderbuffers, GLint* numRenderbuffers
+void, glExtGetShadersQCOM, GLuint* shaders, GLint maxShaders, GLint* numShaders
+void, glExtGetTexLevelParameterivQCOM, GLuint texture, GLenum face, GLint level, GLenum pname, GLint* params
+void, glExtGetTexSubImageQCOM, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, GLvoid* texels
+void, glExtGetTexturesQCOM, GLuint* textures, GLint maxTextures, GLint* numTextures
+GLboolean, glExtIsProgramBinaryQCOM, GLuint program
+void, glExtTexObjectStateOverrideiQCOM, GLenum target, GLenum pname, GLint param
+GLsync, glFenceSync, GLenum condition, GLbitfield flags
+void, glFinish, void
+void, glFinishFenceNV, GLuint fence
+void, glFlush, void
+void, glFlushMappedBufferRange, GLenum target, GLintptr offset, GLsizeiptr length
+void, glFogf, GLenum pname, GLfloat param
+void, glFogfv, GLenum pname, const GLfloat* params
+void, glFogx, GLenum pname, GLfixed param
+void, glFogxOES, GLenum pname, GLfixed param
+void, glFogxv, GLenum pname, const GLfixed* params
+void, glFogxvOES, GLenum pname, const GLfixed* params
+void, glFramebufferRenderbuffer, GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer
+void, glFramebufferRenderbufferOES, GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer
+void, glFramebufferTexture2D, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level
+void, glFramebufferTexture2DMultisampleEXT, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples
+void, glFramebufferTexture2DMultisampleIMG, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples
+void, glFramebufferTexture2DOES, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level
+void, glFramebufferTexture3DOES, GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset
+void, glFramebufferTextureLayer, GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer
+void, glFrontFace, GLenum mode
+void, glFrustumf, GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar
+void, glFrustumfOES, GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar
+void, glFrustumx, GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar
+void, glFrustumxOES, GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar
+void, glGenBuffers, GLsizei n, GLuint* buffers
+void, glGenFencesNV, GLsizei n, GLuint* fences
+void, glGenFramebuffers, GLsizei n, GLuint* framebuffers
+void, glGenFramebuffersOES, GLsizei n, GLuint* framebuffers
+void, glGenPerfMonitorsAMD, GLsizei n, GLuint* monitors
+void, glGenProgramPipelinesEXT, GLsizei n, GLuint* pipelines
+void, glGenQueries, GLsizei n, GLuint* ids
+void, glGenQueriesEXT, GLsizei n, GLuint* ids
+void, glGenRenderbuffers, GLsizei n, GLuint* renderbuffers
+void, glGenRenderbuffersOES, GLsizei n, GLuint* renderbuffers
+void, glGenSamplers, GLsizei count, GLuint* samplers
+void, glGenTextures, GLsizei n, GLuint* textures
+void, glGenTransformFeedbacks, GLsizei n, GLuint* ids
+void, glGenVertexArrays, GLsizei n, GLuint* arrays
+void, glGenVertexArraysOES, GLsizei n, GLuint* arrays
+void, glGenerateMipmap, GLenum target
+void, glGenerateMipmapOES, GLenum target
+void, glGetActiveAttrib, GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, GLchar* name
+void, glGetActiveUniform, GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, GLchar* name
+void, glGetActiveUniformBlockName, GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei* length, GLchar* uniformBlockName
+void, glGetActiveUniformBlockiv, GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint* params
+void, glGetActiveUniformsiv, GLuint program, GLsizei uniformCount, const GLuint* uniformIndices, GLenum pname, GLint* params
+void, glGetAttachedShaders, GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders
+GLint, glGetAttribLocation, GLuint program, const GLchar* name
+void, glGetBooleanv, GLenum pname, GLboolean* params
+void, glGetBufferParameteri64v, GLenum target, GLenum pname, GLint64* params
+void, glGetBufferParameteriv, GLenum target, GLenum pname, GLint* params
+void, glGetBufferPointerv, GLenum target, GLenum pname, GLvoid** params
+void, glGetBufferPointervOES, GLenum target, GLenum pname, GLvoid**  params
+void, glGetClipPlanef, GLenum pname, GLfloat eqn[4]
+void, glGetClipPlanefOES, GLenum pname, GLfloat eqn[4]
+void, glGetClipPlanex, GLenum pname, GLfixed eqn[4]
+void, glGetClipPlanexOES, GLenum pname, GLfixed eqn[4]
+void, glGetDriverControlStringQCOM, GLuint driverControl, GLsizei bufSize, GLsizei* length, GLchar* driverControlString
+void, glGetDriverControlsQCOM, GLint* num, GLsizei size, GLuint* driverControls
+GLenum, glGetError, void
+void, glGetFenceivNV, GLuint fence, GLenum pname, GLint* params
+void, glGetFixedv, GLenum pname, GLfixed* params
+void, glGetFixedvOES, GLenum pname, GLfixed* params
+void, glGetFloatv, GLenum pname, GLfloat* params
+GLint, glGetFragDataLocation, GLuint program, const GLchar* name
+void, glGetFramebufferAttachmentParameteriv, GLenum target, GLenum attachment, GLenum pname, GLint* params
+void, glGetFramebufferAttachmentParameterivOES, GLenum target, GLenum attachment, GLenum pname, GLint* params
+GLenum, glGetGraphicsResetStatusEXT, void
+void, glGetInteger64i_v, GLenum target, GLuint index, GLint64* data
+void, glGetInteger64v, GLenum pname, GLint64* params
+void, glGetIntegeri_v, GLenum target, GLuint index, GLint* data
+void, glGetIntegerv, GLenum pname, GLint* params
+void, glGetInternalformativ, GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint* params
+void, glGetLightfv, GLenum light, GLenum pname, GLfloat* params
+void, glGetLightxv, GLenum light, GLenum pname, GLfixed* params
+void, glGetLightxvOES, GLenum light, GLenum pname, GLfixed* params
+void, glGetMaterialfv, GLenum face, GLenum pname, GLfloat* params
+void, glGetMaterialxv, GLenum face, GLenum pname, GLfixed* params
+void, glGetMaterialxvOES, GLenum face, GLenum pname, GLfixed* params
+void, glGetObjectLabelEXT, GLenum type, GLuint object, GLsizei bufSize, GLsizei* length, GLchar* label
+void, glGetPerfMonitorCounterDataAMD, GLuint monitor, GLenum pname, GLsizei dataSize, GLuint* data, GLint* bytesWritten
+void, glGetPerfMonitorCounterInfoAMD, GLuint group, GLuint counter, GLenum pname, GLvoid* data
+void, glGetPerfMonitorCounterStringAMD, GLuint group, GLuint counter, GLsizei bufSize, GLsizei* length, GLchar* counterString
+void, glGetPerfMonitorCountersAMD, GLuint group, GLint* numCounters, GLint* maxActiveCounters, GLsizei counterSize, GLuint* counters
+void, glGetPerfMonitorGroupStringAMD, GLuint group, GLsizei bufSize, GLsizei* length, GLchar* groupString
+void, glGetPerfMonitorGroupsAMD, GLint* numGroups, GLsizei groupsSize, GLuint* groups
+void, glGetPointerv, GLenum pname, GLvoid** params
+void, glGetProgramBinary, GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, GLvoid* binary
+void, glGetProgramBinaryOES, GLuint program, GLsizei bufSize, GLsizei* length, GLenum* binaryFormat, GLvoid* binary
+void, glGetProgramInfoLog, GLuint program, GLsizei bufsize, GLsizei* length, GLchar* infolog
+void, glGetProgramPipelineInfoLogEXT, GLuint pipeline, GLsizei bufSize, GLsizei* length, GLchar* infoLog
+void, glGetProgramPipelineivEXT, GLuint pipeline, GLenum pname, GLint* params
+void, glGetProgramiv, GLuint program, GLenum pname, GLint* params
+void, glGetQueryObjectuiv, GLuint id, GLenum pname, GLuint* params
+void, glGetQueryObjectuivEXT, GLuint id, GLenum pname, GLuint* params
+void, glGetQueryiv, GLenum target, GLenum pname, GLint* params
+void, glGetQueryivEXT, GLenum target, GLenum pname, GLint* params
+void, glGetRenderbufferParameteriv, GLenum target, GLenum pname, GLint* params
+void, glGetRenderbufferParameterivOES, GLenum target, GLenum pname, GLint* params
+void, glGetSamplerParameterfv, GLuint sampler, GLenum pname, GLfloat* params
+void, glGetSamplerParameteriv, GLuint sampler, GLenum pname, GLint* params
+void, glGetShaderInfoLog, GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* infolog
+void, glGetShaderPrecisionFormat, GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision
+void, glGetShaderSource, GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* source
+void, glGetShaderiv, GLuint shader, GLenum pname, GLint* params
+const GLchar* , glGetString, GLenum name
+const GLubyte*, glGetStringi, GLenum name, GLuint index
+void, glGetSynciv, GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length, GLint* values
+void, glGetTexEnvfv, GLenum env, GLenum pname, GLfloat* params
+void, glGetTexEnviv, GLenum env, GLenum pname, GLint* params
+void, glGetTexEnvxv, GLenum env, GLenum pname, GLfixed* params
+void, glGetTexEnvxvOES, GLenum env, GLenum pname, GLfixed* params
+void, glGetTexGenfvOES, GLenum coord, GLenum pname, GLfloat* params
+void, glGetTexGenivOES, GLenum coord, GLenum pname, GLint* params
+void, glGetTexGenxvOES, GLenum coord, GLenum pname, GLfixed* params
+void, glGetTexParameterfv, GLenum target, GLenum pname, GLfloat* params
+void, glGetTexParameteriv, GLenum target, GLenum pname, GLint* params
+void, glGetTexParameterxv, GLenum target, GLenum pname, GLfixed* params
+void, glGetTexParameterxvOES, GLenum target, GLenum pname, GLfixed* params
+void, glGetTransformFeedbackVarying, GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLsizei* size, GLenum* type, GLchar* name
+GLuint, glGetUniformBlockIndex, GLuint program, const GLchar* uniformBlockName
+void, glGetUniformIndices, GLuint program, GLsizei uniformCount, const GLchar* const* uniformNames, GLuint* uniformIndices
+GLint, glGetUniformLocation, GLuint program, const GLchar* name
+void, glGetUniformfv, GLuint program, GLint location, GLfloat* params
+void, glGetUniformiv, GLuint program, GLint location, GLint* params
+void, glGetUniformuiv, GLuint program, GLint location, GLuint* params
+void, glGetVertexAttribIiv, GLuint index, GLenum pname, GLint* params
+void, glGetVertexAttribIuiv, GLuint index, GLenum pname, GLuint* params
+void, glGetVertexAttribPointerv, GLuint index, GLenum pname, GLvoid** pointer
+void, glGetVertexAttribfv, GLuint index, GLenum pname, GLfloat* params
+void, glGetVertexAttribiv, GLuint index, GLenum pname, GLint* params
+void, glGetnUniformfvEXT, GLuint program, GLint location, GLsizei bufSize, float* params
+void, glGetnUniformivEXT, GLuint program, GLint location, GLsizei bufSize, GLint* params
+void, glHint, GLenum target, GLenum mode
+void, glInsertEventMarkerEXT, GLsizei length, const GLchar* marker
+void, glInvalidateFramebuffer, GLenum target, GLsizei numAttachments, const GLenum* attachments
+void, glInvalidateSubFramebuffer, GLenum target, GLsizei numAttachments, const GLenum* attachments, GLint x, GLint y, GLsizei width, GLsizei height
+GLboolean, glIsBuffer, GLuint buffer
+GLboolean, glIsEnabled, GLenum cap
+GLboolean, glIsFenceNV, GLuint fence
+GLboolean, glIsFramebuffer, GLuint framebuffer
+GLboolean, glIsFramebufferOES, GLuint framebuffer
+GLboolean, glIsProgram, GLuint program
+GLboolean, glIsProgramPipelineEXT, GLuint pipeline
+GLboolean, glIsQuery, GLuint id
+GLboolean, glIsQueryEXT, GLuint id
+GLboolean, glIsRenderbuffer, GLuint renderbuffer
+GLboolean, glIsRenderbufferOES, GLuint renderbuffer
+GLboolean, glIsSampler, GLuint sampler
+GLboolean, glIsShader, GLuint shader
+GLboolean, glIsSync, GLsync sync
+GLboolean, glIsTexture, GLuint texture
+GLboolean, glIsTransformFeedback, GLuint id
+GLboolean, glIsVertexArray, GLuint array
+GLboolean, glIsVertexArrayOES, GLuint array
+void, glLabelObjectEXT, GLenum type, GLuint object, GLsizei length, const GLchar* label
+void, glLightModelf, GLenum pname, GLfloat param
+void, glLightModelfv, GLenum pname, const GLfloat* params
+void, glLightModelx, GLenum pname, GLfixed param
+void, glLightModelxOES, GLenum pname, GLfixed param
+void, glLightModelxv, GLenum pname, const GLfixed* params
+void, glLightModelxvOES, GLenum pname, const GLfixed* params
+void, glLightf, GLenum light, GLenum pname, GLfloat param
+void, glLightfv, GLenum light, GLenum pname, const GLfloat* params
+void, glLightx, GLenum light, GLenum pname, GLfixed param
+void, glLightxOES, GLenum light, GLenum pname, GLfixed param
+void, glLightxv, GLenum light, GLenum pname, const GLfixed* params
+void, glLightxvOES, GLenum light, GLenum pname, const GLfixed* params
+void, glLineWidth, GLfloat width
+void, glLineWidthx, GLfixed width
+void, glLineWidthxOES, GLfixed width
+void, glLinkProgram, GLuint program
+void, glLoadIdentity, void
+void, glLoadMatrixf, const GLfloat* m
+void, glLoadMatrixx, const GLfixed* m
+void, glLoadMatrixxOES, const GLfixed* m
+void, glLoadPaletteFromModelViewMatrixOES, void
+void, glLogicOp, GLenum opcode
+void*, glMapBufferOES, GLenum target, GLenum access
+GLvoid*, glMapBufferRange, GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access
+void, glMaterialf, GLenum face, GLenum pname, GLfloat param
+void, glMaterialfv, GLenum face, GLenum pname, const GLfloat* params
+void, glMaterialx, GLenum face, GLenum pname, GLfixed param
+void, glMaterialxOES, GLenum face, GLenum pname, GLfixed param
+void, glMaterialxv, GLenum face, GLenum pname, const GLfixed* params
+void, glMaterialxvOES, GLenum face, GLenum pname, const GLfixed* params
+void, glMatrixIndexPointerOES, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glMatrixMode, GLenum mode
+void, glMultMatrixf, const GLfloat* m
+void, glMultMatrixx, const GLfixed* m
+void, glMultMatrixxOES, const GLfixed* m
+void, glMultiDrawArraysEXT, GLenum mode, GLint* first, GLsizei* count, GLsizei primcount
+void, glMultiDrawElementsEXT, GLenum mode, const GLsizei* count, GLenum type, const GLvoid** indices, GLsizei primcount
+void, glMultiTexCoord4f, GLenum target, GLfloat s, GLfloat t, GLfloat r, GLfloat q
+void, glMultiTexCoord4x, GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q
+void, glMultiTexCoord4xOES, GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q
+void, glNormal3f, GLfloat nx, GLfloat ny, GLfloat nz
+void, glNormal3x, GLfixed nx, GLfixed ny, GLfixed nz
+void, glNormal3xOES, GLfixed nx, GLfixed ny, GLfixed nz
+void, glNormalPointer, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glOrthof, GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar
+void, glOrthofOES, GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar
+void, glOrthox, GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar
+void, glOrthoxOES, GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar
+void, glPauseTransformFeedback, void
+void, glPixelStorei, GLenum pname, GLint param
+void, glPointParameterf, GLenum pname, GLfloat param
+void, glPointParameterfv, GLenum pname, const GLfloat* params
+void, glPointParameterx, GLenum pname, GLfixed param
+void, glPointParameterxOES, GLenum pname, GLfixed param
+void, glPointParameterxv, GLenum pname, const GLfixed* params
+void, glPointParameterxvOES, GLenum pname, const GLfixed* params
+void, glPointSize, GLfloat size
+void, glPointSizePointerOES, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glPointSizex, GLfixed size
+void, glPointSizexOES, GLfixed size
+void, glPolygonOffset, GLfloat factor, GLfloat units
+void, glPolygonOffsetx, GLfixed factor, GLfixed units
+void, glPolygonOffsetxOES, GLfixed factor, GLfixed units
+void, glPopGroupMarkerEXT, void
+void, glPopMatrix, void
+void, glProgramBinary, GLuint program, GLenum binaryFormat, const GLvoid* binary, GLsizei length
+void, glProgramBinaryOES, GLuint program, GLenum binaryFormat, const GLvoid* binary, GLint length
+void, glProgramParameteri, GLuint program, GLenum pname, GLint value
+void, glProgramParameteriEXT, GLuint program, GLenum pname, GLint value
+void, glProgramUniform1fEXT, GLuint program, GLint location, GLfloat x
+void, glProgramUniform1fvEXT, GLuint program, GLint location, GLsizei count, const GLfloat* value
+void, glProgramUniform1iEXT, GLuint program, GLint location, GLint x
+void, glProgramUniform1ivEXT, GLuint program, GLint location, GLsizei count, const GLint* value
+void, glProgramUniform2fEXT, GLuint program, GLint location, GLfloat x, GLfloat y
+void, glProgramUniform2fvEXT, GLuint program, GLint location, GLsizei count, const GLfloat* value
+void, glProgramUniform2iEXT, GLuint program, GLint location, GLint x, GLint y
+void, glProgramUniform2ivEXT, GLuint program, GLint location, GLsizei count, const GLint* value
+void, glProgramUniform3fEXT, GLuint program, GLint location, GLfloat x, GLfloat y, GLfloat z
+void, glProgramUniform3fvEXT, GLuint program, GLint location, GLsizei count, const GLfloat* value
+void, glProgramUniform3iEXT, GLuint program, GLint location, GLint x, GLint y, GLint z
+void, glProgramUniform3ivEXT, GLuint program, GLint location, GLsizei count, const GLint* value
+void, glProgramUniform4fEXT, GLuint program, GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w
+void, glProgramUniform4fvEXT, GLuint program, GLint location, GLsizei count, const GLfloat* value
+void, glProgramUniform4iEXT, GLuint program, GLint location, GLint x, GLint y, GLint z, GLint w
+void, glProgramUniform4ivEXT, GLuint program, GLint location, GLsizei count, const GLint* value
+void, glProgramUniformMatrix2fvEXT, GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glProgramUniformMatrix3fvEXT, GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glProgramUniformMatrix4fvEXT, GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glPushGroupMarkerEXT, GLsizei length, const GLchar* marker
+void, glPushMatrix, void
+GLbitfield, glQueryMatrixxOES, GLfixed mantissa[16], GLint exponent[16]
+void, glReadBuffer, GLenum mode
+void, glReadBufferNV, GLenum mode
+void, glReadPixels, GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels
+void, glReadnPixelsEXT, GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void* data
+void, glReleaseShaderCompiler, void
+void, glRenderbufferStorage, GLenum target, GLenum internalformat, GLsizei width, GLsizei height
+void, glRenderbufferStorageMultisample, GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height
+void, glRenderbufferStorageMultisampleANGLE, GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height
+void, glRenderbufferStorageMultisampleAPPLE, GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height
+void, glRenderbufferStorageMultisampleEXT, GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height
+void, glRenderbufferStorageMultisampleIMG, GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height
+void, glRenderbufferStorageOES, GLenum target, GLenum internalformat, GLsizei width, GLsizei height
+void, glResolveMultisampleFramebufferAPPLE, void
+void, glResumeTransformFeedback, void
+void, glRotatef, GLfloat angle, GLfloat x, GLfloat y, GLfloat z
+void, glRotatex, GLfixed angle, GLfixed x, GLfixed y, GLfixed z
+void, glRotatexOES, GLfixed angle, GLfixed x, GLfixed y, GLfixed z
+void, glSampleCoverage, GLclampf value, GLboolean invert
+void, glSampleCoveragex, GLclampx value, GLboolean invert
+void, glSampleCoveragexOES, GLclampx value, GLboolean invert
+void, glSamplerParameterf, GLuint sampler, GLenum pname, GLfloat param
+void, glSamplerParameterfv, GLuint sampler, GLenum pname, const GLfloat* param
+void, glSamplerParameteri, GLuint sampler, GLenum pname, GLint param
+void, glSamplerParameteriv, GLuint sampler, GLenum pname, const GLint* param
+void, glScalef, GLfloat x, GLfloat y, GLfloat z
+void, glScalex, GLfixed x, GLfixed y, GLfixed z
+void, glScalexOES, GLfixed x, GLfixed y, GLfixed z
+void, glScissor, GLint x, GLint y, GLsizei width, GLsizei height
+void, glSelectPerfMonitorCountersAMD, GLuint monitor, GLboolean enable, GLuint group, GLint numCounters, GLuint* countersList
+void, glSetFenceNV, GLuint fence, GLenum condition
+void, glShadeModel, GLenum mode
+void, glShaderBinary, GLsizei n, const GLuint* shaders, GLenum binaryformat, const GLvoid* binary, GLsizei length
+void, glShaderSource, GLuint shader, GLsizei count, const GLchar** string, const GLint* length
+void, glStartTilingQCOM, GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask
+void, glStencilFunc, GLenum func, GLint ref, GLuint mask
+void, glStencilFuncSeparate, GLenum face, GLenum func, GLint ref, GLuint mask
+void, glStencilMask, GLuint mask
+void, glStencilMaskSeparate, GLenum face, GLuint mask
+void, glStencilOp, GLenum fail, GLenum zfail, GLenum zpass
+void, glStencilOpSeparate, GLenum face, GLenum fail, GLenum zfail, GLenum zpass
+GLboolean, glTestFenceNV, GLuint fence
+void, glTexCoordPointer, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glTexEnvf, GLenum target, GLenum pname, GLfloat param
+void, glTexEnvfv, GLenum target, GLenum pname, const GLfloat* params
+void, glTexEnvi, GLenum target, GLenum pname, GLint param
+void, glTexEnviv, GLenum target, GLenum pname, const GLint* params
+void, glTexEnvx, GLenum target, GLenum pname, GLfixed param
+void, glTexEnvxOES, GLenum target, GLenum pname, GLfixed param
+void, glTexEnvxv, GLenum target, GLenum pname, const GLfixed* params
+void, glTexEnvxvOES, GLenum target, GLenum pname, const GLfixed* params
+void, glTexGenfOES, GLenum coord, GLenum pname, GLfloat param
+void, glTexGenfvOES, GLenum coord, GLenum pname, const GLfloat* params
+void, glTexGeniOES, GLenum coord, GLenum pname, GLint param
+void, glTexGenivOES, GLenum coord, GLenum pname, const GLint* params
+void, glTexGenxOES, GLenum coord, GLenum pname, GLfixed param
+void, glTexGenxvOES, GLenum coord, GLenum pname, const GLfixed* params
+void, glTexImage2D, GLenum target, GLint level, GLEnum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels
+void, glTexImage3D, GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid* pixels
+void, glTexImage3DOES, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid* pixels
+void, glTexParameterf, GLenum target, GLenum pname, GLfloat param
+void, glTexParameterfv, GLenum target, GLenum pname, const GLfloat* params
+void, glTexParameteri, GLenum target, GLenum pname, GLint param
+void, glTexParameteriv, GLenum target, GLenum pname, const GLint* params
+void, glTexParameterx, GLenum target, GLenum pname, GLfixed param
+void, glTexParameterxOES, GLenum target, GLenum pname, GLfixed param
+void, glTexParameterxv, GLenum target, GLenum pname, const GLfixed* params
+void, glTexParameterxvOES, GLenum target, GLenum pname, const GLfixed* params
+void, glTexStorage1DEXT, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width
+void, glTexStorage2D, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height
+void, glTexStorage2DEXT, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height
+void, glTexStorage3D, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth
+void, glTexStorage3DEXT, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth
+void, glTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels
+void, glTexSubImage3D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid* pixels
+void, glTexSubImage3DOES, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid* pixels
+void, glTextureStorage1DEXT, GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width
+void, glTextureStorage2DEXT, GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height
+void, glTextureStorage3DEXT, GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth
+void, glTransformFeedbackVaryings, GLuint program, GLsizei count, const GLchar* const* varyings, GLenum bufferMode
+void, glTranslatef, GLfloat x, GLfloat y, GLfloat z
+void, glTranslatex, GLfixed x, GLfixed y, GLfixed z
+void, glTranslatexOES, GLfixed x, GLfixed y, GLfixed z
+void, glUniform1f, GLint location, GLfloat x
+void, glUniform1fv, GLint location, GLsizei count, const GLfloat* v
+void, glUniform1i, GLint location, GLint x
+void, glUniform1iv, GLint location, GLsizei count, const GLint* v
+void, glUniform1ui, GLint location, GLuint v0
+void, glUniform1uiv, GLint location, GLsizei count, const GLuint* value
+void, glUniform2f, GLint location, GLfloat x, GLfloat y
+void, glUniform2fv, GLint location, GLsizei count, const GLfloat* v
+void, glUniform2i, GLint location, GLint x, GLint y
+void, glUniform2iv, GLint location, GLsizei count, const GLint* v
+void, glUniform2ui, GLint location, GLuint v0, GLuint v1
+void, glUniform2uiv, GLint location, GLsizei count, const GLuint* value
+void, glUniform3f, GLint location, GLfloat x, GLfloat y, GLfloat z
+void, glUniform3fv, GLint location, GLsizei count, const GLfloat* v
+void, glUniform3i, GLint location, GLint x, GLint y, GLint z
+void, glUniform3iv, GLint location, GLsizei count, const GLint* v
+void, glUniform3ui, GLint location, GLuint v0, GLuint v1, GLuint v2
+void, glUniform3uiv, GLint location, GLsizei count, const GLuint* value
+void, glUniform4f, GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w
+void, glUniform4fv, GLint location, GLsizei count, const GLfloat* v
+void, glUniform4i, GLint location, GLint x, GLint y, GLint z, GLint w
+void, glUniform4iv, GLint location, GLsizei count, const GLint* v
+void, glUniform4ui, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3
+void, glUniform4uiv, GLint location, GLsizei count, const GLuint* value
+void, glUniformBlockBinding, GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding
+void, glUniformMatrix2fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix2x3fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix2x4fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix3fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix3x2fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix3x4fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix4fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix4x2fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+void, glUniformMatrix4x3fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat* value
+GLboolean, glUnmapBuffer, GLenum target
+GLboolean, glUnmapBufferOES, GLenum target
+void, glUseProgram, GLuint program
+void, glUseProgramStagesEXT, GLuint pipeline, GLbitfield stages, GLuint program
+void, glValidateProgram, GLuint program
+void, glValidateProgramPipelineEXT, GLuint pipeline
+void, glVertexAttrib1f, GLuint indx, GLfloat x
+void, glVertexAttrib1fv, GLuint indx, const GLfloat* values
+void, glVertexAttrib2f, GLuint indx, GLfloat x, GLfloat y
+void, glVertexAttrib2fv, GLuint indx, const GLfloat* values
+void, glVertexAttrib3f, GLuint indx, GLfloat x, GLfloat y, GLfloat z
+void, glVertexAttrib3fv, GLuint indx, const GLfloat* values
+void, glVertexAttrib4f, GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w
+void, glVertexAttrib4fv, GLuint indx, const GLfloat* values
+void, glVertexAttribDivisor, GLuint index, GLuint divisor
+void, glVertexAttribI4i, GLuint index, GLint x, GLint y, GLint z, GLint w
+void, glVertexAttribI4iv, GLuint index, const GLint* v
+void, glVertexAttribI4ui, GLuint index, GLuint x, GLuint y, GLuint z, GLuint w
+void, glVertexAttribI4uiv, GLuint index, const GLuint* v
+void, glVertexAttribIPointer, GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glVertexAttribPointer, GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr
+void, glVertexAttribPointerData, GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr, GLuint minIndex, GLuint maxIndex
+void, glVertexPointer, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer
+void, glViewport, GLint x, GLint y, GLsizei width, GLsizei height
+void, glWaitSync, GLsync sync, GLbitfield flags, GLuint64 timeout
+void, glWeightPointerOES, GLint size, GLenum type, GLsizei stride, const GLvoid* pointer

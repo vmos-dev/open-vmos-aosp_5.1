@@ -1,0 +1,2 @@
+# Triggers a sys_module denial, but kernel does not have CONFIG_MODULES set
+dontaudit netd self:capability sys_module;

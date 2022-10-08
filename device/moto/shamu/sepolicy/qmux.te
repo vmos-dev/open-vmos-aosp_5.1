@@ -1,0 +1,24 @@
+# Qualcomm Management Interface Multiplexer
+type qmux, domain;
+type qmux_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(qmux)
+
+# Create sockets under each /dev/socket/qmux_* directory.
+allow qmux qmuxd_socket:dir w_dir_perms;
+allow qmux qmuxd_socket:sock_file { create setattr getattr unlink };
+
+# /dev/hsicctl* node access
+allow qmux radio_device:chr_file rw_file_perms;
+
+wakelock_use(qmux)
+
+# Access to /sys/devices/virtual/smdpkt/smdcntl*/open_timeout
+allow qmux sysfs_smdcntl_open_timeout:file rw_file_perms;
+# TODO constrain further, by labeling /sys/devices/virtual/hsicctl/hsicctl0/modem_file
+# e.g. allow qmux sysfs_hsicctl_modem_wait:file rw_file_perms;
+allow qmux sysfs:file rw_file_perms;
+
+# qmux currently runs as root: b/16988307
+allow qmux self:capability { dac_override };

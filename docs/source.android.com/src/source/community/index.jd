@@ -1,0 +1,170 @@
+page.title=Android Community
+@jd:body
+
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Welcome to the Android community!</p>
+<p>The key to any community is, obviously, communication. Like most projects,
+Android communicates via mailing lists. Because Android is an extremely large
+project with many components, we have many discussion forums, each focusing on
+a different topic.</p>
+<p>Please check out the groups below, and join any that seem interesting to
+you. Note that if you're a user looking for help with your Android device,
+this page probably isn't for you; you should contact your carrier or retailer
+for help with your phone.</p>
+<p>Please note that if you're looking for information about building
+applications for Android, you can find a separate set of groups for those at
+our sister site, developer.android.com: [https://developer.android.com/resources/community-groups.html]</p>
+
+<h2 id="open-source-project-discussions">Open Source Project discussions</h2>
+<ul>
+<li>
+<p><em>android-platform</em>: 
+    This list is for general discussion about the Android open-source project or the platform technologies.</p>
+<ul>
+<li>Subscribe using Google Groups: <a href="https://groups.google.com/forum/?fromgroups#!forum/android-platform">android-platform</a></li>
+<li>Subscribe via email: <a href="mailto:android-platform+subscribe@googlegroups.com">android-platform</a></li>
+</ul>
+</li>
+<li>
+<p><em>android-building</em>:
+    Subscribe to this list for discussion and help on building the Android source code, and on the build system. If you've just checked out the source code and have questions about how to turn it into binaries, start here.</p>
+<ul>
+<li>Subscribe using Google Groups: <a href="https://groups.google.com/forum/?fromgroups#!forum/android-building">android-building</a></li>
+<li>Subscribe via email: <a href="mailto:android-building+subscribe@googlegroups.com">android-building</a></li>
+</ul>
+</li>
+<li>
+<p><em>android-porting</em>:
+    This list is for developers who want to port Android to a new device. If you're wondering how to combine the Android source code with your hardware, this is the right group for you. Discuss here the specifics of porting Android to individual devices, from obtaining toolchains and merging kernel drivers all the way to configuring or modifying applications for your specific
+configuration.</p>
+<ul>
+<li>Subscribe using Google Groups: <a href="https://groups.google.com/forum/?fromgroups#!forum/android-porting">android-porting</a></li>
+<li>Subscribe via email: <a href="mailto:android-porting+subscribe@googlegroups.com">android-porting</a></li>
+</ul>
+</li>
+<li>
+<p><em>android-contrib</em>:
+    This list is for developers who want to contribute code to Android. This is a working list, and is not appropriate for general discussion. We ask that general discussion go to android-platform.  Note: contributors to the Android kernel should go to the android-kernel list, below.</p>
+<ul>
+<li>Subscribe using Google Groups: <a href="https://groups.google.com/forum/?fromgroups#!forum/android-contrib">android-contrib</a></li>
+<li>Subscribe via email: <a href="mailto:android-contrib+subscribe@googlegroups.com">android-contrib</a></li>
+</ul>
+</li>
+<li>
+<p><em>android-kernel</em>:
+    This list is for deveopers who want to contribute to the Linux kernel that Android devices use. If you've downloaded the kernel code, if you know how to compile it, if you want to write kernel code to specifically support Android,
+this is your place. This group isn't for user-space topics (see android-platform for that), and people will shake their fingers at you and call you naughty if you ask user-space questions here.</p>
+<ul>
+<li>Subscribe using Google Groups: <a href="https://groups.google.com/forum/?fromgroups#!forum/android-kernel">android-kernel</a></li>
+<li>Subscribe via email: <a href="mailto:android-kernel+subscribe@googlegroups.com">android-kernel</a></li>
+</ul>
+</li>
+</ul>
+
+
+<h3 id="audience">Audience</h3>
+<p>
+These discussion groups are intended for developers working with the Android platform. Everyone is welcome to join in, provided you follow our community's policies described below. Our users help each other, and many experts post to these groups, including members of the Open Handset Alliance.
+</p>
+<p>
+No topic is off-limits, provided it relates to Android in some way. However, since these are very busy lists, search the archives before posting your question; you may find your question has already been answered.
+</p>
+
+
+<h3 id="getting-the-most-from-our-lists">Getting the Most from Our Lists</h3>
+<p>Please consider the following before you post to our lists.</p>
+<ul>
+<li>
+<p><em>Read the <a href="#mailing">Charter for our forums.</a></em> This explains the (few) rules and guidelines for our community.</p>
+</li>
+<li>
+<p><em>Search the group archives to see whether your questions have already been discussed.</em> This avoids time-wasting redundant discussions.</p>
+</li>
+<li>
+<p><em>Use a clear, relevant message subject.</em> This helps everyone, both those trying to answer your question as well as those who may be looking for information in the future.</p>
+</li>
+<li>
+<p><em>Give plenty of details in your post.</em> Code or log snippets, pointers to screenshots, and similar details will get better results and make for better discussions. For a great guide to phrasing your questions, read <a href="http://www.catb.org/%7Eesr/faqs/smart-questions.html">How to Ask Questions the Smart Way</a>.</p>
+</li>
+</ul>
+
+<h3 id="mailing">Mailing list rules</h3>
+<p>We love simplicity and hate restrictions, so we keep our policies minimal. The rules
+below describe what's expected of subscribers to the Android mailing lists.</h2>
+
+<ul>
+  <li><em>Please be friendly</em>: Showing courtesy and respect to others is a vital part of the Android culture, and we expect everyone participating in the Android community to join us in accepting nothing less. Being courteous does not mean we can't constructively disagree with each other, but it does mean that we must be polite when we do so. There's never a reason to be antagonistic or dismissive toward anyone; if you think there is, think again before you post. Mobile development is serious business, but it's also a lot of fun. Let's keep it that way. Let's strive to be one of the friendliest communities in all of open source.
+  </li>
+  <li><em>Allowed discussion topics</em>: Most of our groups are for technical discussions of Android or users helping each other. Generally we don't put hard restrictions on the topics discussed in the group: as long as the topic is relevant to Android in some way, it's welcome on our groups. We welcome announcements and discussion of products, libraries, publications, and other interesting Android-related news, but please do not cross-post. Post only to the most relevant group for your message. We even welcome (polite!) discussion of articles and ideas critical of Android--after all, we can't improve if we don't listen.
+  </li>
+  <li><em>Working Lists</em>: Some of our groups are considered "working lists", by which we mean that the list is intended to be used in support of the completion of specific tasks. On these groups, we don't welcome off-topic conversations, and will generally ask you to take general discussions to a different list. Since these are lists where people are trying to get work done, we will be pretty aggressive about keeping the noise level low. We ask that you respect our contributors' time and keep general discussions to appropriate lists.
+  </li>
+  <li><em>Spam</em>: We hate spam almost as passionately as we love courtesy and respect, so we reserve the right to limit discussions that amount to spam. Outright spam will result in the spammer being immediately and permanently banned from the list.
+  </li>
+</ul>
+<p>
+The most important rule is friendliness. Remember: disrespect and rudeness are not welcome in our community under any circumstances. We don't have a formal policy on dealing with troublemakers, and we hope we never need one. That said, we do pledge to do our best to be fair, and we will always try to warn someone before banning him or her.
+</p>
+<h3 id="contacting">Contacting the moderators</h3>
+<p>
+If you see anyone being rude, call them out on it. This is your group too, and you don't have to accept someone else being disrespectful just because it wasn't directed at you. Just remember to be polite and courteous yourself! Don't add fuel to the fire.
+</p>
+<p>
+But if you see an outrageous violation, want to report spam, feel very strongly about something, or even if you just want to chat, then contact the mailing list's owners. It's what we're here for!
+</p>
+
+
+
+<h3 id="using-email-with-google-groups">Using email with Google Groups</h3>
+<p>Instead of using the <a href="https://groups.google.com/">Google groups</a> site, you can use your email client of choice to participate in the mailing lists.</p>
+<p>To subscribe to a group without using the Google Groups site, use the link under "subscribe via email" in the lists above.</p>
+<p>To set up how you receive mailing list postings by email:</p>
+<ol>
+<li>
+<p>Sign into the group via the Google Groups site. For example, for the android-platform group you would use [https://groups.google.com/forum/?fromgroups#!forum/android-platform].</p>
+</li>
+<li>
+<p>Click "My membership" on the right side.</p>
+</li>
+<li>
+<p>Under "How do you want to read this group?" select one of the email options.</p>
+</li>
+</ol>
+<h2 id="android-on-irc">Android on IRC</h2>
+<p>We also have a presence on IRC via <a href="http://freenode.net/">freenode</a>.
+We maintain two official IRC channels on <a href="irc://irc.freenode.net/">irc.freenode.net</a> (access via the web
+at <a href="http://webchat.freenode.net/">freenode webchat</a>)</p>
+<ul>
+<li>
+<p><a href="irc://irc.freenode.net/android">#android</a> - dedicated to general Android discussion and porting concerns</p>
+</li>
+<li>
+<p><a href="irc://irc.freenode.net/android-dev">#android-dev</a> - dedicated to discussion about writing Android applications</p>
+</li>
+</ul>
+<p>The channels above are official. There are a few other channels the
+community is using, but are not official. These aren't official or officially
+moderated/managed, so you use the channels below at your own risk. The Open
+Handset Alliance doesn't endorse these channels, there's no warranty express
+or implied, and so on. There may be more channels than just these listed.</p>
+<ul>
+<li>
+<p><a href="irc://irc.freenode.net/android-firehose">#android-firehose</a> - displays in real-time the commits to the Android Open Source Project</p>
+</li>
+<li>
+<p><a href="irc://irc.freenode.net/android-fr">#android-fr</a> - pour discuter d'Android en français</p>
+</li>
+<li>
+<p><a href="irc://irc.freenode.net/android-offtopic">#android-offtopic</a> - for, well, off-topic discussions</p>
+</li>
+<li>
+<p><a href="irc://irc.freenode.net/android-root">#android-root</a> - for discussion related to off-label uses of hardware</p>
+</li>
+</ul>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description url="https://dl-ssl.google.com/android/eclipse/">
+      Update Site for Android Development Toolkit
+   </description>
+   <feature url="features/com.android.ide.eclipse.ddms_23.0.2.qualifier.jar" id="com.android.ide.eclipse.ddms.feature" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.hierarchyviewer_23.0.2.qualifier.jar" id="com.android.ide.eclipse.hierarchyviewer.feature" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.traceview_23.0.2.qualifier.jar" id="com.android.ide.eclipse.traceview.feature" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.gldebugger_23.0.2.qualifier.jar" id="com.android.ide.eclipse.gldebugger.feature" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.adt_23.0.2.qualifier.jar" id="com.android.ide.eclipse.adt.feature" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <feature url="features/com.android.ide.eclipse.ndk_23.0.2.qualifier.jar" id="com.android.ide.eclipse.ndk.feature" version="23.0.2.qualifier">
+      <category name="developer"/>
+   </feature>
+   <category-def name="developer" label="Developer Tools">
+      <description>
+         Features that add Android support to Eclipse for application developers.
+      </description>
+   </category-def>
+</site>

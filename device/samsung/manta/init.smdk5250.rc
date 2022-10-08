@@ -1,0 +1,57 @@
+import init.smdk5250.usb.rc
+
+on init
+    # See storage config details at http://source.android.com/tech/storage/
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
+
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+
+    # Support legacy paths
+    symlink /storage/emulated/legacy /sdcard
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+
+on post-fs-data
+    mkdir /data/media 0770 media_rw media_rw
+
+    setprop vold.post_fs_data_done 1
+
+on boot
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
+    setprop ro.radio.noril yes
+
+    # HACK, suspend is broken. remove me when it's fixed
+    write /sys/power/wake_lock taken_from_init_smdk5250_rc
+
+    # Set up kernel tracing, but disable it by default
+    chmod 0222 /sys/kernel/debug/tracing/trace_marker
+    write /sys/kernel/debug/tracing/tracing_on 0
+
+
+on fs
+    mount_all /fstab.smdk5250
+    setprop ro.crypto.fuse_sdcard true
+
+# Permissions for backlight
+    chmod 0666 /sys/class/backlight/pwm-backlight.0/brightness
+    chown system system /sys/class/backlight/pwm-backlight.0/brightness
+
+# Permissions for Gscaler log level
+    chmod 0666 /sys/module/gsc/parameters/gsc_dbg
+
+# create filesystem if necessary
+service setup_fs /system/bin/setup_fs \
+            /dev/block/mmcblk0p3 \
+            /dev/block/mmcblk0p4
+    class core
+    user root
+    group root
+    oneshot
+
+# virtual sdcard daemon running as media_rw (1023)
+service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
+    class late_start

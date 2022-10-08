@@ -1,0 +1,16 @@
+# Qualcomm Management Interface Multiplexer
+type qmuxd, domain;
+type qmuxd_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(qmuxd)
+
+# Create sockets under each /dev/socket/qmux_* directory.
+allow qmuxd qmuxd_socket:dir w_dir_perms;
+allow qmuxd qmuxd_socket:sock_file { create setattr getattr unlink };
+
+# /dev/hsicctl* node access
+allow qmuxd radio_device:chr_file rw_file_perms;
+
+# wake lock access
+wakelock_use(qmuxd)

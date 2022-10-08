@@ -1,0 +1,4 @@
+userdebug_or_eng(`
+  unix_socket_connect(radio, rild_debug, rild)
+  allow radio baseband_log_device:chr_file rw_file_perms;
+')

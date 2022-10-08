@@ -1,0 +1,26 @@
+page.title=Life of a Patch
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>The Android Open Source Project (AOSP) uses a web-based code review tool
+known as <a href="https://android-review.googlesource.com/">Gerrit</a>.
+The image below is a flowchart that details what happens to
+a patch, once it's been written. Though it may appear complex, the majority of
+the steps below are performed in the web application.</p>
+<p>For full instructions on how to get set up to use gerrit and git, please
+see the <a href="submit-patches.html">Submitting Patches</a> page.</p>
+<p><img src="{@docRoot}images/workflow-0.png" alt="workflow diagram"/></p>

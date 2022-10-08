@@ -1,0 +1,2 @@
+# TODO - identify cause of this
+allow zygote shell_data_file:dir search;

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="custom_theme_color">#b0b0ff</color>
+    <style name="CustomTheme" parent="android:Theme.Light">
+        <item name="android:windowBackground">@color/custom_theme_color</item>
+        <item name="android:colorBackground"> @color/custom_theme_color </item>
+    </style>
+
+    <style name="BrowserTheme" parent="@android:Theme.Black">
+        <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextView</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="AutoCompleteTextView">
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:completionHintView">@android:layout/simple_dropdown_item_1line</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceLargeInverse</item>
+        <item name="android:completionThreshold">2</item>
+        <item name="android:dropDownSelector">@android:drawable/list_selector_background</item>
+        <item name="android:popupBackground">@android:drawable/spinner_dropdown_background</item>
+    </style>
+
+    <style name="CustomTitle" parent="@android:Theme">
+        <item name="android:windowTitleSize">60dip</item>
+    </style>
+</resources>

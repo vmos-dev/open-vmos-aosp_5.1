@@ -1,0 +1,16 @@
+# Bridge Manager (radio process)
+type bridge, domain;
+type bridge_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(bridge)
+
+# Uevent for usb connection
+allow bridge self:netlink_kobject_uevent_socket { create bind read };
+
+# Talk to qmuxd (qmux_radio)
+qmux_socket(bridge)
+
+# Alert the RmNet SMD & SDIO function driver of the correct transport.
+# (/sys/class/android_usb/f_rmnet_smd_sdio/transport)
+allow bridge sysfs_rmnet:file { open read write getattr };

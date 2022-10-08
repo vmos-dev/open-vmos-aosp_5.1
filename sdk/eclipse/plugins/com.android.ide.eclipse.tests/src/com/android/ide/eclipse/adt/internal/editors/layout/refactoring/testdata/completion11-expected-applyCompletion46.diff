@@ -1,0 +1,4 @@
+Code completion in completion11.xml for ?android:attr/Textapp^ selecting ?android:attr/textAppearanceLargeInverse:
+@@ -7 +7
+-         style="?android:attr/Textapp^"
++         style="?android:attr/textAppearanceLargeInverse^"

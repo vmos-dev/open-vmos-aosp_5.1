@@ -1,0 +1,1 @@
+dontaudit domain rootfs:chr_file { read write };

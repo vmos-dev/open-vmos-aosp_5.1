@@ -1,0 +1,22 @@
+*~
+*.bak
+*.pyc
+Thumbs.db
+*.class
+*.DS_Store
+testapps/testSensors/proguard.cfg
+.gradle
+/build/ivy.xml
+
+# Hide temporary files created by the build_server script
+eclipse/assemble.com.android.ide.eclipse.*.xml
+eclipse/package.com.android.ide.eclipse.*.xml
+eclipse/final*Versions*.properties
+eclipse/plugins/com.android.ide.eclipse.*/@dot*
+eclipse/plugins/com.android.*/javaCompiler...args
+eclipse/plugins/com.android.ide.eclipse.*/build.xml
+eclipse/features/com.android.ide.eclipse.*/build.xml
+eclipse/features/com.android.ide.eclipse.*/*.zip
+/eclipse/v[0-9-]*-[0-9]*
+/eclipse/v[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+/status-output

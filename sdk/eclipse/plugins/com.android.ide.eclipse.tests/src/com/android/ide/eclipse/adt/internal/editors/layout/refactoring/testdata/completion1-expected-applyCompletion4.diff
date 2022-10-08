@@ -1,0 +1,4 @@
+Code completion in completion1.xml for marginBottom="50^" selecting 50mm:
+@@ -12 +12
+-         android:layout_marginBottom="50^"
++         android:layout_marginBottom="50mm"^

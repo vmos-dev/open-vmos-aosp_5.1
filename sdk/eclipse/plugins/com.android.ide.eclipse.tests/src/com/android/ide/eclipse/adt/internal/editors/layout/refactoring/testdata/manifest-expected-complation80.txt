@@ -1,0 +1,8 @@
+Code completion in manifest.xml for <activity android:name="^.:
+android.accounts.AccountAuthenticatorActivity
+android.app.ActivityGroup
+android.app.AliasActivity
+android.app.ExpandableListActivity
+android.app.ListActivity
+android.app.NativeActivity
+android.app.TabActivity

@@ -1,0 +1,367 @@
+page.title=HAL interface
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>The HAL interface, declared in <a href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a>, represents the interface between the Android <a href="sensor-stack.html#framework">framework</a> and the hardware-specific software. A HAL implementation must define each
+  function declared in sensors.h. The main functions are:</p>
+<ul>
+  <li><code>get_sensors_list</code> - Returns the list of all sensors. </li>
+  <li><code>activate</code> - Starts or stops a sensor. </li>
+  <li><code>batch</code> - Sets a sensor’s parameters such as sampling frequency and maximum
+    reporting latency. </li>
+  <li><code>setDelay</code> - Used only in HAL version 1.0. Sets the sampling frequency for a
+    given sensor. </li>
+  <li><code>flush</code> - Flushes the FIFO of the specified sensor and reports a flush complete
+    event when this is done. </li>
+  <li><code>poll</code> - Returns available sensor events. </li>
+</ul>
+<p>The implementation must be thread safe and allow these functions to be called
+  from different threads.</p>
+<p>The interface also defines several types used by those functions. The main
+  types are:</p>
+<ul>
+  <li><code>sensors_module_t</code></li>
+  <li><code>sensors_poll_device_t</code></li>
+  <li><code>sensor_t</code></li>
+  <li><code>sensors_event_t</code></li>
+</ul>
+<p>In addition to the sections below, see <a href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a> for more information on those types.</p>
+<h2 id="get_sensors_list_list">get_sensors_list(list)</h2>
+<pre>int (*get_sensors_list)(struct sensors_module_t* module, struct sensor_t
+  const** list);</pre>
+<p>Provides the list of sensors implemented by the HAL. See <a href="#sensor_t">sensor_t</a> for details on how the sensors are defined.</p>
+<p>The order in which the sensors appear in the list is the order in which the
+  sensors will be reported to the applications. Usually, the base sensors appear
+  first, followed by the composite sensors.</p>
+<p>If several sensors share the same sensor type and wake-up property, the first
+  one in the list is called the “default” sensor. It is the one returned by
+  <code>getDefaultSensor(int sensorType, bool wakeUp)</code>.</p>
+<p>This function returns the number of sensors in the list.</p>
+<h2 id="activate_sensor_true_false">activate(sensor, true/false)</h2>
+<pre>int (*activate)(struct sensors_poll_device_t *dev, int sensor_handle, int
+  enabled);</pre>
+<p>Activates or deactivates a sensor.</p>
+<p><code>sensor_handle</code> is the handle of the sensor to activate/deactivate. A sensor’s
+  handle is defined by the <code>handle</code> field of its <a href="#sensor_t">sensor_t</a> structure.</p>
+<p><code>enabled</code> is set to 1 to enable or 0 to disable the sensor.</p>
+<p>One-shot sensors deactivate themselves automatically upon receiving an event,
+  and they must still accept to be deactivated through a call to <code>activate(...,
+  enabled=0)</code>.</p>
+<p>Non-wake-up sensors never prevent the SoC from going into suspend mode; that
+  is, the HAL shall not hold a partial wake-lock on behalf of applications.</p>
+<p>Wake-up sensors, when delivering events continuously, can prevent the SoC from
+  going into suspend mode, but if no event needs to be delivered, the partial
+  wake-lock must be released.</p>
+<p>If <code>enabled</code> is 1 and the sensor is already activated, this function is a no-op
+  and succeeds.</p>
+<p>If <code>enabled</code> is 0 and the sensor is already deactivated, this function is a no-op
+  and succeeds.</p>
+<p>This function returns 0 on success and a negative error number otherwise.</p>
+<h2 id="batch_sensor_flags_sampling_period_maximum_report_latency">batch(sensor, flags, sampling period, maximum report latency)</h2>
+<pre>
+int (*batch)(
+     struct sensors_poll_device_1* dev,
+     int sensor_handle,
+     int flags,
+     int64_t sampling_period_ns,
+     int64_t max_report_latency_ns);
+</pre>
+<p>Sets a sensor’s parameters, including <a href="#sampling_period_ns">sampling frequency</a> and <a href="#max_report_latency_ns">maximum report latency</a>. This function can be called while the sensor is activated, in which case it
+  must not cause any sensor measurements to be lost: Transitioning from one
+  sampling rate to the other cannot cause lost events, nor can transitioning from
+  a high maximum report latency to a low maximum report latency.</p>
+<p><code>sensor_handle</code> is the handle of the sensor to configure.</p>
+<p><code>flags</code> is currently unused.</p>
+<p><code>sampling_period_ns</code> is the sampling period at which the sensor should run, in
+  nanoseconds. See <a href="#sampling_period_ns">sampling_period_ns</a> for more details.</p>
+<p><code>max_report_latency_ns</code> is the maximum time by which events can be delayed before
+  being reported through the HAL, in nanoseconds. See the <a href="#max_report_latency_ns">max_report_latency_ns</a> paragraph for more details.</p>
+<p>This function returns 0 on success and a negative error number otherwise.</p>
+<h3 id="sampling_period_ns">sampling_period_ns</h3>
+<p>What the <code>sampling_period_ns</code> parameter means depends on the specified sensor's
+  reporting mode:</p>
+<ul>
+  <li> Continuous: <code>sampling_period_ns</code> is the sampling rate, meaning the rate at which
+    events are generated. </li>
+  <li> On-change: <code>sampling_period_ns</code> limits the sampling rate of events, meaning
+    events are generated no faster than every <code>sampling_period_ns</code> nanoseconds. There
+    might be periods longer than <code>sampling_period_ns</code> where no event is generated if
+    the measured values do not change for long periods. See <a
+    href="report-modes.html#on-change">on-change</a> reporting mode for more
+    details. </li>
+  <li> One-shot: <code>sampling_period_ns</code> is ignored. It has no effect. </li>
+  <li> Special: See the specific <a href="sensor-types.html">sensor type
+  descriptions</a> for details on how <code>sampling_period_ns</code> is used
+  for special sensors. </li>
+</ul>
+<p>See <a href="report-modes.html">Reporting modes</a> for more information
+  about the impact of <code>sampling_period_ns</code> in the different modes.</p>
+<p>For continuous and on-change sensors,</p>
+<ul>
+  <li> if <code>sampling_period_ns</code> is less than
+    <code>sensor_t.minDelay</code>, then the HAL implementation must silently
+    clamp it to <code>max(sensor_t.minDelay, 1ms)</code>. Android
+    does not support the generation of events at more than 1000Hz. </li>
+  <li> if <code>sampling_period_ns</code> is greater than
+    <code>sensor_t.maxDelay</code>, then the HAL
+    implementation must silently truncate it to <code>sensor_t.maxDelay</code>. </li>
+</ul>
+<p>Physical sensors sometimes have limitations on the rates at which they can run
+  and the accuracy of their clocks. To account for this, we allow the actual
+  sampling frequency to differ from the requested frequency, as long as it
+  satisfies the requirements in the table below.</p>
+<table>
+  <tr>
+    <th><p>If the requested frequency is</p></th>
+    <th><p>Then the actual frequency must be</p></th>
+  </tr>
+  <tr>
+    <td><p>below min frequency (&lt;1/maxDelay)</p></td>
+    <td><p>between 90% and 110% of the min frequency</p></td>
+  </tr>
+  <tr>
+    <td><p>between min and max frequency</p></td>
+    <td><p>between 90% and 220% of the requested frequency</p></td>
+  </tr>
+  <tr>
+    <td><p>above max frequency (&gt;1/minDelay)</p></td>
+    <td><p>between 90% and 110% of the max frequency</p>
+      <p>and below 1100Hz</p></td>
+  </tr>
+</table>
+<p>Note that this contract is valid only at the HAL level, where there is always a
+  single client. At the SDK level, applications might get different rates, due to
+  the multiplexing happening in the Framework. See <a
+  href="sensor-stack.html#framework">Framework</a> for more details.</p>
+<h3 id="max_report_latency_ns">max_report_latency_ns</h3>
+<p><code>max_report_latency_ns</code> sets the maximum time in nanoseconds, by which events can
+  be delayed and stored in the hardware FIFO before being reported through the
+  HAL while the SoC is awake.</p>
+<p>A value of zero signifies that the events must be reported as soon as they are
+  measured, either skipping the FIFO altogether, or emptying the FIFO as soon as
+  one event from this sensor is present in it.</p>
+<p>For example, an accelerometer activated at 50Hz with <code>max_report_latency_ns=0</code>
+  will trigger interrupts 50 times per second when the SoC is awake.</p>
+<p>When <code>max_report_latency_ns&gt;0</code>, sensor events do not need to be reported as soon
+  as they are detected. They can be temporarily stored in the hardware FIFO and
+  reported in batches, as long as no event is delayed by more than
+  max_report_latency_ns nanoseconds. That is, all events since the previous batch
+  are recorded and returned at once. This reduces the amount of interrupts sent
+  to the SoC and allows the SoC to switch to a lower power mode (idle) while the
+  sensor is capturing and batching data.</p>
+<p>Each event has a timestamp associated with it. Delaying the time at which an
+  event is reported does not impact the event timestamp. The timestamp must be
+  accurate and correspond to the time at which the event physically happened, not
+  the time it is being reported. </p>
+<p>Allowing sensor events to be stored temporarily in the hardware FIFO does not
+  modify the behavior of <code>poll</code>: events from different sensors can be interleaved,
+  and as usual, all events from the same sensor are time-ordered.</p>
+<p>See <a href="batching.html">Batching</a> for more details on sensor
+batching, including behaviors in suspend mode and out of suspend mode.</p>
+<h2 id="setdelay_sensor_sampling_period">setDelay(sensor, sampling period)</h2>
+<pre>
+int (*setDelay)(
+     struct sensors_poll_device_t *dev,
+     int sensor_handle,
+     int64_t sampling_period_ns);
+</pre>
+<p>After HAL version 1.0, this function is deprecated and is never called.
+  Instead, the <code>batch</code> function is called to set the
+  <code>sampling_period_ns</code> parameter.</p>
+<p>In HAL version 1.0, setDelay was used instead of batch to set <a href="#sampling_period_ns">sampling_period_ns</a>.</p>
+<h2 id="flush_sensor">flush(sensor)</h2>
+<pre>int (*flush)(struct sensors_poll_device_1* dev, int sensor_handle);</pre>
+<p>Add a <a href="#metadata_flush_complete_events">flush complete event</a> to the end of the hardware FIFO for the specified sensor and flushes the FIFO;
+  those events are delivered as usual (i.e.: as if the maximum reporting latency
+  had expired) and removed from the FIFO.</p>
+<p>The flush happens asynchronously (i.e.: this function must return immediately).
+  If the implementation uses a single FIFO for several sensors, that FIFO is
+  flushed and the flush complete event is added only for the specified sensor.</p>
+<p>If the specified sensor has no FIFO (no buffering possible), or if the FIFO,
+  was empty at the time of the call, <code>flush</code> must still succeed and send a flush
+  complete event for that sensor. This applies to all sensors other than one-shot
+  sensors.</p>
+<p>When <code>flush</code> is called, even if a flush event is already in the FIFO for that
+  sensor, an additional one must be created and added to the end of the FIFO, and
+  the FIFO must be flushed. The number of <code>flush</code> calls must be
+  equal to the number of flush complete events created.</p>
+<p><code>flush</code> does not apply to <a href="report-modes.html#one-shot">one-shot</a>
+  sensors; if <code>sensor_handle</code> refers to a one-shot sensor,
+  <code>flush</code> must return <code>-EINVAL</code> and not generate any
+  flush complete metadata event.</p>
+<p>This function returns 0 on success, <code>-EINVAL</code> if the specified sensor is a
+  one-shot sensor or wasn’t enabled, and a negative error number otherwise.</p>
+<h2 id="poll">poll()</h2>
+<pre>int (*poll)(struct sensors_poll_device_t *dev, sensors_event_t* data, int
+  count);</pre>
+<p>Returns an array of sensor data by filling the <code>data</code> argument. This function
+  must block until events are available. It will return the number of events read
+  on success, or a negative error number in case of an error.</p>
+<p>The number of events returned in <code>data</code> must be less or equal to
+  the <code>count</code> argument. This function shall never return 0 (no event).</p>
+<h2 id="sequence_of_calls">Sequence of calls</h2>
+<p>When the device boots, <code>get_sensors_list</code> is called.</p>
+<p>When a sensor gets activated, the <code>batch</code> function will be called with the
+  requested parameters, followed by <code>activate(..., enable=1)</code>.</p>
+<p>Note that in HAL version 1_0, the order was the opposite: <code>activate</code> was called
+  first, followed by <code>set_delay</code>.</p>
+<p>When the requested characteristics of a sensor are changing while it is
+  activated, the <code>batch</code> function is called.</p>
+<p><code>flush</code> can be called at any time, even on non-activated sensors (in which case
+  it must return <code>-EINVAL</code>)</p>
+<p>When a sensor gets deactivated, <code>activate(..., enable=0)</code> will be called.</p>
+<p>In parallel to those calls, the <code>poll</code> function will be called repeatedly to
+  request data. <code>poll</code> can be called even when no sensors are activated.</p>
+<h2 id="sensors_module_t">sensors_module_t</h2>
+<p><code>sensors_module_t</code> is the type used to create the Android hardware module for the
+  sensors. The implementation of the HAL must define an object
+  <code>HAL_MODULE_INFO_SYM</code> of this type to expose the <a
+  href="#get_sensors_list_list">get_sensors_list</a> function. See the definition
+  of <code>sensors_module_t</code> in <a
+  href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a> and the
+  definition of <code>hw_module_t</code> for more information.</p>
+<h2 id="sensors_poll_device_t_sensors_poll_device_1_t">sensors_poll_device_t / sensors_poll_device_1_t</h2>
+<p><code>sensors_poll_device_1_t</code> contains the rest of the methods defined above:
+  <code>activate</code>, <code>batch</code>, <code>flush</code> and
+  <code>poll</code>. Its <code>common</code> field (of type <a
+  href="{@docRoot}devices/halref/structhw__device__t.html">hw_device_t</a>)
+  defines the version number of the HAL.</p>
+<h2 id="sensor_t">sensor_t</h2>
+<p><code>sensor_t</code> represents an <a href="index.html">Android sensor</a>. Here are some of its important fields:</p>
+<p><strong>name:</strong> A user-visible string that represents the sensor. This string often
+  contains the part name of the underlying sensor, the type of the sensor, and
+  whether it is a wake-up sensor. For example, “LIS2HH12 Accelerometer”,
+  “MAX21000 Uncalibrated Gyroscope”, “BMP280 Wake-up Barometer”, “MPU6515 Game
+  Rotation Vector”</p>
+<p><strong>handle:</strong> The integer used to refer to the sensor when registering to it or
+  generating events from it.</p>
+<p><strong>type:</strong> The type of the sensor. See the explanation of sensor
+type in <a href="index.html">What are Android sensors?</a> for more details, and see <a
+href="sensor-types.html">Sensor types</a> for official sensor types. For
+non-official sensor types, <code>type</code> must start with <code>SENSOR_TYPE_DEVICE_PRIVATE_BASE</code></p>
+<p><strong>stringType:</strong> The type of the sensor as a string. When the sensor has an official
+  type, set to <code>SENSOR_STRING_TYPE_*</code>. When the sensor has a manufacturer specific
+  type, <code>stringType</code> must start with the manufacturer reverse domain name. For
+  example, a sensor (say a unicorn detector) defined by the
+  <em>Cool-product</em> team at Fictional-Company could use
+  <code>stringType=”com.fictional_company.cool_product.unicorn_detector”</code>.
+  The <code>stringType</code> is used to uniquely identify non-official sensors types. See <a
+  href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a> for more
+  information on types and string types.</p>
+<p><strong>requiredPermission:</strong> A string representing the permission that applications must
+  possess to see the sensor, register to it and receive its data. An empty string
+  means applications do not require any permission to access this sensor. Some
+  sensor types like the <a href="sensor-types.html#heart_rate">heart rate
+  monitor</a> have a mandatory <code>requiredPermission</code>. All sensors
+  providing sensitive user information (such as the heart rate) must be protected by a permission.</p>
+<p><strong>flags:</strong> Flags for this sensor, defining the sensor’s reporting mode and whether
+  the sensor is a wake-up sensor or not. For example, a one-shot wake-up sensor
+  will have <code>flags = SENSOR_FLAG_ONE_SHOT_MODE | SENSOR_FLAG_WAKE_UP</code>. The bits of
+  the flag that are not used in the current HAL version must be left equal to 0.</p>
+<p><strong>maxRange:</strong> The maximum value the sensor can report, in the same unit as the
+  reported values. The sensor must be able to report values without saturating
+  within <code>[-maxRange; maxRange]</code>. Note that this means the total range of the
+  sensor in the generic sense is <code>2*maxRange</code>. When the sensor reports values over
+  several axes, the range applies to each axis. For example, a “+/- 2g”
+  accelerometer will report <code>maxRange = 2*9.81 = 2g</code>.</p>
+<p><strong>resolution:</strong> The smallest difference in value that the sensor can measure.
+  Usually computed based on <code>maxRange</code> and the number of bits in the measurement.</p>
+<p><strong>power:</strong> The power cost of enabling the sensor, in milliAmps. This is nearly
+  always more that the power consumption reported in the datasheet of the
+  underlying sensor. See <a
+href="sensor-types.html#base_sensors_=_not_equal_to_physical_sensors">Base
+sensors != physical sensors</a> for more details and see <a
+href="power-use.html#power_measurement_process">Power measurement process</a> for details on
+how to measure the power consumption of a sensor. If the
+  sensor’s power consumption depends on whether the device is moving, the power
+  consumption while moving is the one reported in the <code>power</code> field.</p>
+<p><strong>minDelay:</strong> For continuous sensors, the sampling period, in microseconds,
+  corresponding to the fastest rate the sensor supports. See <a href="#sampling_period_ns">sampling_period_ns</a> for details on how this value is used. Beware that <code>minDelay</code> is expressed in
+  microseconds while <code>sampling_period_ns</code> is in nanoseconds. For on-change and
+  special reporting mode sensors, unless otherwise specified, <code>minDelay</code> must be 0.
+  For one-shot sensors, it must be -1.</p>
+<p><strong>maxDelay:</strong> For continuous and on-change sensors, the sampling period, in
+  microseconds, corresponding to the slowest rate the sensor supports. See <a href="#sampling_period_ns">sampling_period_ns</a> for details on how this value is used. Beware that <code>maxDelay</code> is expressed in
+  microseconds while <code>sampling_period_ns</code> is in nanoseconds. For special and
+  one-shot sensors, <code>maxDelay</code> must be 0.</p>
+<p><strong>fifoReservedEventCount:</strong> The number of events reserved for this sensor in the
+  hardware FIFO. If there is a dedicated FIFO for this sensor, then
+  <code>fifoReservedEventCount</code> is the size of this dedicated FIFO. If the FIFO is
+  shared with other sensors, <code>fifoReservedEventCount</code> is the size of the part of
+  the FIFO that is reserved for that sensor. On most shared-FIFO systems, and on
+  systems that do not have a hardware FIFO this value is 0.</p>
+<p><strong>fifoMaxEventCount:</strong> The maximum number of events that could be stored in the
+  FIFOs for this sensor. This is always greater or equal to
+  <code>fifoReservedEventCount</code>. This value is used to estimate how quickly the FIFO
+  will get full when registering to the sensor at a specific rate, supposing no
+  other sensors are activated. On systems that do not have a hardware FIFO,
+  <code>fifoMaxEventCount</code> is 0. See <a href="batching.html">Batching</a> for more details.</p>
+<p>For sensors with an official sensor type, some of the fields are overwritten by
+  the framework. For example, <a
+  href="sensor-types.html#accelerometer">accelerometer</a> sensors are forced to
+  have a continuous reporting mode, and <a
+  href="sensor-types.html#heart_rate">heart rate</a> monitors are forced to be
+  protected by the <code>SENSOR_PERMISSION_BODY_SENSORS</code> permission.</p>
+<h2 id="sensors_event_t">sensors_event_t</h2>
+<p>Sensor events generated by Android sensors and reported through the <a
+href="#poll">poll</a> function are of <code>type sensors_event_t</code>. Here are some
+important fields of <code>sensors_event_t</code>:</p>
+<p><strong>version:</strong> Must be <code>sizeof(struct sensors_event_t)</code></p>
+<p><strong>sensor:</strong> The handle of the sensor that generated the event, as defined by
+  <code>sensor_t.handle</code>.</p>
+<p><strong>type:</strong> The sensor type of the sensor that generated the event, as defined by
+  <code>sensor_t.type</code>.</p>
+<p><strong>timestamp:</strong> The timestamp of the event in nanoseconds. This is the time the
+  event happened (a step was taken, or an accelerometer measurement was made),
+  not the time the event was reported. <code>timestamp</code> must be synchronized with the
+  <code>elapsedRealtimeNano</code> clock, and in the case of continuous sensors, the jitter
+  must be small. Timestamp filtering is sometimes necessary to satisfy the CDD
+  requirements, as using only the SoC interrupt time to set the timestamps
+  causes too high jitter, and using only the sensor chip time to set the
+  timestamps can cause de-synchronization from the
+  <code>elapsedRealtimeNano</code> clock, as the sensor clock drifts.</p>
+<p><strong>data and overlapping fields:</strong> The values measured by the sensor. The meaning and
+  units of those fields are specific to each sensor type. See <a
+  href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a> and the
+  definition of the different <a href="sensor-types.html">Sensor types</a> for a
+  description of the data fields. For some sensors, the accuracy of the
+  readings is also reported as part of the data, through a <code>status</code> field. This
+  field is only piped through for those select sensor types, appearing at the SDK
+  layer as an accuracy value. For those sensors, the fact that the status field
+  must be set is mentioned in their <a href="sensor-types.html">sensor type</a> definition.</p>
+<h3 id="metadata_flush_complete_events">Metadata flush complete events</h3>
+<p>Metadata events have the same type as normal sensor events:
+  <code>sensors_event_meta_data_t = sensors_event_t</code>. They are returned together with
+  other sensor events through poll. They possess the following fields:</p>
+<p><strong>version:</strong> Must be <code>META_DATA_VERSION</code></p>
+<p><strong>type:</strong> Must be <code>SENSOR_TYPE_META_DATA</code></p>
+<p><strong>sensor, reserved, and timestamp</strong>: Must be 0</p>
+<p><strong>meta_data.what:</strong> Contains the metadata type for this event. There is currently a
+  single valid metadata type: <code>META_DATA_FLUSH_COMPLETE</code>.</p>
+<p><code>META_DATA_FLUSH_COMPLETE</code> events represent the completion of the flush of a
+  sensor FIFO. When <code>meta_data.what=META_DATA_FLUSH_COMPLETE</code>, <code>meta_data.sensor</code>
+  must be set to the handle of the sensor that has been flushed. They are
+  generated when and only when <code>flush</code> is called on a sensor. See the section on
+  the <a href="#flush_sensor">flush</a> function for more information.</p>

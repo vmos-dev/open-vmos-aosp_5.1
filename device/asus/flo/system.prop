@@ -1,0 +1,5 @@
+#
+#set prefer network type
+#LTE, GSM, WCDMA(9)
+#
+ro.telephony.default_network=9

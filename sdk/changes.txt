@@ -1,0 +1,199 @@
+Change log for Android SDK Tools.
+
+Revision 22.2.1:
+- Emergency fix to new project templates.
+
+Revision 22.2.0:
+
+Revision 22:
+
+Revision 20:
+- Ant build system:
+- Ant build system:
+   * the location of the SDK can now be set through the ANDROID_HOME
+     environment variable (requires updating the project's build.xml file)
+   * Fixed issues with compilation, deployment of test projects and running tests.
+     Both separate test projects and self-contained app+test projects now work.
+   * Aidl files from library projects are now in the import list.
+
+Revision 19:
+- Fix GPU rendering
+
+Revision 18:
+* Fix Ant issues where some jar libraries in libs/ are not picked in some
+  cases
+* New version of SdkController
+
+Revision 17:
+* Bug fixes.
+* ProGuard updated to version 4.7. In addition to many new features,
+  this will fix the "Conversion to Dalvik format failed with error 1"
+  error some users have experienced.
+* The default proguard.cfg file has been updated with better
+  flags.
+* Lint now checks Java code, and checks which previously performed
+  pattern based searches in the Java code (such as the unused resource
+  check) have been rewritten to use the more accurate Java parse
+  trees.
+* Lint supports library projects, so for example the unused resource
+  check will properly handle resources declared in a library project
+  and referenced in a downstream project.
+* Lint warnings can be suppressed in Java code with the new
+  @SuppressLint annotation, and in XML files with the new tools:
+  namespace and ignore-attribute.
+* New lint checks:
+  * Find Android API calls that require a version of Android higher
+    than the minimum supported version. You can use the new @TargetApi
+    annotation to specify local overrides for conditionally loaded
+    code.
+  * Find object allocations within onDraw, onMeasure and onLayout
+    calls
+  * Find usages of HashMap<Integer,X> which can be replaced by the
+    more efficient SparseArray, SparseIntArray or SparseBooleanArray
+  * Find typos in XML namespace declarations, as well as unused custom
+    namespace declarations and usages of custom namespaces in library
+    projects which do not yet work
+  * Find manifest files which declare more than one <uses-sdk>
+    elements, or which fail to declare minSdkVersion or
+    targetSdkVersion
+  * Check dialog button order such that OK/Cancel are in the right
+    order (depending on the target version of Android), that they are
+    using the standard case ("OK", not "Ok" or "ok" etc), and that
+    there aren't any Back buttons.
+  * Check menus to ensure that they are using "ifRoom" instead of
+    "always" for the showAsAction attribute (unless it's used
+    sparingly)
+  * Find hardcoded android:debuggable attributes on <application>
+    elements. This can lead to accidentally leaving debug information
+    in published applications.
+  * Find errors in format strings. This includes inconsistencies
+    between translated versions, as well as incompatible types
+    declared in XML and supplied in the String.format call in Java.
+  * Find incorrect casts in Java code where the cast is incompatible
+    with the view type declared in XML layouts.
+  * Find hardcoded references to "/sdcard" in Java code; these should
+    be using Environment.getExternalStorageDirectory().getPath()
+    instead
+  * Find "import android.R" statements in Java code, which can lead to
+    confusing compilation error messages
+  * Find Java code which creates world-writeable files (which can lead
+    to security problems)
+  * Find references to private resources (which can lead to runtime
+    errors on devices that do not provide the resource, since private
+    resources may disappear any time, and may not be present on all
+    platforms.)
+  * Find invalid @id references (where for example a RelativeLayout
+    references an id that does not exist anywhere). If no match is
+    found, it looks for spelling mistakes and suggests other similar
+    ids in the error message.
+  * Finds method calls to java.lang.Math where a float variable is
+    cast to a double and/or the return value is cast to a float, and
+    suggests replacing it with the equivalent android.util.FloatMath
+    method.
+  * Finds calls to a getter on the same class where a field could be
+    accessed instead.
+  * Find XML files using a different encoding format than UTF-8, since
+    this can lead to subtle bugs (and lint was fixed to properly use
+    the specified encoding)
+  * Find XML resource files that contain text which should not be
+    there (such as in layouts). This can identify accidentally
+    malformed documents which happen to be valid XML, such as a
+    missing "<" tag opening character.
+  * Find style references which lead to cycles, such as extending
+    self.
+
+Revision 16:
+* New "lint" tool which scans Android project trees for potential
+  problems such as missing translations, duplicate ids between layouts
+  that include each other, using px instead of dp units, hardcoded
+  strings, missing contentDescriptions, obsolete Proguard
+  configuration files, etc. For a full list of available issues run
+  "lint --show" (and see eclipse/changes.txt for further details).
+* layoutopt was removed; its functionality is replaced by the new lint
+  tool
+
+Revision 14:
+
+- Build performance improvements:
+   * resource compilation and packaging now properly use dependency to only
+     be executed if a resource changed.
+   * Optimized resource compilation for projects with libraries. This should
+     speed up this phase significantly for large projects with libraries.
+   * PNG files that are optimized during resource packaging are now cached
+     and only re-optimized if they changed instead of doing at every build.
+- New library project mechanism:
+   *
+
+Revision 13:
+
+Revision 12: (07/2011):
+- The AVD manager and emulator can now use system images compiled for ARM v7 and
+  x86 CPUs.
+
+Revision 11 (05/2011):
+- See eclipse/changes.txt for ADT related changes.
+
+Revision 10 (02/2011):
+- The tools now automatically generate Java Programming Language
+  source files (in the gen directory) and bytecode (in the res/raw
+  directory) from your native .rs files
+
+Revision 9 (01/2011):
+- Fix packaging issue that broke draw9patch
+- Ant build rules will now check the Ant version and fail if it's older than 1.8
+- Fix "folder locked" errors when installing packages in SDK Manager on Windows.
+- Support https proxy when installing from SDK Manager.
+- SDK Manager now suggests to install missing base platform for add-ons.
+- Default proguard config file changes:
+   * ignore classes extending android.preference.Preference
+   * ignore classes extending android.app.backup.BackupAgentHelper
+- Ant lib rules now allow for overriding java.encoding, java.source, and java.target
+- Default encoding for Ant javac is now UTF-8
+- Logcat view in DDMS now properly displays UTF-8 characters.
+
+
+Revision 8 (12/2010):
+- New SDK component: platform-tools. This makes all platforms use the same
+  latest version of aapt/aidl/dx.
+- Support for true debug build. No need to change the value of debuggable in
+  the Android Manifest.
+  "ant debug" will automatically insert debuggable==true, while "ant release"
+  will not.
+  If debuggable=true is set, then "ant release" will actually do a debug build.
+- Automatic Proguard support in release builds. Only need to have a proguard.config
+  property in default.properties that points to a proguard config file.
+- new overridable Ant javac properties: java.encoding, java.source, and java.target
+  (default to "ascii", "1.5" and "1.5")
+
+
+Revision 7 (09/2010):
+- Support for Ant rules provided by the Tools components (override the one in
+  the platform component)
+- Added support for libraries with library dependencies.
+- Support for aidl files in library projects.
+- Support for extension targets in Ant build to perform tasks between the
+  normal tasks: -pre-build, -pre-compile, -post-compile.
+- Headless SDK update. See 'android -h update sdk' for more info.
+- Fixed location control in DDMS to work in any locale not using '.' as a
+  decimal point.
+
+
+Revision 6 (05/2010)
+- Support for library project to share code/resources among projects
+    - Updated Ant rules and custom tasks
+    - New "android create lib-project", "android update lib-project" actions.
+    - New parameter for "android update project"
+
+
+Revision 5 (03/2010):
+- AVD/SDK Manager:
+	- Fixed SSL download for the standalone version of the SDK Updater.
+	- Fixed issue with 64bit JVM on windows.
+	- Add support for samples components.
+	- improved support for dependency between components.
+	- AVDs now sorted by API level.
+	- Prevent deletion of running AVDs.
+	- Settings are now automatically saved, no need to click Apply.
+- Emulator now requires sd card to be 9MB and above.
+- Fixed layoutopt.bat to correctly execute on Windows.
+

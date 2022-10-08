@@ -1,0 +1,31 @@
+# Integrated qualcomm sensor process
+type sensors, domain;
+type sensors_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(sensors)
+
+# drop privileges
+allow sensors self:capability { dac_override sys_nice chown setuid setgid net_bind_service};
+
+allow sensors persist_sensors_file:dir setattr;
+
+allow sensors shared_log_device:chr_file rw_file_perms;
+
+# Access power management controls
+allow sensors power_control_device:chr_file w_file_perms;
+
+allow sensors sensors_device:chr_file rw_file_perms;
+type_transition sensors socket_device:sock_file sensors_socket "sensor_ctl_socket";
+allow sensors sensors_socket:sock_file create_file_perms;
+allow sensors socket_device:dir { add_name write remove_name };
+
+# Wake lock access
+wakelock_use(sensors)
+
+# Access to /persist/sensors
+allow sensors persist_file:dir r_dir_perms;
+allow sensors persist_sensors_file:dir rw_dir_perms;
+allow sensors persist_sensors_file:file create_file_perms;
+
+allow sensors self:socket *;

@@ -1,0 +1,28 @@
+binder_call(rild, mediaserver)
+binder_use(rild)
+binder_service(rild)
+
+# Grant access to Qualcomm MSM Interface (QMI) radio sockets to RILD
+qmux_socket(rild)
+
+allow rild persist_file:dir search;
+allow rild persist_modem_file:dir rw_dir_perms;
+allow rild persist_modem_file:file create_file_perms;
+
+allow rild time:unix_stream_socket connectto;
+allow rild sysfs_capsense_update:file { getattr w_file_perms};
+allow rild sysfs_sar_wifi:file { getattr w_file_perms};
+
+allow rild audio_cutback_data_file:dir rw_dir_perms;
+allow rild audio_cutback_data_file:sock_file create_file_perms;
+# why?
+allow rild audio_cutback_data_file:dir setattr;
+
+# rild needs to parse through /proc to obtain pid of netmgrd
+r_dir_file(rild, netmgrd)
+# b/18352920 suppress denials until the procfs lookup is removed
+dontaudit rild domain:dir r_dir_perms;
+
+# Allow permissions for FSG
+allow rild fsg_file:dir search;
+allow rild fsg_file:file r_file_perms;

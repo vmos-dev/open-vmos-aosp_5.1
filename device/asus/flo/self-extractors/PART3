@@ -1,0 +1,12 @@
+
+if test $? != 0
+then
+  echo
+  echo ERROR: Couldn\'t extract files. 1>&2
+  exit 3
+else
+  echo
+  echo Files extracted successfully.
+fi
+exit 0
+

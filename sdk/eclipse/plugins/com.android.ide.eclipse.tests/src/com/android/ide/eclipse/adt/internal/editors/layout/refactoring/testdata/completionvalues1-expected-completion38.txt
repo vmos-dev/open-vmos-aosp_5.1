@@ -1,0 +1,6 @@
+Code completion in completionvalues1.xml for            c^:
+center_vertical
+center_horizontal
+center
+clip_vertical
+clip_horizontal

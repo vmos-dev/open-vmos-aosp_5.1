@@ -1,0 +1,29 @@
+# Temperature sensor daemon (root process)
+type thermald, domain;
+type thermald_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(thermald)
+
+allow thermald shared_log_device:chr_file rw_file_perms;
+
+allow thermald self:capability { dac_override fsetid chown };
+
+# Access to /dev/msm_thermal_query
+allow thermald thermal_engine_device:chr_file rw_file_perms;
+
+# Talk to qmuxd (/dev/socket/qmux_radio)
+qmux_socket(thermald)
+
+# Create and access to /dev/socket/thermal-.*
+type_transition thermald socket_device:sock_file thermald_socket;
+allow thermald socket_device:dir w_dir_perms;
+allow thermald thermald_socket:sock_file create_file_perms;
+
+allow thermald self:socket create_socket_perms;
+
+# Writes to /sys/module/msm_thermal/core_control/cpus_offlined
+allow thermald sysfs_mpdecision:file rw_file_perms;
+
+# TODO specify specific labels for /sys/ files
+allow thermald sysfs:file write;

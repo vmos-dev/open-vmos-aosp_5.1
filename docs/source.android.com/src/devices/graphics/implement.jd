@@ -1,0 +1,605 @@
+page.title=Implementing graphics
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+
+<p>Follow the instructions here to implement the Android graphics HAL.</p>
+
+<h2 id=requirements>Requirements</h2>
+
+<p>The following list and sections describe what you need to provide to support
+graphics in your product:</p>
+
+<ul> <li> OpenGL ES 1.x Driver <li> OpenGL ES 2.0 Driver <li> OpenGL ES 3.0
+Driver (optional) <li> EGL Driver <li> Gralloc HAL implementation <li> Hardware
+Composer HAL implementation <li> Framebuffer HAL implementation </ul>
+
+<h2 id=implementation>Implementation</h2>
+
+<h3 id=opengl_and_egl_drivers>OpenGL and EGL drivers</h3>
+
+<p>You must provide drivers for OpenGL ES 1.x, OpenGL ES 2.0, and EGL. Here are
+some key considerations:</p>
+
+<ul> <li> The GL driver needs to be robust and conformant to OpenGL ES
+standards.  <li> Do not limit the number of GL contexts. Because Android allows
+apps in the background and tries to keep GL contexts alive, you should not
+limit the number of contexts in your driver.  <li> It is not uncommon to have
+20-30 active GL contexts at once, so you should also be careful with the amount
+of memory allocated for each context.  <li> Support the YV12 image format and
+any other YUV image formats that come from other components in the system such
+as media codecs or the camera.  <li> Support the mandatory extensions:
+<code>GL_OES_texture_external</code>,
+<code>EGL_ANDROID_image_native_buffer</code>, and
+<code>EGL_ANDROID_recordable</code>. The
+<code>EGL_ANDROID_framebuffer_target</code> extension is required for Hardware
+Composer 1.1 and higher, as well.  <li> We highly recommend also supporting
+<code>EGL_ANDROID_blob_cache</code>, <code>EGL_KHR_fence_sync</code>,
+<code>EGL_KHR_wait_sync</code>, and <code>EGL_ANDROID_native_fence_sync</code>.
+</ul>
+
+<p>Note the OpenGL API exposed to app developers is different from the OpenGL
+interface that you are implementing. Apps do not have access to the GL driver
+layer and must go through the interface provided by the APIs.</p>
+
+<h3 id=pre-rotation>Pre-rotation</h3>
+
+<p>Many hardware overlays do not support rotation, and even if they do it costs
+processing power. So the solution is to pre-transform the buffer before it
+reaches SurfaceFlinger. A query hint in <code>ANativeWindow</code> was added
+(<code>NATIVE_WINDOW_TRANSFORM_HINT</code>) that represents the most likely
+transform to be applied to the buffer by SurfaceFlinger. Your GL driver can use
+this hint to pre-transform the buffer before it reaches SurfaceFlinger so when
+the buffer arrives, it is correctly transformed.</p>
+
+<p>For example, you may receive a hint to rotate 90 degrees. You must generate
+a matrix and apply it to the buffer to prevent it from running off the end of
+the page. To save power, this should be done in pre-rotation. See the
+<code>ANativeWindow</code> interface defined in
+<code>system/core/include/system/window.h</code> for more details.</p>
+
+<h3 id=gralloc_hal>Gralloc HAL</h3>
+
+<p>The graphics memory allocator is needed to allocate memory that is requested
+by image producers. You can find the interface definition of the HAL at:
+<code>hardware/libhardware/modules/gralloc.h</code></p>
+
+<h3 id=protected_buffers>Protected buffers</h3>
+
+<p>The gralloc usage flag <code>GRALLOC_USAGE_PROTECTED</code> allows the
+graphics buffer to be displayed only through a hardware-protected path. These
+overlay planes are the only way to display DRM content. DRM-protected buffers
+cannot be accessed by SurfaceFlinger or the OpenGL ES driver.</p>
+
+<p>DRM-protected video can be presented only on an overlay plane. Video players
+that support protected content must be implemented with SurfaceView. Software
+running on unprotected hardware cannot read or write the buffer.
+Hardware-protected paths must appear on the Hardware Composer overlay. For
+instance, protected videos will disappear from the display if Hardware Composer
+switches to OpenGL ES composition.</p>
+
+<p>See the <a href="{@docRoot}devices/drm.html">DRM</a> page for a description
+of protected content.</p>
+
+<h3 id=hardware_composer_hal>Hardware Composer HAL</h3>
+
+<p>The Hardware Composer HAL is used by SurfaceFlinger to composite surfaces to
+the screen. The Hardware Composer abstracts objects like overlays and 2D
+blitters and helps offload some work that would normally be done with
+OpenGL.</p>
+
+<p>We recommend you start using version 1.3 of the Hardware Composer HAL as it
+will provide support for the newest features (explicit synchronization,
+external displays, and more). Because the physical display hardware behind the
+Hardware Composer abstraction layer can vary from device to device, it is
+difficult to define recommended features. But here is some guidance:</p>
+
+<ul> <li> The Hardware Composer should support at least four overlays (status
+bar, system bar, application, and wallpaper/background).  <li> Layers can be
+bigger than the screen, so the Hardware Composer should be able to handle
+layers that are larger than the display (for example, a wallpaper).  <li>
+Pre-multiplied per-pixel alpha blending and per-plane alpha blending should be
+supported at the same time.  <li> The Hardware Composer should be able to
+consume the same buffers that the GPU, camera, video decoder, and Skia buffers
+are producing, so supporting some of the following properties is helpful: <ul>
+<li> RGBA packing order <li> YUV formats <li> Tiling, swizzling, and stride
+properties </ul> <li> A hardware path for protected video playback must be
+present if you want to support protected content.  </ul>
+
+<p>The general recommendation when implementing your Hardware Composer is to
+implement a non-operational Hardware Composer first. Once you have the
+structure done, implement a simple algorithm to delegate composition to the
+Hardware Composer. For example, just delegate the first three or four surfaces
+to the overlay hardware of the Hardware Composer.</p>
+
+<p>Focus on optimization, such as intelligently selecting the surfaces to send
+to the overlay hardware that maximizes the load taken off of the GPU. Another
+optimization is to detect whether the screen is updating. If not, delegate
+composition to OpenGL instead of the Hardware Composer to save power. When the
+screen updates again, continue to offload composition to the Hardware
+Composer.</p>
+
+<p>Devices must report the display mode (or resolution). Android uses the first
+mode reported by the device. To support televisions, have the TV device report
+the mode selected for it by the manufacturer to Hardware Composer. See
+hwcomposer.h for more details.</p>
+
+<p>Prepare for common use cases, such as:</p>
+
+<ul> <li> Full-screen games in portrait and landscape mode <li> Full-screen
+video with closed captioning and playback control <li> The home screen
+(compositing the status bar, system bar, application window, and live
+wallpapers) <li> Protected video playback <li> Multiple display support </ul>
+
+<p>These use cases should address regular, predictable uses rather than edge
+cases that are rarely encountered. Otherwise, any optimization will have little
+benefit. Implementations must balance two competing goals: animation smoothness
+and interaction latency.</p>
+
+<p>Further, to make best use of Android graphics, you must develop a robust
+clocking strategy. Performance matters little if clocks have been turned down
+to make every operation slow. You need a clocking strategy that puts the clocks
+at high speed when needed, such as to make animations seamless, and then slows
+the clocks whenever the increased speed is no longer needed.</p>
+
+<p>Use the <code>adb shell dumpsys SurfaceFlinger</code> command to see
+precisely what SurfaceFlinger is doing. See the <a
+href="{@docRoot}devices/graphics/architecture.html#hwcomposer">Hardware
+Composer</a> section of the Architecture page for example output and a
+description of relevant fields.</p>
+
+<p>You can find the HAL for the Hardware Composer and additional documentation
+in: <code>hardware/libhardware/include/hardware/hwcomposer.h
+hardware/libhardware/include/hardware/hwcomposer_defs.h</code></p>
+
+<p>A stub implementation is available in the
+<code>hardware/libhardware/modules/hwcomposer</code> directory.</p>
+
+<h3 id=vsync>VSYNC</h3>
+
+<p>VSYNC synchronizes certain events to the refresh cycle of the display.
+Applications always start drawing on a VSYNC boundary, and SurfaceFlinger
+always composites on a VSYNC boundary. This eliminates stutters and improves
+visual performance of graphics. The Hardware Composer has a function
+pointer:</p>
+
+<pre class=prettyprint> int (waitForVsync*) (int64_t *timestamp) </pre>
+
+
+<p>This points to a function you must implement for VSYNC. This function blocks
+until a VSYNC occurs and returns the timestamp of the actual VSYNC. A message
+must be sent every time VSYNC occurs. A client can receive a VSYNC timestamp
+once, at specified intervals, or continuously (interval of 1). You must
+implement VSYNC to have no more than a 1ms lag at the maximum (0.5ms or less is
+recommended), and the timestamps returned must be extremely accurate.</p>
+
+<h4 id=explicit_synchronization>Explicit synchronization</h4>
+
+<p>Explicit synchronization is required and provides a mechanism for Gralloc
+buffers to be acquired and released in a synchronized way. Explicit
+synchronization allows producers and consumers of graphics buffers to signal
+when they are done with a buffer. This allows the Android system to
+asynchronously queue buffers to be read or written with the certainty that
+another consumer or producer does not currently need them. See the <a
+href="#synchronization_framework">Synchronization framework</a> section for an overview of
+this mechanism.</p>
+
+<p>The benefits of explicit synchronization include less behavior variation
+between devices, better debugging support, and improved testing metrics. For
+instance, the sync framework output readily identifies problem areas and root
+causes. And centralized SurfaceFlinger presentation timestamps show when events
+occur in the normal flow of the system.</p>
+
+<p>This communication is facilitated by the use of synchronization fences,
+which are now required when requesting a buffer for consuming or producing. The
+synchronization framework consists of three main building blocks:
+sync_timeline, sync_pt, and sync_fence.</p>
+
+<h5 id=sync_timeline>sync_timeline</h5>
+
+<p>A sync_timeline is a monotonically increasing timeline that should be
+implemented for each driver instance, such as a GL context, display controller,
+or 2D blitter. This is essentially a counter of jobs submitted to the kernel
+for a particular piece of hardware. It provides guarantees about the order of
+operations and allows hardware-specific implementations.</p>
+
+<p>Please note, the sync_timeline is offered as a CPU-only reference
+implementation called sw_sync (which stands for software sync). If possible,
+use sw_sync instead of a sync_timeline to save resources and avoid complexity.
+If you’re not employing a hardware resource, sw_sync should be sufficient.</p>
+
+<p>If you must implement a sync_timeline, use the sw_sync driver as a starting
+point. Follow these guidelines:</p>
+
+<ul> <li> Provide useful names for all drivers, timelines, and fences. This
+simplifies debugging.  <li> Implement timeline_value str and pt_value_str
+operators in your timelines as they make debugging output much more readable.
+<li> If you want your userspace libraries (such as the GL library) to have
+access to the private data of your timelines, implement the fill driver_data
+operator. This lets you get information about the immutable sync_fence and
+sync_pts so you might build command lines based upon them.  </ul>
+
+<p>When implementing a sync_timeline, <strong>don’t</strong>:</p>
+
+<ul> <li> Base it on any real view of time, such as when a wall clock or other
+piece of work might finish. It is better to create an abstract timeline that
+you can control.  <li> Allow userspace to explicitly create or signal a fence.
+This can result in one piece of the user pipeline creating a denial-of-service
+attack that halts all functionality. This is because the userspace cannot make
+promises on behalf of the kernel.  <li> Access sync_timeline, sync_pt, or
+sync_fence elements explicitly, as the API should provide all required
+functions.  </ul>
+
+<h5 id=sync_pt>sync_pt</h5>
+
+<p>A sync_pt is a single value or point on a sync_timeline. A point has three
+states: active, signaled, and error. Points start in the active state and
+transition to the signaled or error states. For instance, when a buffer is no
+longer needed by an image consumer, this sync_point is signaled so that image
+producers know it is okay to write into the buffer again.</p>
+
+<h5 id=sync_fence>sync_fence</h5>
+
+<p>A sync_fence is a collection of sync_pts that often have different
+sync_timeline parents (such as for the display controller and GPU). These are
+the main primitives over which drivers and userspace communicate their
+dependencies. A fence is a promise from the kernel that it gives upon accepting
+work that has been queued and assures completion in a finite amount of
+time.</p>
+
+<p>This allows multiple consumers or producers to signal they are using a
+buffer and to allow this information to be communicated with one function
+parameter. Fences are backed by a file descriptor and can be passed from
+kernel-space to user-space. For instance, a fence can contain two sync_points
+that signify when two separate image consumers are done reading a buffer. When
+the fence is signaled, the image producers know both consumers are done
+consuming.
+
+Fences, like sync_pts, start active and then change state based upon the state
+of their points. If all sync_pts become signaled, the sync_fence becomes
+signaled. If one sync_pt falls into an error state, the entire sync_fence has
+an error state.
+
+Membership in the sync_fence is immutable once the fence is created. And since
+a sync_pt can be in only one fence, it is included as a copy. Even if two
+points have the same value, there will be two copies of the sync_pt in the
+fence.
+
+To get more than one point in a fence, a merge operation is conducted. In the
+merge, the points from two distinct fences are added to a third fence. If one
+of those points was signaled in the originating fence, and the other was not,
+the third fence will also not be in a signaled state.</p>
+
+<p>To implement explicit synchronization, you need to provide the
+following:</p>
+
+<ul> <li> A kernel-space driver that implements a synchronization timeline for
+a particular piece of hardware. Drivers that need to be fence-aware are
+generally anything that accesses or communicates with the Hardware Composer.
+Here are the key files (found in the android-3.4 kernel branch): <ul> <li> Core
+implementation: <ul> <li> <code>kernel/common/include/linux/sync.h</code> <li>
+<code>kernel/common/drivers/base/sync.c</code> </ul> <li> sw_sync: <ul> <li>
+<code>kernel/common/include/linux/sw_sync.h</code> <li>
+<code>kernel/common/drivers/base/sw_sync.c</code> </ul> <li> Documentation:
+<li> <code>kernel/common//Documentation/sync.txt</code> Finally, the
+<code>platform/system/core/libsync</code> directory includes a library to
+communicate with the kernel-space.  </ul> <li> A Hardware Composer HAL module
+(version 1.3 or later) that supports the new synchronization functionality. You
+will need to provide the appropriate synchronization fences as parameters to
+the set() and prepare() functions in the HAL.  <li> Two GL-specific extensions
+related to fences, <code>EGL_ANDROID_native_fence_sync</code> and
+<code>EGL_ANDROID_wait_sync</code>, along with incorporating fence support into
+your graphics drivers.  </ul>
+
+<p>For example, to use the API supporting the synchronization function, you
+might develop a display driver that has a display buffer function. Before the
+synchronization framework existed, this function would receive dma-bufs, put
+those buffers on the display, and block while the buffer is visible, like
+so:</p>
+
+<pre class=prettyprint>
+/*
+ * assumes buf is ready to be displayed.  returns when buffer is no longer on
+ * screen.
+ */
+void display_buffer(struct dma_buf *buf); </pre>
+
+
+<p>With the synchronization framework, the API call is slightly more complex.
+While putting a buffer on display, you associate it with a fence that says when
+the buffer will be ready. So you queue up the work, which you will initiate
+once the fence clears.</p>
+
+<p>In this manner, you are not blocking anything. You immediately return your
+own fence, which is a guarantee of when the buffer will be off of the display.
+As you queue up buffers, the kernel will list dependencies. With the
+synchronization framework:</p>
+
+<pre class=prettyprint>
+/*
+ * will display buf when fence is signaled.  returns immediately with a fence
+ * that will signal when buf is no longer displayed.
+ */
+struct sync_fence* display_buffer(struct dma_buf *buf, struct sync_fence
+*fence); </pre>
+
+
+<h4 id=sync_integration>Sync integration</h4>
+
+<h5 id=integration_conventions>Integration conventions</h5>
+
+<p>This section explains how to integrate the low-level sync framework with
+different parts of the Android framework and the drivers that need to
+communicate with one another.</p>
+
+<p>The Android HAL interfaces for graphics follow consistent conventions so
+when file descriptors are passed across a HAL interface, ownership of the file
+descriptor is always transferred. This means:</p>
+
+<ul> <li> if you receive a fence file descriptor from the sync framework, you
+must close it.  <li> if you return a fence file descriptor to the sync
+framework, the framework will close it.  <li> if you want to continue using the
+fence file descriptor, you must duplicate the descriptor.  </ul>
+
+<p>Every time a fence is passed through BufferQueue - such as for a window that
+passes a fence to BufferQueue saying when its new contents will be ready - the
+fence object is renamed. Since kernel fence support allows fences to have
+strings for names, the sync framework uses the window name and buffer index
+that is being queued to name the fence, for example:
+<code>SurfaceView:0</code></p>
+
+<p>This is helpful in debugging to identify the source of a deadlock. Those
+names appear in the output of <code>/d/sync</code> and bug reports when
+taken.</p>
+
+<h5 id=anativewindow_integration>ANativeWindow integration</h5>
+
+<p>ANativeWindow is fence aware. <code>dequeueBuffer</code>,
+<code>queueBuffer</code>, and <code>cancelBuffer</code> have fence
+parameters.</p>
+
+<h5 id=opengl_es_integration>OpenGL ES integration</h5>
+
+<p>OpenGL ES sync integration relies upon these two EGL extensions:</p>
+
+<ul> <li> <code>EGL_ANDROID_native_fence_sync</code> - provides a way to either
+wrap or create native Android fence file descriptors in EGLSyncKHR objects.
+<li> <code>EGL_ANDROID_wait_sync</code> - allows GPU-side stalls rather than in
+CPU, making the GPU wait for an EGLSyncKHR. This is essentially the same as the
+<code>EGL_KHR_wait_sync</code> extension. See the
+<code>EGL_KHR_wait_sync</code> specification for details.  </ul>
+
+<p>These extensions can be used independently and are controlled by a compile
+flag in libgui. To use them, first implement the
+<code>EGL_ANDROID_native_fence_sync</code> extension along with the associated
+kernel support. Next add a ANativeWindow support for fences to your driver and
+then turn on support in libgui to make use of the
+<code>EGL_ANDROID_native_fence_sync</code> extension.</p>
+
+<p>Then, as a second pass, enable the <code>EGL_ANDROID_wait_sync</code>
+extension in your driver and turn it on separately. The
+<code>EGL_ANDROID_native_fence_sync</code> extension consists of a distinct
+native fence EGLSync object type so extensions that apply to existing EGLSync
+object types don’t necessarily apply to <code>EGL_ANDROID_native_fence</code>
+objects to avoid unwanted interactions.</p>
+
+<p>The EGL_ANDROID_native_fence_sync extension employs a corresponding native
+fence file descriptor attribute that can be set only at creation time and
+cannot be directly queried onward from an existing sync object. This attribute
+can be set to one of two modes:</p>
+
+<ul> <li> A valid fence file descriptor - wraps an existing native Android
+fence file descriptor in an EGLSyncKHR object.  <li> -1 - creates a native
+Android fence file descriptor from an EGLSyncKHR object.  </ul>
+
+<p>The DupNativeFenceFD function call is used to extract the EGLSyncKHR object
+from the native Android fence file descriptor. This has the same result as
+querying the attribute that was set but adheres to the convention that the
+recipient closes the fence (hence the duplicate operation). Finally, destroying
+the EGLSync object should close the internal fence attribute.</p>
+
+<h5 id=hardware_composer_integration>Hardware Composer integration</h5>
+
+<p>Hardware Composer handles three types of sync fences:</p>
+
+<ul> <li> <em>Acquire fence</em> - one per layer, this is set before calling
+HWC::set. It signals when Hardware Composer may read the buffer.  <li>
+<em>Release fence</em> - one per layer, this is filled in by the driver in
+HWC::set. It signals when Hardware Composer is done reading the buffer so the
+framework can start using that buffer again for that particular layer.  <li>
+<em>Retire fence</em> - one per the entire frame, this is filled in by the
+driver each time HWC::set is called. This covers all of the layers for the set
+operation. It signals to the framework when all of the effects of this set
+operation has completed. The retire fence signals when the next set operation
+takes place on the screen.  </ul>
+
+<p>The retire fence can be used to determine how long each frame appears on the
+screen. This is useful in identifying the location and source of delays, such
+as a stuttering animation. </p>
+
+<h4 id=vsync_offset>VSYNC Offset</h4>
+
+<p>Application and SurfaceFlinger render loops should be synchronized to the
+hardware VSYNC. On a VSYNC event, the display begins showing frame N while
+SurfaceFlinger begins compositing windows for frame N+1. The app handles
+pending input and generates frame N+2.</p>
+
+<p>Synchronizing with VSYNC delivers consistent latency. It reduces errors in
+apps and SurfaceFlinger and the drifting of displays in and out of phase with
+each other. This, however, does assume application and SurfaceFlinger per-frame
+times don’t vary widely. Nevertheless, the latency is at least two frames.</p>
+
+<p>To remedy this, you may employ VSYNC offsets to reduce the input-to-display
+latency by making application and composition signal relative to hardware
+VSYNC. This is possible because application plus composition usually takes less
+than 33 ms.</p>
+
+<p>The result of VSYNC offset is three signals with same period, offset
+phase:</p>
+
+<ul> <li> <em>HW_VSYNC_0</em> - Display begins showing next frame <li>
+<em>VSYNC</em> - App reads input and generates next frame <li> <em>SF
+VSYNC</em> - SurfaceFlinger begins compositing for next frame </ul>
+
+<p>With VSYNC offset, SurfaceFlinger receives the buffer and composites the
+frame, while the application processes the input and renders the frame, all
+within a single frame of time.</p>
+
+<p>Please note, VSYNC offsets reduce the time available for app and composition
+and therefore provide a greater chance for error.</p>
+
+<h5 id=dispsync>DispSync</h5>
+
+<p>DispSync maintains a model of the periodic hardware-based VSYNC events of a
+display and uses that model to execute periodic callbacks at specific phase
+offsets from the hardware VSYNC events.</p>
+
+<p>DispSync is essentially a software phase lock loop (PLL) that generates the
+VSYNC and SF VSYNC signals used by Choreographer and SurfaceFlinger, even if
+not offset from hardware VSYNC.</p>
+
+<img src="images/dispsync.png" alt="DispSync flow">
+
+<p class="img-caption"><strong>Figure 4.</strong> DispSync flow</p>
+
+<p>DispSync has these qualities:</p>
+
+<ul> <li> <em>Reference</em> - HW_VSYNC_0 <li> <em>Output</em> - VSYNC and SF
+VSYNC <li> <em>Feedback</em> - Retire fence signal timestamps from Hardware
+Composer </ul>
+
+<h5 id=vsync_retire_offset>VSYNC/Retire Offset</h5>
+
+<p>The signal timestamp of retire fences must match HW VSYNC even on devices
+that don’t use the offset phase. Otherwise, errors appear to have greater
+severity than reality.</p>
+
+<p>“Smart” panels often have a delta. Retire fence is the end of direct memory
+access (DMA) to display memory. The actual display switch and HW VSYNC is some
+time later.</p>
+
+<p><code>PRESENT_TIME_OFFSET_FROM_VSYNC_NS</code> is set in the device’s
+BoardConfig.mk make file. It is based upon the display controller and panel
+characteristics. Time from retire fence timestamp to HW Vsync signal is
+measured in nanoseconds.</p>
+
+<h5 id=vsync_and_sf_vsync_offsets>VSYNC and SF_VSYNC Offsets</h5>
+
+<p>The <code>VSYNC_EVENT_PHASE_OFFSET_NS</code> and
+<code>SF_VSYNC_EVENT_PHASE_OFFSET_NS</code> are set conservatively based on
+high-load use cases, such as partial GPU composition during window transition
+or Chrome scrolling through a webpage containing animations. These offsets
+allow for long application render time and long GPU composition time.</p>
+
+<p>More than a millisecond or two of latency is noticeable. We recommend
+integrating thorough automated error testing to minimize latency without
+significantly increasing error counts.</p>
+
+<p>Note these offsets are also set in the device’s BoardConfig.mk make file.
+The default if not set is zero offset. Both settings are offset in nanoseconds
+after HW_VSYNC_0. Either can be negative.</p>
+
+<h3 id=virtual_displays>Virtual displays</h3>
+
+<p>Android added support for virtual displays to Hardware Composer in version
+1.3. This support was implemented in the Android platform and can be used by
+Miracast.</p>
+
+<p>The virtual display composition is similar to the physical display: Input
+layers are described in prepare(), SurfaceFlinger conducts GPU composition, and
+layers and GPU framebuffer are  provided to Hardware Composer in set().</p>
+
+<p>Instead of the output going to the screen, it is sent to a gralloc buffer.
+Hardware Composer writes output to a buffer and provides the completion fence.
+The buffer is sent to an arbitrary consumer: video encoder, GPU, CPU, etc.
+Virtual displays can use 2D/blitter or overlays if the display pipeline can
+write to memory.</p>
+
+<h4 id=modes>Modes</h4>
+
+<p>Each frame is in one of three modes after prepare():</p>
+
+<ul> <li> <em>GLES</em> - All layers composited by GPU. GPU writes directly to
+the output buffer while Hardware Composer does nothing. This is equivalent to
+virtual display composition with Hardware Composer <1.3.  <li> <em>MIXED</em> -
+GPU composites some layers to framebuffer, and Hardware Composer composites
+framebuffer and remaining layers. GPU writes to scratch buffer (framebuffer).
+Hardware Composer reads scratch buffer and writes to the output buffer. Buffers
+may have different formats, e.g. RGBA and YCbCr.  <li> <em>HWC</em> - All
+layers composited by Hardware Composer. Hardware Composer writes directly to
+the output buffer.  </ul>
+
+<h4 id=output_format>Output format</h4>
+
+<p><em>MIXED and HWC modes</em>: If the consumer needs CPU access, the consumer
+chooses the format. Otherwise, the format is IMPLEMENTATION_DEFINED. Gralloc
+can choose best format based on usage flags. For example, choose a YCbCr format
+if the consumer is video encoder, and Hardware Composer can write the format
+efficiently.</p>
+
+<p><em>GLES mode</em>: EGL driver chooses output buffer format in
+dequeueBuffer(), typically RGBA8888. The consumer must be able to accept this
+format.</p>
+
+<h4 id=egl_requirement>EGL requirement</h4>
+
+<p>Hardware Composer 1.3 virtual displays require that eglSwapBuffers() does
+not dequeue the next buffer immediately. Instead, it should defer dequeueing
+the buffer until rendering begins. Otherwise, EGL always owns the “next” output
+buffer. SurfaceFlinger can’t get the output buffer for Hardware Composer in
+MIXED/HWC mode. </p>
+
+<p>If Hardware Composer always sends all virtual display layers to GPU, all
+frames will be in GLES mode. Although it is not recommended, you may use this
+method if you need to support Hardware Composer 1.3 for some other reason but
+can’t conduct virtual display composition.</p>
+
+<h2 id=testing>Testing</h2>
+
+<p>For benchmarking, we suggest following this flow by phase:</p>
+
+<ul> <li> <em>Specification</em> - When initially specifying the device, such
+as when using immature drivers, you should use predefined (fixed) clocks and
+workloads to measure the frames per second rendered. This gives a clear view of
+what the hardware is capable of doing.  <li> <em>Development</em> - In the
+development phase as drivers mature, you should use a fixed set of user actions
+to measure the number of visible stutters (janks) in animations.  <li>
+<em>Production</em> - Once the device is ready for production and you want to
+compare against competitors, you should increase the workload until stutters
+increase. Determine if the current clock settings can keep up with the load.
+This can help you identify where you might be able to slow the clocks and
+reduce power use.  </ul>
+
+<p>For the specification phase, Android offers the Flatland tool to help derive
+device capabilities. It can be found at:
+<code>platform/frameworks/native/cmds/flatland/</code></p>
+
+<p>Flatland relies upon fixed clocks and shows the throughput that can be
+achieved with composition-based workloads. It uses gralloc buffers to simulate
+multiple window scenarios, filling in the window with GL and then measuring the
+compositing. Please note, Flatland uses the synchronization framework to
+measure time. So you must support the synchronization framework to readily use
+Flatland.</p>

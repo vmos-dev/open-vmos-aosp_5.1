@@ -1,0 +1,649 @@
+page.title=Audio Terminology
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+This document provides a glossary of audio-related terminology, including
+a list of widely used, generic terms and a list of terms that are specific
+to Android.
+</p>
+
+<h2 id="genericTerm">Generic Terms</h2>
+
+<p>
+These are audio terms that are widely used, with their conventional meanings.
+</p>
+
+<h3 id="digitalAudioTerms">Digital Audio</h3>
+
+<dl>
+
+<dt>acoustics</dt>
+<dd>
+The study of the mechanical properties of sound, for example how the
+physical placement of transducers such as speakers and microphones on
+a device affects perceived audio quality.
+</dd>
+
+<dt>attenuation</dt>
+<dd>
+A multiplicative factor less than or equal to 1.0,
+applied to an audio signal to decrease the signal level.
+Compare to "gain".
+</dd>
+
+<dt>bits per sample or bit depth</dt>
+<dd>
+Number of bits of information per sample.
+</dd>
+
+<dt>channel</dt>
+<dd>
+A single stream of audio information, usually corresponding to one
+location of recording or playback.
+</dd>
+
+<dt>downmixing</dt>
+<dd>
+To decrease the number of channels, e.g. from stereo to mono, or from 5.1 to stereo.
+This can be accomplished by dropping some channels, mixing channels, or more advanced signal processing.
+Simple mixing without attenuation or limiting has the potential for overflow and clipping.
+Compare to "upmixing".
+</dd>
+
+<dt>duck</dt>
+<dd>
+To temporarily reduce the volume of one stream, when another stream
+becomes active.  For example, if music is playing and a notification arrives,
+then the music stream could be ducked while the notification plays.
+Compare to "mute".
+</dd>
+
+<dt>frame</dt>
+<dd>
+A set of samples, one per channel, at a point in time.
+</dd>
+
+<dt>frames per buffer</dt>
+<dd>
+The number of frames handed from one module to the next at once;
+for example the audio HAL interface uses this concept.
+</dd>
+
+<dt>gain</dt>
+<dd>
+A multiplicative factor greater than or equal to 1.0,
+applied to an audio signal to increase the signal level.
+Compare to "attenuation".
+</dd>
+
+<dt>Hz</dt>
+<dd>
+The units for sample rate or frame rate.
+</dd>
+
+<dt>latency</dt>
+<dd>
+Time delay as a signal passes through a system.
+</dd>
+
+<dt>mono</dt>
+<dd>
+One channel.
+</dd>
+
+<dt>multichannel</dt>
+<dd>
+See "surround sound".
+Strictly, since stereo is more than one channel, it is also "multi" channel.
+But that usage would be confusing.
+</dd>
+
+<dt>mute</dt>
+<dd>
+To (temporarily) force volume to be zero, independently from the usual volume controls.
+</dd>
+
+<dt>PCM</dt>
+<dd>
+Pulse Code Modulation, the most common low-level encoding of digital audio.
+The audio signal is sampled at a regular interval, called the sample rate,
+and then quantized to discrete values within a particular range depending on the bit depth.
+For example, for 16-bit PCM, the sample values are integers between -32768 and +32767.
+</dd>
+
+<dt>ramp</dt>
+<dd>
+To gradually increase or decrease the level of a particular audio parameter,
+for example volume or the strength of an effect.
+A volume ramp is commonly applied when pausing and resuming music, to avoid a hard audible transition.
+</dd>
+
+<dt>sample</dt>
+<dd>
+A number representing the audio value for a single channel at a point in time.
+</dd>
+
+<dt>sample rate or frame rate</dt>
+<dd>
+Number of frames per second;
+note that "frame rate" is thus more accurate,
+but "sample rate" is conventionally used to mean "frame rate."
+</dd>
+
+<dt>sonification</dt>
+<dd>
+The use of sound to express feedback or information,
+for example touch sounds and keyboard sounds.
+</dd>
+
+<dt>stereo</dt>
+<dd>
+Two channels.
+</dd>
+
+<dt>stereo widening</dt>
+<dd>
+An effect applied to a stereo signal, to make another stereo signal which sounds fuller and richer.
+The effect can also be applied to a mono signal, in which case it is a type of upmixing.
+</dd>
+
+<dt>surround sound</dt>
+<dd>
+Various techniques for increasing the ability of a listener to perceive
+sound position beyond stereo left and right.
+</dd>
+
+<dt>upmixing</dt>
+<dd>
+To increase the number of channels, e.g. from mono to stereo, or from stereo to surround sound.
+This can be accomplished by duplication, panning, or more advanced signal processing.
+Compare to "downmixing".
+</dd>
+
+<dt>virtualizer</dt>
+<dd>
+An effect that attempts to spatialize audio channels, such as trying to
+simulate more speakers, or give the illusion that various sound sources have position.
+</dd>
+
+<dt>volume</dt>
+<dd>
+Loudness, the subjective strength of an audio signal.
+</dd>
+
+</dl>
+
+<h3 id="hardwareTerms">Hardware and Accessories</h3>
+
+<p>
+These terms are related to audio hardware and accessories.
+</p>
+
+<h4 id="interDeviceTerms">Inter-device interconnect</h4>
+
+<p>
+These technologies connect audio and video components between devices,
+and are readily visible at the external connectors.  The HAL implementor
+may need to be aware of these, as well as the end user.
+</p>
+
+<dl>
+
+<dt>Bluetooth</dt>
+<dd>
+A short range wireless technology.
+The major audio-related
+<a href="http://en.wikipedia.org/wiki/Bluetooth_profile">Bluetooth profiles</a>
+and
+<a href="http://en.wikipedia.org/wiki/Bluetooth_protocols">Bluetooth protocols</a>
+are described at these Wikipedia articles:
+
+<ul>
+
+<li><a href="http://en.wikipedia.org/wiki/Bluetooth_profile#Advanced_Audio_Distribution_Profile_.28A2DP.29">A2DP</a>
+for music
+</li>
+
+<li><a href="http://en.wikipedia.org/wiki/Bluetooth_protocols#Synchronous_connection-oriented_.28SCO.29_link">SCO</a>
+for telephony
+</li>
+
+</ul>
+
+</dd>
+
+<dt>DisplayPort</dt>
+<dd>
+Digital display interface by VESA.
+</dd>
+
+<dt>HDMI</dt>
+<dd>
+High-Definition Multimedia Interface, an interface for transferring
+audio and video data.  For mobile devices, either a micro-HDMI (type D) or MHL connector is used.
+</dd>
+
+<dt>MHL</dt>
+<dd>
+Mobile High-Definition Link is a mobile audio/video interface, often
+over micro-USB connector.
+</dd>
+
+<dt>phone connector</dt>
+<dd>
+A mini or sub-mini phone connector
+connects a device to wired headphones, headset, or line-level amplifier.
+</dd>
+
+<dt>SlimPort</dt>
+<dd>
+An adapter from micro-USB to HDMI.
+</dd>
+
+<dt>S/PDIF</dt>
+<dd>
+Sony/Philips Digital Interface Format is an interconnect for uncompressed PCM.
+See Wikipedia article <a href="http://en.wikipedia.org/wiki/S/PDIF">S/PDIF</a>.
+</dd>
+
+<dt>USB</dt>
+<dd>
+Universal Serial Bus.
+See Wikipedia article <a href="http://en.wikipedia.org/wiki/USB">USB</a>.
+</dd>
+
+</dl>
+
+<h4 id="intraDeviceTerms">Intra-device interconnect</h4>
+
+<p>
+These technologies connect internal audio components within a given
+device, and are not visible without disassembling the device.  The HAL
+implementor may need to be aware of these, but not the end user.
+</p>
+
+See these Wikipedia articles:
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/General-purpose_input/output">GPIO</a></li>
+<li><a href="http://en.wikipedia.org/wiki/I%C2%B2C">I²C</a></li>
+<li><a href="http://en.wikipedia.org/wiki/I%C2%B2S">I²S</a></li>
+<li><a href="http://en.wikipedia.org/wiki/McASP">McASP</a></li>
+<li><a href="http://en.wikipedia.org/wiki/SLIMbus">SLIMbus</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus">SPI</a></li>
+</ul>
+
+<h3 id="signalTerms">Audio Signal Path</h3>
+
+<p>
+These terms are related to the signal path that audio data follows from
+an application to the transducer, or vice-versa.
+</p>
+
+<dl>
+
+<dt>ADC</dt>
+<dd>
+Analog to digital converter, a module that converts an analog signal
+(continuous in both time and amplitude) to a digital signal (discrete in
+both time and amplitude).  Conceptually, an ADC consists of a periodic
+sample-and-hold followed by a quantizer, although it does not have to
+be implemented that way.  An ADC is usually preceded by a low-pass filter
+to remove any high frequency components that are not representable using
+the desired sample rate.  See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Analog-to-digital_converter">Analog-to-digital_converter</a>.
+</dd>
+
+<dt>AP</dt>
+<dd>
+Application processor, the main general-purpose computer on a mobile device.
+</dd>
+
+<dt>codec</dt>
+<dd>
+Coder-decoder, a module that encodes and/or decodes an audio signal
+from one representation to another.  Typically this is analog to PCM, or PCM to analog.
+Strictly, the term "codec" is reserved for modules that both encode and decode,
+however it can also more loosely refer to only one of these.
+See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Audio_codec">Audio codec</a>.
+</dd>
+
+<dt>DAC</dt>
+<dd>
+Digital to analog converter, a module that converts a digital signal
+(discrete in both time and amplitude) to an analog signal
+(continuous in both time and amplitude).  A DAC is usually followed by
+a low-pass filter to remove any high frequency components introduced
+by digital quantization.
+See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Digital-to-analog_converter">Digital-to-analog converter</a>.
+</dd>
+
+<dt>DSP</dt>
+<dd>
+Digital Signal Processor, an optional component which is typically located
+after the application processor (for output), or before the application processor (for input).
+The primary purpose of a DSP is to off-load the application processor,
+and provide signal processing features at a lower power cost.
+</dd>
+
+<dt>PDM</dt>
+<dd>
+Pulse-density modulation
+is a form of modulation used to represent an analog signal by a digital signal,
+where the relative density of 1s versus 0s indicates the signal level.
+It is commonly used by digital to analog converters.
+See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Pulse-density_modulation">Pulse-density modulation</a>.
+</dd>
+
+<dt>PWM</dt>
+<dd>
+Pulse-width modulation
+is a form of modulation used to represent an analog signal by a digital signal,
+where the relative width of a digital pulse indicates the signal level.
+It is commonly used by analog to digital converters.
+See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Pulse-width_modulation">Pulse-width modulation</a>.
+</dd>
+
+</dl>
+
+<h3 id="srcTerms">Sample Rate Conversion</h3>
+
+<dl>
+
+<dt>downsample</dt>
+<dd>To resample, where sink sample rate &lt; source sample rate.</dd>
+
+<dt>Nyquist frequency</dt>
+<dd>
+The Nyquist frequency, equal to 1/2 of a given sample rate, is the
+maximum frequency component that can be represented by a discretized
+signal at that sample rate.  For example, the human hearing range is
+typically assumed to extend up to approximately 20 kHz, and so a digital
+audio signal must have a sample rate of at least 40 kHz to represent that
+range.  In practice, sample rates of 44.1 kHz and 48 kHz are commonly
+used, with Nyquist frequencies of 22.05 kHz and 24 kHz respectively.
+See
+<a href="http://en.wikipedia.org/wiki/Nyquist_frequency" target="_android">Nyquist frequency</a>
+and
+<a href="http://en.wikipedia.org/wiki/Hearing_range" target="_android">Hearing range</a>
+for more information.
+</dd>
+
+<dt>resampler</dt>
+<dd>Synonym for sample rate converter.</dd>
+
+<dt>resampling</dt>
+<dd>The process of converting sample rate.</dd>
+
+<dt>sample rate converter</dt>
+<dd>A module that resamples.</dd>
+
+<dt>sink</dt>
+<dd>The output of a resampler.</dd>
+
+<dt>source</dt>
+<dd>The input to a resampler.</dd>
+
+<dt>upsample</dt>
+<dd>To resample, where sink sample rate &gt; source sample rate.</dd>
+
+</dl>
+
+<h2 id="androidSpecificTerms">Android-Specific Terms</h2>
+
+<p>
+These are terms specific to the Android audio framework, or that
+may have a special meaning within Android beyond their general meaning.
+</p>
+
+<dl>
+
+<dt>ALSA</dt>
+<dd>
+Advanced Linux Sound Architecture.  As the name suggests, it is an audio
+framework primarily for Linux, but it has influenced other systems.
+See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Advanced_Linux_Sound_Architecture">ALSA</a>
+for the general definition. As used within Android, it refers primarily
+to the kernel audio framework and drivers, not to the user-mode API. See
+tinyalsa.
+</dd>
+
+<dt>AudioEffect</dt>
+<dd>
+An API and implementation framework for output (post-processing) effects
+and input (pre-processing) effects.  The API is defined at
+<a href="http://developer.android.com/reference/android/media/audiofx/AudioEffect.html">android.media.audiofx.AudioEffect</a>.
+</dd>
+
+<dt>AudioFlinger</dt>
+<dd>
+The sound server implementation for Android. AudioFlinger
+runs within the mediaserver process. See Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Sound_server">Sound server</a>
+for the generic definition.
+</dd>
+
+<dt>audio focus</dt>
+<dd>
+A set of APIs for managing audio interactions across multiple independent apps.
+See <a href="http://developer.android.com/training/managing-audio/audio-focus.html">Managing Audio
+Focus</a> and the focus-related methods and constants of
+<a href="http://developer.android.com/reference/android/media/AudioManager.html">android.media.AudioManager</a>.
+</dd>
+
+<dt>AudioMixer</dt>
+<dd>
+The module within AudioFlinger responsible for
+combining multiple tracks and applying attenuation
+(volume) and certain effects. The Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Audio_mixing_(recorded_music)">Audio mixing (recorded music)</a>
+may be useful for understanding the generic
+concept. But that article describes a mixer more as a hardware device
+or a software application, rather than a software module within a system.
+</dd>
+
+<dt>audio policy</dt>
+<dd>
+Service responsible for all actions that require a policy decision
+to be made first, such as opening a new I/O stream, re-routing after a
+change and stream volume management.
+</dd>
+
+<dt>AudioRecord</dt>
+<dd>
+The primary low-level client API for receiving data from an audio
+input device such as microphone.  The data is usually in pulse-code modulation
+(PCM) format.
+The API is defined at
+<a href="http://developer.android.com/reference/android/media/AudioRecord.html">android.media.AudioRecord</a>.
+</dd>
+
+<dt>AudioResampler</dt>
+<dd>
+The module within AudioFlinger responsible for
+<a href="audio_src.html">sample rate conversion</a>.
+</dd>
+
+<dt>AudioTrack</dt>
+<dd>
+The primary low-level client API for sending data to an audio output
+device such as a speaker.  The data is usually in PCM format.
+The API is defined at
+<a href="http://developer.android.com/reference/android/media/AudioTrack.html">android.media.AudioTrack</a>.
+</dd>
+
+<dt>client</dt>
+<dd>
+Usually same as application or app, but sometimes the "client" of
+AudioFlinger is actually a thread running within the mediaserver system
+process. An example of that is when playing media that is decoded by a
+MediaPlayer object.
+</dd>
+
+<dt>HAL</dt>
+<dd>
+Hardware Abstraction Layer. HAL is a generic term in Android. With
+respect to audio, it is a layer between AudioFlinger and the kernel
+device driver with a C API, which replaces the earlier C++ libaudio.
+</dd>
+
+<dt>FastMixer</dt>
+<dd>
+A thread within AudioFlinger that services lower latency "fast tracks"
+and drives the primary output device.
+</dd>
+
+<dt>fast track</dt>
+<dd>
+An AudioTrack client with lower latency but fewer features, on some devices.
+</dd>
+
+<dt>MediaPlayer</dt>
+<dd>
+A higher-level client API than AudioTrack, for playing either encoded
+content, or content which includes multimedia audio and video tracks.
+</dd>
+
+<dt>media.log</dt>
+<dd>
+An AudioFlinger debugging feature, available in custom builds only,
+for logging audio events to a circular buffer where they can then be
+dumped retroactively when needed.
+</dd>
+
+<dt>mediaserver</dt>
+<dd>
+An Android system process that contains a number of media-related
+services, including AudioFlinger.
+</dd>
+
+<dt>NBAIO</dt>
+<dd>
+An abstraction for "non-blocking" audio input/output ports used within
+AudioFlinger. The name can be misleading, as some implementations of
+the NBAIO API actually do support blocking. The key implementations of
+NBAIO are for pipes of various kinds.
+</dd>
+
+<dt>normal mixer</dt>
+<dd>
+A thread within AudioFlinger that services most full-featured
+AudioTrack clients, and either directly drives an output device or feeds
+its sub-mix into FastMixer via a pipe.
+</dd>
+
+<dt>OpenSL ES</dt>
+<dd>
+An audio API standard by The Khronos Group. Android versions since
+API level 9 support a native audio API which is based on a subset of
+OpenSL ES 1.0.1.
+</dd>
+
+<dt>silent mode</dt>
+<dd>
+A user-settable feature to mute the phone ringer and notifications,
+without affecting media playback (music, videos, games) or alarms.
+</dd>
+
+<dt>SoundPool</dt>
+<dd>
+A higher-level client API than AudioTrack, used for playing sampled
+audio clips. It is useful for triggering UI feedback, game sounds, etc.
+The API is defined at
+<a href="http://developer.android.com/reference/android/media/SoundPool.html">android.media.SoundPool</a>.
+</dd>
+
+<dt>Stagefright</dt>
+<dd>
+See <a href="{@docRoot}devices/media.html">Media</a>.
+</dd>
+
+<dt>StateQueue</dt>
+<dd>
+A module within AudioFlinger responsible for synchronizing state
+among threads. Whereas NBAIO is used to pass data, StateQueue is used
+to pass control information.
+</dd>
+
+<dt>strategy</dt>
+<dd>
+A grouping of stream types with similar behavior, used by the audio policy service.
+</dd>
+
+<dt>stream type</dt>
+<dd>
+An enumeration that expresses a use case for audio output.
+The audio policy implementation uses the stream type, along with other parameters,
+to determine volume and routing decisions.
+Specific stream types are listed at
+<a href="http://developer.android.com/reference/android/media/AudioManager.html">android.media.AudioManager</a>.
+</dd>
+
+<dt>tee sink</dt>
+<dd>
+See the separate article on tee sink in
+<a href="audio_debugging.html#teeSink">Audio Debugging</a>.
+</dd>
+
+<dt>tinyalsa</dt>
+<dd>
+A small user-mode API above ALSA kernel with BSD license, recommended
+for use in HAL implementations.
+</dd>
+
+<dt>ToneGenerator</dt>
+<dd>
+A higher-level client API than AudioTrack, used for playing DTMF signals.
+See the Wikipedia article
+<a href="http://en.wikipedia.org/wiki/Dual-tone_multi-frequency_signaling">Dual-tone multi-frequency signaling</a>,
+and the API definition at
+<a href="http://developer.android.com/reference/android/media/ToneGenerator.html">android.media.ToneGenerator</a>.
+</dd>
+
+<dt>track</dt>
+<dd>
+An audio stream, controlled by the AudioTrack API.
+</dd>
+
+<dt>volume attenuation curve</dt>
+<dd>
+A device-specific mapping from a generic volume index to a particular attenuation factor
+for a given output.
+</dd>
+
+<dt>volume index</dt>
+<dd>
+A unitless integer that expresses the desired relative volume of a stream.
+The volume-related APIs of
+<a href="http://developer.android.com/reference/android/media/AudioManager.html">android.media.AudioManager</a>
+operate in volume indices rather than absolute attenuation factors.
+</dd>
+
+</dl>

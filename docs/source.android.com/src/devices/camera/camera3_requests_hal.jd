@@ -1,0 +1,428 @@
+page.title=HAL subsystem
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="requests">Requests</h2>
+<p> The app framework issues requests for captured results to the camera subsystem. 
+  One request corresponds to one set of results. A request encapsulates all 
+  configuration information about the capturing and processing of those results. 
+  This includes things such as resolution and pixel format; manual sensor, lens, 
+  and flash control; 3A operating modes; RAW to YUV processing control; and 
+  statistics generation. This allows for much more control over the results' 
+  output and processing. Multiple requests can be in flight at once, and 
+  submitting requests is non-blocking. And the requests are always processed in 
+  the order they are received.<br/>
+  <img src="images/camera_model.png" alt="Camera request model"/>
+  <br/>
+  <strong>Figure 3.</strong> Camera model</p>
+<h2 id="hal-subsystem">The HAL and camera subsystem</h2>
+<p> The camera subsystem includes the implementations for components in the camera 
+  pipeline such as the 3A algorithm and processing controls. The camera HAL 
+  provides interfaces for you to implement your versions of these components. To 
+  maintain cross-platform compatibility between multiple device manufacturers and 
+  Image Signal Processor (ISP, or camera sensor) vendors, the camera pipeline 
+  model is virtual and does not directly correspond to any real ISP. However, it 
+  is similar enough to real processing pipelines so that you can map it to your 
+  hardware efficiently. In addition, it is abstract enough to allow for multiple 
+  different algorithms and orders of operation without compromising either 
+  quality, efficiency, or cross-device compatibility.<br/>
+  The camera pipeline also supports triggers that the app framework can initiate 
+  to turn on things such as auto-focus. It also sends notifications back to the 
+  app framework, notifying apps of events such as an auto-focus lock or errors.<br/>
+  <img src="images/camera_hal.png" alt="Camera hardware abstraction layer"/>
+  <br/>
+  <strong>Figure 4.</strong> Camera pipeline<br/>
+  Please note, some image processing blocks shown in the diagram above are not 
+  well-defined in the initial release.<br/>
+  The camera pipeline makes the following assumptions:</p>
+<ul>
+  <li>RAW Bayer output undergoes no processing inside the ISP.</li>
+  <li>Statistics are generated based off the raw sensor data.</li>
+  <li>The various processing blocks that convert raw sensor data to YUV are in an 
+    arbitrary order.</li>
+  <li>While multiple scale and crop units are shown, all scaler units share the 
+    output region controls (digital zoom). However, each unit may have a different 
+    output resolution and pixel format.</li>
+</ul>
+<p><strong>Summary of API use</strong><br/>
+  This is a brief summary of the steps for using the Android camera API. See the 
+  Startup and expected operation sequence section for a detailed breakdown of 
+  these steps, including API calls.</p>
+<ol>
+  <li>Listen for and enumerate camera devices.</li>
+  <li>Open device and connect listeners.</li>
+  <li>Configure outputs for target use case (such as still capture, recording, 
+    etc.).</li>
+  <li>Create request(s) for target use case.</li>
+  <li>Capture/repeat requests and bursts.</li>
+  <li>Receive result metadata and image data.</li>
+  <li>When switching use cases, return to step 3.</li>
+</ol>
+<p><strong>HAL operation summary</strong></p>
+<ul>
+  <li>Asynchronous requests for captures come from the framework.</li>
+  <li>HAL device must process requests in order. And for each request, produce 
+    output result metadata, and one or more output image buffers.</li>
+  <li>First-in, first-out for requests and results, and for streams referenced by 
+    subsequent requests. </li>
+  <li>Timestamps must be identical for all outputs from a given request, so that the 
+    framework can match them together if needed. </li>
+  <li>All capture configuration and state (except for the 3A routines) is 
+    encapsulated in the requests and results.</li>
+</ul>
+<p><img src="images/camera-hal-overview.png" alt="Camera HAL overview"/>
+  <br/>
+  <strong>Figure 5.</strong> Camera HAL overview</p>
+<h2 id="startup">Startup and expected operation sequence</h2>
+<p>This section contains a detailed explanation of the steps expected when using 
+  the camera API. Please see <a href="https://android.googlesource.com/platform/hardware/libhardware/+/master/include/hardware/camera3.h">platform/hardware/libhardware/include/hardware/camera3.h</a> for definitions of these structures and methods.</p>
+<ol>
+  <li>Framework calls camera_module_t-&gt;common.open(), which returns a 
+    hardware_device_t structure.</li>
+  <li>Framework inspects the hardware_device_t-&gt;version field, and instantiates the 
+    appropriate handler for that version of the camera hardware device. In case 
+    the version is CAMERA_DEVICE_API_VERSION_3_0, the device is cast to a 
+    camera3_device_t.</li>
+  <li>Framework calls camera3_device_t-&gt;ops-&gt;initialize() with the framework 
+    callback function pointers. This will only be called this one time after 
+    open(), before any other functions in the ops structure are called.</li>
+  <li>The framework calls camera3_device_t-&gt;ops-&gt;configure_streams() with a list of 
+    input/output streams to the HAL device.</li>
+  <li>The framework allocates gralloc buffers and calls 
+    camera3_device_t-&gt;ops-&gt;register_stream_buffers() for at least one of the 
+    output streams listed in configure_streams. The same stream is registered 
+    only once.</li>
+  <li>The framework requests default settings for some number of use cases with 
+    calls to camera3_device_t-&gt;ops-&gt;construct_default_request_settings(). This 
+    may occur any time after step 3.</li>
+  <li>The framework constructs and sends the first capture request to the HAL with 
+    settings based on one of the sets of default settings, and with at least one 
+    output stream that has been registered earlier by the framework. This is sent 
+    to the HAL with camera3_device_t-&gt;ops-&gt;process_capture_request(). The HAL 
+    must block the return of this call until it is ready for the next request to 
+    be sent.</li>
+  <li>The framework continues to submit requests, and possibly call 
+    register_stream_buffers() for not-yet-registered streams, and call 
+    construct_default_request_settings to get default settings buffers for other 
+    use cases.</li>
+  <li>When the capture of a request begins (sensor starts exposing for the 
+    capture), the HAL calls camera3_callback_ops_t-&gt;notify() with the SHUTTER 
+    event, including the frame number and the timestamp for start of exposure. 
+    This notify call must be made before the first call to 
+    process_capture_result() for that frame number.</li>
+  <li>After some pipeline delay, the HAL begins to return completed captures to 
+    the framework with camera3_callback_ops_t-&gt;process_capture_result(). These 
+    are returned in the same order as the requests were submitted. Multiple 
+    requests can be in flight at once, depending on the pipeline depth of the 
+    camera HAL device.</li>
+  <li>After some time, the framework may stop submitting new requests, wait for 
+    the existing captures to complete (all buffers filled, all results 
+    returned), and then call configure_streams() again. This resets the camera 
+    hardware and pipeline for a new set of input/output streams. Some streams 
+    may be reused from the previous configuration; if these streams' buffers had 
+    already been registered with the HAL, they will not be registered again. The 
+    framework then continues from step 7, if at least one registered output 
+    stream remains. (Otherwise, step 5 is required first.)</li>
+  <li>Alternatively, the framework may call camera3_device_t-&gt;common-&gt;close() to 
+    end the camera session. This may be called at any time when no other calls 
+    from the framework are active, although the call may block until all 
+    in-flight captures have completed (all results returned, all buffers 
+    filled). After the close call returns, no more calls to the 
+    camera3_callback_ops_t functions are allowed from the HAL. Once the close() 
+    call is underway, the framework may not call any other HAL device functions.</li>
+  <li>In case of an error or other asynchronous event, the HAL must call 
+    camera3_callback_ops_t-&gt;notify() with the appropriate error/event message. 
+    After returning from a fatal device-wide error notification, the HAL should 
+    act as if close() had been called on it. However, the HAL must either cancel 
+    or complete all outstanding captures before calling notify(), so that once 
+    notify() is called with a fatal error, the framework will not receive 
+    further callbacks from the device. Methods besides close() should return 
+    -ENODEV or NULL after the notify() method returns from a fatal error 
+    message.</li>
+</ol>
+<p><img src="images/camera-ops-flow.png" width="600" height="434" alt="Camera operations flow" />
+</p>
+<p><strong>Figure 6.</strong> Camera operational flow</p>
+<h2 id="ops-modes">Operational modes</h2>
+<p>The camera 3 HAL device can implement one of two possible operational modes: 
+  limited and full. Full support is expected from new higher-end devices. Limited 
+  mode has hardware requirements roughly in line with those for a camera HAL 
+  device v1 implementation, and is expected from older or inexpensive devices. 
+  Full is a strict superset of limited, and they share the same essential 
+  operational flow, as documented above.</p>
+<p>The HAL must indicate its level of support with the 
+  android.info.supportedHardwareLevel static metadata entry, with 0 indicating 
+  limited mode, and 1 indicating full mode support.</p>
+<p>Roughly speaking, limited-mode devices do not allow for application control of 
+  capture settings (3A control only), high-rate capture of high-resolution images, 
+  raw sensor readout, or support for YUV output streams above maximum recording 
+  resolution (JPEG only for large images).<br/>
+  Here are the details of limited-mode behavior:</p>
+<ul>
+  <li>Limited-mode devices do not need to implement accurate synchronization between 
+    capture request settings and the actual image data captured. Instead, changes 
+    to settings may take effect some time in the future, and possibly not for the 
+    same output frame for each settings entry. Rapid changes in settings may 
+    result in some settings never being used for a capture. However, captures that 
+    include high-resolution output buffers ( &gt; 1080p ) have to use the settings as 
+    specified (but see below for processing rate).</li>
+  <li>Captures in limited mode that include high-resolution (&gt; 1080p) output buffers 
+    may block in process_capture_request() until all the output buffers have been 
+    filled. A full-mode HAL device must process sequences of high-resolution 
+    requests at the rate indicated in the static metadata for that pixel format. 
+    The HAL must still call process_capture_result() to provide the output; the 
+    framework must simply be prepared for process_capture_request() to block until 
+    after process_capture_result() for that request completes for high-resolution 
+    captures for limited-mode devices.</li>
+  <li>Limited-mode devices do not need to support most of the settings/result/static 
+    info metadata. Only the following settings are expected to be consumed or 
+    produced by a limited-mode HAL device:
+    <ul>
+      <li>android.control.aeAntibandingMode (controls)</li>
+      <li>android.control.aeExposureCompensation (controls)</li>
+      <li>android.control.aeLock (controls)</li>
+      <li>android.control.aeMode (controls)</li>
+      <li>[OFF means ON_FLASH_TORCH]</li>
+      <li>android.control.aeRegions (controls)</li>
+      <li>android.control.aeTargetFpsRange (controls)</li>
+      <li>android.control.afMode (controls)</li>
+      <li>[OFF means infinity focus]</li>
+      <li>android.control.afRegions (controls)</li>
+      <li>android.control.awbLock (controls)</li>
+      <li>android.control.awbMode (controls)</li>
+      <li>[OFF not supported]</li>
+      <li>android.control.awbRegions (controls)</li>
+      <li>android.control.captureIntent (controls)</li>
+      <li>android.control.effectMode (controls)</li>
+      <li>android.control.mode (controls)</li>
+      <li>[OFF not supported]</li>
+      <li>android.control.sceneMode (controls)</li>
+      <li>android.control.videoStabilizationMode (controls)</li>
+      <li>android.control.aeAvailableAntibandingModes (static)</li>
+      <li>android.control.aeAvailableModes (static)</li>
+      <li>android.control.aeAvailableTargetFpsRanges (static)</li>
+      <li>android.control.aeCompensationRange (static)</li>
+      <li>android.control.aeCompensationStep (static)</li>
+      <li>android.control.afAvailableModes (static)</li>
+      <li>android.control.availableEffects (static)</li>
+      <li>android.control.availableSceneModes (static)</li>
+      <li>android.control.availableVideoStabilizationModes (static)</li>
+      <li>android.control.awbAvailableModes (static)</li>
+      <li>android.control.maxRegions (static)</li>
+      <li>android.control.sceneModeOverrides (static)</li>
+      <li>android.control.aeRegions (dynamic)</li>
+      <li>android.control.aeState (dynamic)</li>
+      <li>android.control.afMode (dynamic)</li>
+      <li>android.control.afRegions (dynamic)</li>
+      <li>android.control.afState (dynamic)</li>
+      <li>android.control.awbMode (dynamic)</li>
+      <li>android.control.awbRegions (dynamic)</li>
+      <li>android.control.awbState (dynamic)</li>
+      <li>android.control.mode (dynamic)</li>
+      <li>android.flash.info.available (static)</li>
+      <li>android.info.supportedHardwareLevel (static)</li>
+      <li>android.jpeg.gpsCoordinates (controls)</li>
+      <li>android.jpeg.gpsProcessingMethod (controls)</li>
+      <li>android.jpeg.gpsTimestamp (controls)</li>
+      <li>android.jpeg.orientation (controls)</li>
+      <li>android.jpeg.quality (controls)</li>
+      <li>android.jpeg.thumbnailQuality (controls)</li>
+      <li>android.jpeg.thumbnailSize (controls)</li>
+      <li>android.jpeg.availableThumbnailSizes (static)</li>
+      <li>android.jpeg.maxSize (static)</li>
+      <li>android.jpeg.gpsCoordinates (dynamic)</li>
+      <li>android.jpeg.gpsProcessingMethod (dynamic)</li>
+      <li>android.jpeg.gpsTimestamp (dynamic)</li>
+      <li>android.jpeg.orientation (dynamic)</li>
+      <li>android.jpeg.quality (dynamic)</li>
+      <li>android.jpeg.size (dynamic)</li>
+      <li>android.jpeg.thumbnailQuality (dynamic)</li>
+      <li>android.jpeg.thumbnailSize (dynamic)</li>
+      <li>android.lens.info.minimumFocusDistance (static)</li>
+      <li>android.request.id (controls)</li>
+      <li>android.request.id (dynamic)</li>
+      <li>android.scaler.cropRegion (controls)</li>
+      <li>[ignores (x,y), assumes center-zoom]</li>
+      <li>android.scaler.availableFormats (static)</li>
+      <li>[RAW not supported]</li>
+      <li>android.scaler.availableJpegMinDurations (static)</li>
+      <li>android.scaler.availableJpegSizes (static)</li>
+      <li>android.scaler.availableMaxDigitalZoom (static)</li>
+      <li>android.scaler.availableProcessedMinDurations (static)</li>
+      <li>android.scaler.availableProcessedSizes (static)</li>
+      <li>[full resolution not supported]</li>
+      <li>android.scaler.maxDigitalZoom (static)</li>
+      <li>android.scaler.cropRegion (dynamic)</li>
+      <li>android.sensor.orientation (static)</li>
+      <li>android.sensor.timestamp (dynamic)</li>
+      <li>android.statistics.faceDetectMode (controls)</li>
+      <li>android.statistics.info.availableFaceDetectModes (static)</li>
+      <li>android.statistics.faceDetectMode (dynamic)</li>
+      <li>android.statistics.faceIds (dynamic)</li>
+      <li>android.statistics.faceLandmarks (dynamic)</li>
+      <li>android.statistics.faceRectangles (dynamic)</li>
+      <li>android.statistics.faceScores (dynamic)</li>
+    </ul>
+  </li>
+</ul>
+<h2 id="interaction">Interaction between the application capture request, 3A
+control, and the processing pipeline</h2>
+<p>Depending on the settings in the 3A control block, the camera pipeline ignores 
+  some of the parameters in the application's capture request and uses the values 
+  provided by the 3A control routines instead. For example, when auto-exposure is 
+  active, the exposure time, frame duration, and sensitivity parameters of the 
+  sensor are controlled by the platform 3A algorithm, and any app-specified values 
+  are ignored. The values chosen for the frame by the 3A routines must be reported 
+  in the output metadata. The following table describes the different modes of the 
+  3A control block and the properties that are controlled by these modes. See 
+  the <a href="https://android.googlesource.com/platform/system/media/+/master/camera/docs/docs.html">platform/system/media/camera/docs/docs.html</a> file for definitions of these properties.</p>
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>State</th>
+    <th>Properties controlled</th>
+  </tr>
+  <tr>
+    <td>android.control.aeMode</td>
+    <td>OFF</td>
+    <td>None</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>ON</td>
+    <td>android.sensor.exposureTime
+      android.sensor.frameDuration
+      android.sensor.sensitivity
+      android.lens.aperture (if supported)
+      android.lens.filterDensity (if supported)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>ON_AUTO_FLASH</td>
+    <td>Everything is ON, plus android.flash.firingPower, android.flash.firingTime, and android.flash.mode</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>ON_ALWAYS_FLASH</td>
+    <td>Same as ON_AUTO_FLASH</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>ON_AUTO_FLASH_RED_EYE</td>
+    <td>Same as ON_AUTO_FLASH</td>
+  </tr>
+  <tr>
+    <td>android.control.awbMode</td>
+    <td>OFF</td>
+    <td>None</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>WHITE_BALANCE_*</td>
+    <td>android.colorCorrection.transform. Platform-specific adjustments if android.colorCorrection.mode is FAST or HIGH_QUALITY.</td>
+  </tr>
+  <tr>
+    <td>android.control.afMode</td>
+    <td>OFF</td>
+    <td>None</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>FOCUS_MODE_*</td>
+    <td>android.lens.focusDistance</td>
+  </tr>
+  <tr>
+    <td>android.control.videoStabilization</td>
+    <td>OFF</td>
+    <td>None</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>ON</td>
+    <td>Can adjust android.scaler.cropRegion to implement video stabilization</td>
+  </tr>
+  <tr>
+    <td>android.control.mode</td>
+    <td>OFF</td>
+    <td>AE, AWB, and AF are disabled</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>AUTO</td>
+    <td>Individual AE, AWB, and AF settings are used</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>SCENE_MODE_*</td>
+    <td>Can override all parameters listed above. Individual 3A controls are disabled.</td>
+  </tr>
+</table>
+<p>The controls exposed for the 3A algorithm mostly map 1:1 to the old API's 
+  parameters (such as exposure compensation, scene mode, or white balance mode).<br/>
+  The controls in the Image Processing block in Figure 2</a> all 
+  operate on a similar principle, and generally each block has three modes:</p>
+<ul>
+  <li>OFF: This processing block is disabled. The demosaic, color correction, and 
+    tone curve adjustment blocks cannot be disabled.</li>
+  <li>FAST: In this mode, the processing block may not slow down the output frame 
+    rate compared to OFF mode, but should otherwise produce the best-quality 
+    output it can given that restriction. Typically, this would be used for 
+    preview or video recording modes, or burst capture for still images. On some 
+    devices, this may be equivalent to OFF mode (no processing can be done without 
+    slowing down the frame rate), and on some devices, this may be equivalent to 
+    HIGH_QUALITY mode (best quality still does not slow down frame rate).</li>
+  <li>HIGHQUALITY: In this mode, the processing block should produce the best 
+    quality result possible, slowing down the output frame rate as needed. 
+    Typically, this would be used for high-quality still capture. Some blocks 
+    include a manual control which can be optionally selected instead of FAST or 
+    HIGHQUALITY. For example, the color correction block supports a color 
+    transform matrix, while the tone curve adjustment supports an arbitrary global 
+    tone mapping curve.</li>
+</ul>
+  <p>The maximum frame rate that can be supported by a camera subsystem is a function 
+  of many factors:</p>
+<ul>
+  <li>Requested resolutions of output image streams</li>
+  <li>Availability of binning / skipping modes on the imager</li>
+  <li>The bandwidth of the imager interface</li>
+  <li>The bandwidth of the various ISP processing blocks</li>
+</ul>
+<p>Since these factors can vary greatly between different ISPs and sensors, the 
+  camera HAL interface tries to abstract the bandwidth restrictions into as simple 
+  model as possible. The model presented has the following characteristics:</p>
+<ul>
+  <li>The image sensor is always configured to output the smallest resolution 
+    possible given the application's requested output stream sizes.  The smallest 
+    resolution is defined as being at least as large as the largest requested 
+    output stream size.</li>
+  <li>Since any request may use any or all the currently configured output streams, 
+    the sensor and ISP must be configured to support scaling a single capture to 
+    all the streams at the same time. </li>
+  <li>JPEG streams act like processed YUV streams for requests for which they are 
+    not included; in requests in which they are directly referenced, they act as 
+    JPEG streams.</li>
+  <li>The JPEG processor can run concurrently to the rest of the camera pipeline but 
+    cannot process more than one capture at a time.</li>
+</ul>

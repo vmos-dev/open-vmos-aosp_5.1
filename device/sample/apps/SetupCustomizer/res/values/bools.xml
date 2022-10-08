@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2012-2014 Google Inc. All Rights Reserved. -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Display "SKIP" in network selection screen -->
+    <bool name="show_skip_network">true</bool>
+
+    <!-- Allow user to skip Google signin at signin setup step -->
+    <bool name="show_skip_signin">true</bool>
+
+    <!-- Show wifi WPS option at top of list -->
+    <bool name="show_wps_at_top">true</bool>
+
+    <!-- Prevent users from returning to the pre-setup oem customization hook -->
+    <bool name="prevent_prehook_replay">true</bool>
+</resources>

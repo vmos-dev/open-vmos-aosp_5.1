@@ -1,0 +1,767 @@
+page.title=Power Profiles for Android
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc"></ol>
+  </div>
+</div>
+
+<p>Battery usage information is derived from battery usage statistics and power profile values.</p>
+
+<h2 id="usage-statistics">Battery Usage Statistics</h2>
+
+<p>The framework automatically determines battery usage statistics by tracking how long device
+components spend in different states. As components (WiFi chipset, Cellular Radio, Bluetooth, GPS,
+Display, CPU) change states (OFF/ON, idle/full power, low/high brightness, etc.), the controlling
+service reports to the framework BatteryStats service, which collects information over time and
+stores it for use across reboots. The service doesn’t track battery current draw directly,
+but instead collects timing information that can be used to approximate battery
+consumption by different components.</p>
+
+<p>The framework gathers statistics using the following methods:</p>
+
+<ul>
+<li><strong>Push</strong>. Services aware of component changes push state changes to the
+BatteryStats service.</li>
+<li><strong>Pull</strong>. For components such as the CPU usage by apps, the framework automatically
+pulls the data at transition points (such as starting or stopping an activity) to take a
+snapshot.</li>
+</ul>
+
+<p>Resource consumption is associated with the application using the resource. When multiple
+applications simultaneously use a resource (such as wakelocks that prevent the system from
+suspending), the framework spreads consumption across those applications, although not necessarily
+equally.</p>
+
+<p>To avoid losing usage statistics for a shutdown event, which may indicate battery power
+consumption problems (i.e. shutdown occurs because the battery reached zero remaining capacity), the
+framework flashes statistics approximately every 30 minutes.</p>
+
+<p>Battery usage statistics are handled entirely by the framework and do not require OEM
+modifications.</p>
+
+<h2 id="profile-values">Power Profile Values</h2>
+
+<p>Device manufacturers must provide a component power profile that defines the current
+consumption value for the component and the approximate the actual battery drain caused by the
+component over time. Within a power profile, power consumption is specified in milliamps (mA) of
+current draw at a nominal voltage and can be a fractional value specified in microamps (uA). The
+value should be the mA consumed at the battery and not a value applicable to a power rail that does
+not correspond to current consumed from the battery.</p>
+
+<p>For example, a display power profile specifies the mA of current required to keep the display on
+at minimum brightness and at maximum brightness. To determine the power cost (i.e the battery
+drained by the display component) of keeping the display on, the framework tracks the time spent at
+each brightness level, then multiplies those time intervals by an interpolated display brightness
+cost.</p>
+
+<p>The framework also multiplies the CPU time for each application by the mA required to run the CPU
+at a specific speed. This calculation establishes a comparative ranking of how much battery an
+application consumes by executing CPU code (time as the foreground app and total time including
+background activity are reported separately).</p>
+
+<h2 id="component-power">Measuring Component Power</h2>
+
+<p>You can determine individual component power consumption by comparing the current drawn by the
+device when the component is in the desired state (on, active, scanning, etc.) and when the
+component is off. Measure the average instantaneous current drawn on the device at a
+nominal voltage using an external power monitor, such as a bench power supply or specialized
+battery-monitoring tools (such as Monsoon Solution Inc. Power Monitor and Power Tool software).</p>
+
+<p class="note">
+<strong>Note:</strong> Manufacturers often supply information about the current consumed by an
+individual component. Use this information if it accurately represents the current drawn from the
+device battery in practice. However, validate manufacturer-provided values before
+using those values in your device power profile.</p>
+
+<p>When measuring, ensure the device does not have a connection to an external charge source, such
+as a USB connection to a development host used when running Android Debug Bridge (adb). The device
+under test might draw current from the host, thus lowering measurements at the battery. Avoid USB
+On-The-Go (OTG) connections, as the OTG device might draw current from the device under test.</p>
+
+<p>Excluding the component being measured, the system should run at a constant level of power
+consumption to avoid inaccurate measurements caused by changes in other components. System
+activities that can introduce unwanted changes to power measurements include:</p>
+
+<ul>
+<li><strong>Cellular, Wi-Fi, and Bluetooth receive, transmit, or scanning activity</strong>. When
+not measuring cell radio power, set the device to airplane mode and enable Wi-Fi or Bluetooth as
+appropriate.</li>
+<li><strong>Screen on/off</strong>. Colors displayed while the screen is on can affect power draw on
+some screen technologies. Turn the screen off when measuring values for non-screen components.</li>
+<li><strong>System suspend/resume</strong>. A screen off state can trigger a system suspension,
+placing parts of the device in a low-power or off state. This can affect power consumption of the
+component being measured and introduce large variances in power readings as the system periodically
+resumes to send alarms, etc. For details, see <a href="#control-suspend">Controlling System
+Suspend</a>.</li>
+<li><strong>CPUs changing speed and entering/exiting low-power scheduler idle state</strong>. During
+normal operation, the system makes frequent adjustments to CPU speeds, the number of online CPU
+cores, and other system core states such as memory bus speed and voltages of power rails associated
+with CPUs and memory. During testing, these adjustments affect power measurements:
+
+<ul>
+<li>CPU speed scaling operations can reduce the amount of clock and voltage scaling of memory buses
+and other system core components.</li>
+<li>Scheduling activity can affect the percentage of the time CPUs spend in low-power idle states.
+For details on preventing these adjustments from occurring during testing, see
+<a href="#control-cpu">Controlling CPU Speeds</a>.</li>
+</ul>
+
+</li>
+</ul>
+
+<p>For example, Joe Droid wants to compute the <code>screen.on</code> value for a device. He enables
+airplane mode on the device, runs the device at a stable current state, holds the CPU speed constant
+, and uses a partial wakelock to prevent system suspend. Joe then turns the device screen off and
+takes a measurement (200mA). Next, Joe turns the device screen on at minimum brightness and takes
+another measurement (300mA). The <code>screen.on</code> value is 100mA (300 - 200).</p>
+
+<p>For components that don’t have a flat waveform of current consumption when active (such as
+cellular radio or Wi-Fi), measure the average current over time using a power monitoring tool.</p>
+
+<p>When using an external power source in place of the device battery, the system might experience
+problems due to an unconnected battery thermistor or integrated fuel gauge pins (i.e. an invalid
+reading for battery temperature or remaining battery capacity could shut down the kernel or Android
+system). Fake batteries can provide signals on thermistor or fuel gauge pins that mimic temperature
+and state of charge readings for a normal system, and may also provide convenient leads for
+connecting to external power supplies. Alternatively, you can modify the system to ignore the
+invalid data from the missing battery.</p>
+
+<a name="control-suspend"><h3 id="control-suspend">Controlling System Suspend</h3></a>
+
+<p>This section describes how to avoid system suspend state when you don’t want it to interfere with
+other measurements, and how to measure the power draw of system suspend state when you do want to
+measure it.</p>
+
+<h4>Preventing System Suspend</h4>
+
+<p>System suspend can introduce unwanted variance in power measurements and place system components
+in low-power states inappropriate for measuring active power use. To prevent the system from
+suspending while the screen is off, use a temporary partial wakelock. Using a USB cable, connect the
+device to a development host, then issue the following command:</p>
+
+<pre>
+$ adb shell "echo temporary &gt; /sys/power/wake_lock"
+</pre>
+
+<p>While in wake_lock, the screen off state does not trigger a system suspend. (Remember to
+disconnect the USB cable from the device before measuring power consumption.)</p>
+
+<p>To remove the wakelock:</p>
+
+<pre>
+$ adb shell "echo temporary &gt; /sys/power/wake_unlock"
+</pre>
+
+<h4>Measuring System Suspend</h4>
+
+<p>To measure the power draw during the system suspend state, measure the value of cpu.idle in the
+power profile. Before measuring:
+
+<ul>
+<li>Remove existing wakelocks (as described above).</li>
+<li>Place the device in airplane mode to avoid concurrent activity by the cellular radio, which
+might run on a processor separate from the SoC portions controlled by the system suspend.</li>
+<li>Ensure the system is in suspend state by:
+<ul>
+<li>Confirming current readings settle to a steady value. Readings should be within the expected
+range for the power consumption of the SoC suspend state plus the power consumption of system
+components that remain powered (such as the USB PHY).</li>
+<li>Checking the system console output.</li>
+<li>Watching for external indications of system status (such as an LED turning off when not in
+suspend).</li>
+</ul>
+</li>
+</ul>
+
+<a name="control-cpu"><h3 id="control-cpu">Controlling CPU Speeds</h3></a>
+
+<p>Active CPUs can be brought online or put offline, have their clock speeds and associated voltages
+changed (possibly also affecting memory bus speeds and other system core power states), and
+can enter lower power idle states while in the kernel idle loop. When measuring different CPU power
+states for the power profile, avoid the power draw variance when measuring other parameters. The
+power profile assumes all CPUs have the same available speeds and power characteristics.</p>
+
+<p>While measuring CPU power, or while holding CPU power constant to make other measurements, keep
+the number of CPUs brought online constant (such as having one CPU online and the rest
+offline/hotplugged out). Keeping all CPUs except one in scheduling idle may product acceptable
+results. Stopping the Android framework with <code>adb shell stop</code> can reduce system
+scheduling activity.</p>
+
+<p>You must specify the available CPU speeds for your device in the power profile cpu.speeds
+entry. To get a list of available CPU speeds, run:</p>
+
+<pre>
+adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+</pre>
+
+<p>These speeds match the corresponding power measurements in value <code>cpu.active</code>.</p>
+
+<p>For platforms where number of cores brought online significantly affects power consumption, you
+might need to modify the cpufreq driver or governor for the platform. Most platforms support
+controlling CPU speed using the “userspace” cpufreq governor and using sysfs interfaces to
+set the speed. For example, to set speed for 200MHz on a system with only 1 CPU or all CPUs sharing
+a common cpufreq policy, use the system console or adb shell to run the following commands:</p>
+
+<pre>
+echo userspace &gt; /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+echo 200000 &gt; /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 200000 &gt; /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 200000 &gt; /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+</pre>
+
+<p class="note">
+<strong>Note</strong>: The exact commands differ depending on the platform cpufreq implementation.
+</p>
+
+<p>These commands ensure the new speed is not outside the allowed bounds, set the new speed, then
+print the speed at which the CPU is actually running (for verification). If the current
+minimum speed prior to execution is higher than 200000, you might need to reverse the order
+of the first two lines, or execute the first line again to drop the minimum speed prior to
+setting the maximum speed.</p>
+
+<p>To measure current consumed by a CPU running at various speeds, use the system console place the
+CPU in a CPU-bound loop using the command:</p>
+<pre>
+# while true; do true; done
+</pre>
+
+<p>Take the measurement while the loop executes.</p>
+
+<p>Some devices can limit maximum CPU speed while performing thermal throttling due to a high
+temperature measurement (i.e. after running CPUs at high speeds for sustained periods). Watch for
+such limiting, either using the system console output when taking measurements or by checking the
+kernel log after measuring.</p>
+
+<p>For the <code>cpu.active</code> value, measure the power consumed when the system is not in
+suspend and not executing tasks. The CPU should be in a low-power scheduler <em>idle loop
+</em>, possibly executing an ARM Wait For Event instruction or in an SoC-specific low power state
+with a fast exit latency suitable for idle use. Your platform might have more than one idle state in
+use with differing levels of power consumption; choose a representative idle state for
+longer periods of scheduler idle (several milliseconds). Examine the power graph on your measurement
+equipment and choose samples where the CPU is at its lowest consumption, discarding higher samples
+where the CPU exited idle.</p>
+
+<h3 id="screen-power">Measuring Screen Power</h3>
+
+<p>When measuring screen on power, ensure that other devices normally turned on when the screen is
+enabled are also on. For example, if the touchscreen and display backlight would normally be on when
+the screen is on, ensure these devices are on when you measure to get a realistic example of screen
+on power usage.</p>
+
+<p>Some display technologies vary in power consumption according to the colors displayed, causing
+power measurements to vary considerably depending on what is displayed on the screen at the time of
+measurement. When measuring, ensure the screen is displaying something that has power
+characteristics of a realistic screen. Aim between the extremes of an all-black screen (which
+consumes the lowest power for some technologies) and an all-white screen. A common choice is a view
+of a schedule in the calendar app, which has a mix of white background and non-white elements.</p>
+
+<p>Measure screen on power at <em>minimum</em> and <em>maximum</em> display/backlight brightness.
+To set minimum brightness:</p>
+
+<ul>
+<li><strong>Use the Android UI</strong> (not recommended). Set the Settings > Display Brightness
+slider to the minimum display brightness. However, the Android UI allows setting brightness only to
+a minimum of 10-20% of the possible panel/backlight brightness, and does not allow setting
+brightness so low that the screen might not be visible without great effort.</li>
+<li><strong>Use a sysfs file</strong> (recommended). If available, use a sysfs file to control panel
+brightness all the way down to the minimum brightness supported by the hardware.</li>
+</ul>
+
+<p>Additionally, if the platform sysfs file enables turning the LCD panel, backlight, and
+touchscreen on and off, use the file to take measurements with the screen on and off. Otherwise,
+set a partial wakelock so the system does not suspend, then turn on and off the
+screen with the power button.</p>
+
+<h3 id="wifi-power">Measuring Wi-Fi Power</h3>
+
+<p>Perform Wi-Fi measurements on a relatively quiet network. Avoid introducing additional work
+processing high volumes of broadcast traffic that is unrelated to the activity being measured.</p>
+
+<p>The <code>wifi.on</code> value measures the power consumed when Wi-Fi is enabled but not actively
+transmitting or receiving. This is often measured as the delta between the current draw in
+system suspend (sleep) state with Wi-Fi enabled vs. disabled.</p>
+
+<p>The <code>wifi.scan</code> value measures the power consumed during a Wi-Fi scan for access
+points. Applications can trigger Wi-Fi scans using the WifiManager class
+<a href = "http://developer.android.com/reference/android/net/wifi/WifiManager.html">
+<code>startScan()</code>API</a>. You can also open Settings &gt; Wi-Fi, which performs access point
+scans every few seconds with an apparent jump in power consumption, but you must subtract screen
+power from these measurements.</p>
+
+<p class="note">
+<strong>Note</strong>: Use a controlled setup (such as
+<a href="http://en.wikipedia.org/wiki/Iperf">iperf</a>) to generate network receive and transmit
+traffic.</p>
+
+<h2 id="device-power">Measuring Device Power</h2>
+
+<p>You can determine device power consumption for Android devices that include a battery fuel gauge
+such as a Summit SMB347 or Maxim MAX17050 (available on many Nexus devices). Use the in-system
+battery fuel gauge when external measurement equipment is not available or is inconvenient to
+connect to a device (such as in mobile usage).</p>
+
+<p>Measurements can include instantaneous current, remaining charge, battery capacity at test start
+and end, and more depending on the supported properties of the device (see below). For best results,
+perform device power measurements during long-running A/B tests that use the same device type with
+the same fuel gauge and same current sense resistor. Ensure the starting battery charge is the same
+for each device to avoid differing fuel gauge behavior at different points in the battery discharge
+curve.</p>
+
+<p>Even with identical test environments, measurements are not guaranteed to be of high absolute
+accuracy. However, most inaccuracies specific to the fuel gauge and sense resistor are consistent
+between test runs, making comparisons between identical devices useful. We recommend running
+multiple tests in different configurations to identify significant differences and relative power
+consumption between configurations.</p>
+
+<h3 id="power-consumption">Reading Power Consumption</h3>
+
+<p>To read power consumption data, insert calls to the API in your testing code.</p>
+
+<pre>
+import android.os.BatteryManager;
+import android.os.ServiceManager;
+import android.content.Context;
+BatteryManager mBatteryManager =
+(BatteryManager)Context.getSystemService(Context.BATTERY_SERVICE);
+Long energy =
+mBatteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER);
+Slog.i(TAG, "Remaining energy = " + energy + "nWh");
+</pre>
+
+<h3 id="avail-props">Available Properties</h3>
+
+<p>Android supports the following battery fuel gauge properties:</p>
+
+<pre>
+BATTERY_PROPERTY_CHARGE_COUNTER   Remaining battery capacity in microampere-hours
+BATTERY_PROPERTY_CURRENT_NOW      Instantaneous battery current in microamperes
+BATTERY_PROPERTY_CURRENT_AVERAGE  Average battery current in microamperes
+BATTERY_PROPERTY_CAPACITY         Remaining battery capacity as an integer percentage
+BATTERY_PROPERTY_ENERGY_COUNTER   Remaining energy in nanowatt-hours
+</pre>
+
+<p>Most properties are read from kernel power_supply subsystem attributes of similar names.
+However, the exact properties, resolution of property values, and update frequency
+available for a specific device depend on:</p>
+
+<ul>
+<li>Fuel gauge hardware, such as a Summit SMB347 or Maxim MAX17050.</li>
+<li>Fuel gauge-to-system connection, such as the value of external current sense resistors.</li>
+<li>Fuel gauge chip software configuration, such as values chosen for average current computation
+intervals in the kernel driver.</li>
+</ul>
+
+<p>For details, see the properties available for <a href="#nexus-devices">Nexus devices</a>.</p>
+
+<h3 id="maxim-fuel">Maxim Fuel Gauge</h3>
+
+<p>When determining battery state-of-charge over a long period of time, the Maxim fuel gauge
+(MAX17050, BC15) corrects for coulomb-counter offset measurements. For measurements made over a
+short period of time (such as power consumption metering tests), the fuel gauge does not make
+corrections, making the offset the primary source of error when current measurements are too small
+(although no amount of time can eliminate the offset error completely).</p>
+
+<p>For a typical 10mOhm sense resistor design, the offset current should be better than 1.5mA,
+meaning any measurement is +/-1.5mA (PCBoard layout can also affect this variation). For example,
+when measuring a large current (200mA) you can expect the following:</p>
+
+<ul>
+<li>2mA (1% gain error of 200mA due to fuel gauge gain error)</li>
+<li>+2mA (1% gain error of 200mA due to sense resistor error)</li>
+<li>+1.5mA  (current sense offset error from fuel gauge)</li>
+</ul>
+
+<p>The total error is 5.5mA (2.75%). Compare this to a medium current (50mA) where the same error
+percentages give a total error of 7% or to a small current (15mA) where +/-1.5mA gives a total error
+of 10%.</p>
+
+<p>For best results, we recommend measuring greater than 20mA. Gain measurement errors are
+systematic and repeatable, enabling you to test a device in multiple modes and get clean relative
+measurements (with exceptions for the 1.5mA offset).</p>
+
+<p>For +/-100uA relative measurements, required measurement time depends on:</p>
+
+<ul>
+<li><b>ADC sampling noise</b>. The MAX17050 with its normal factory configuration produces +/-1.5mA
+sample-to-sample variation due to noise, with each sample delivered at 175.8ms. You can expect a
+rough +/-100uA for a 1 minute test window and a clean  3-sigma noise less than 100uA (or 1-sigma
+noise at 33uA) for a 6 minute test window.</li>
+<li><b>Sample Aliasing because of load variation</b>. Variation exaggerates errors, so for samples
+with variation inherent in the loading, consider using a longer test window.</li>
+</ul>
+
+<a name="nexus-devices"><h3>Supported Nexus Devices</h3></a>
+
+<h5><a name="nexus-5">Nexus 5</a></h5>
+
+<table>
+<tbody>
+<tr>
+<th>Model</th>
+<td>Nexus 5</td>
+</tr>
+<tr>
+<th>Fuel Gauge</th>
+<td>Maxim MAX17048 fuel gauge (ModelGauge™, no coulomb counter)</td>
+</tr>
+<tr>
+<th>Properties</th>
+<td>BATTERY_PROPERTY_CAPACITY</td>
+</tr>
+<tr>
+<th>Measurements</th>
+<td>The fuel gauge does not support any measurements other than battery State Of Charge to a
+resolution of %/256 (1/256th of a percent of full battery capacity).</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5><a name="nexus-6">Nexus 6</a></h5>
+
+<table>
+<tbody>
+<tr>
+<th>Model</th>
+<td>Nexus 6</td>
+</tr>
+<tr>
+<th>Fuel Gauge</th>
+<td>Maxim MAX17050 fuel gauge (a coulomb counter with Maxim ModelGauge™ adjustments), and a 10mohm
+current sense resistor.</td>
+</tr>
+<tr>
+<th>Properties</th>
+<td>BATTERY_PROPERTY_CAPACITY<br>
+BATTERY_PROPERTY_CURRENT_NOW<br>
+BATTERY_PROPERTY_CURRENT_AVERAGE<br>
+BATTERY_PROPERTY_CHARGE_COUNTER<br>
+BATTERY_PROPERTY_ENERGY_COUNTER</td>
+</tr>
+<tr>
+<th>Measurements</th>
+<td>CURRENT_NOW resolution 156.25uA, update period is 175.8ms.<br>
+CURRENT_AVERAGE resolution 156.25uA, update period configurable 0.7s - 6.4h, default 11.25 secs.<br>
+CHARGE_COUNTER (accumulated current, non-extended precision) resolution is 500uAh (raw coulomb
+counter read, not adjusted by fuel gauge for coulomb counter offset, plus inputs from the ModelGauge
+m3 algorithm including empty compensation).<br>
+CHARGE_COUNTER_EXT (extended precision in kernel) resolution 8nAh.<br>
+ENERGY_COUNTER is CHARGE_COUNTER_EXT at nominal voltage of 3.7V.</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5><a name="nexus-9">Nexus 9</a></h5>
+
+<table>
+<tbody>
+<tr>
+<th>Model</th>
+<td>Nexus 9</td>
+</tr>
+<tr>
+<th>Fuel Gauge</th>
+<td>Maxim MAX17050 fuel gauge (a coulomb counter with Maxim ModelGauge™ adjustments), and a 10mohm
+current sense resistor.</td>
+</tr>
+<tr>
+<th>Properties</th>
+<td>BATTERY_PROPERTY_CAPACITY<br>
+BATTERY_PROPERTY_CURRENT_NOW<br>
+BATTERY_PROPERTY_CURRENT_AVERAGE<br>
+BATTERY_PROPERTY_CHARGE_COUNTER<br>
+BATTERY_PROPERTY_ENERGY_COUNTER</td>
+</tr>
+<tr>
+<th>Measurements</th>
+<td>CURRENT_NOW resolution 156.25uA, update period is 175.8ms.<br>
+CURRENT_AVERAGE resolution 156.25uA, update period configurable 0.7s - 6.4h, default 11.25 secs.<br>
+CHARGE_COUNTER (accumulated current, non-extended precision) resolution is 500uAh.<br>
+CHARGE_COUNTER_EXT (extended precision in kernel) resolution 8nAh.<br>
+ENERGY_COUNTER is CHARGE_COUNTER_EXT at nominal voltage of 3.7V.<br>
+Accumulated current update period 175.8ms.<br>
+ADC sampled at 175ms quantization with a 4ms sample period. Can adjust duty cycle.</td>
+</tr>
+</tbody>
+</table>
+
+
+<h5><a name="nexus-10">Nexus 10</a></h5>
+
+<table>
+<tbody>
+<tr>
+<th>Model</th>
+<td>Nexus 10</td>
+</tr>
+<tr>
+<th>Fuel Gauge</th>
+<td>Dallas Semiconductor DS2784 fuel gauge (a coulomb counter), with a 10mohm current sense
+resistor.</td>
+</tr>
+<tr>
+<th>Properties</th>
+<td>BATTERY_PROPERTY_CAPACITY<br>
+BATTERY_PROPERTY_CURRENT_NOW<br>
+BATTERY_PROPERTY_CURRENT_AVERAGE<br>
+BATTERY_PROPERTY_CHARGE_COUNTER<br>
+BATTERY_PROPERTY_ENERGY_COUNTER</td>
+</tr>
+<tr>
+<th>Measurements</th>
+<td>Current measurement (instantaneous and average) resolution is 156.3uA.<br>
+CURRENT_NOW instantaneous current update period is 3.5 seconds.<br>
+CURRENT_AVERAGE update period is 28 seconds (not configurable).<br>
+CHARGE_COUNTER (accumulated current, non-extended precision) resolution is 625uAh.<br>
+CHARGE_COUNTER_EXT (extended precision in kernel) resolution is 144nAh.<br>
+ENERGY_COUNTER is CHARGE_COUNTER_EXT at nominal voltage of 3.7V.<br>
+Update period for all is 3.5 seconds.</td>
+</tr>
+</tbody>
+</table>
+
+
+<h2 id="viewing-usage">Viewing Battery Usage Data</h2>
+
+<p>The <code>dumpsys</code> <code>batterystats</code> command generates interesting statistical data
+about battery usage on a device, organized by unique application ID. You can view a history of
+battery-related events such as mobile radio state, Wi-Fi and Bluetooth power states, and wakelock
+reasons.</p>
+
+<p>Statistics include:</p>
+
+<ul>
+<li>History of battery-related events</li>
+<li>Global statistics for the device</li>
+<li>Approximate power use per UID and system component</li>
+<li>System UID aggregated statistics</li>
+</ul>
+
+<p>Use the output of the dumpsys command with the
+<a href="https://github.com/google/battery-historian">Battery Historian</a> tool to generate HTML
+visualizations of power-related events from logs.</p>
+
+
+<h2 id="power-values">Power Values</h2>
+<table>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Example Value</th>
+  <th>Notes</th>
+</tr>
+<tr>
+  <td>none</td>
+  <td>Nothing</td>
+  <td>0</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>screen.on</td>
+  <td>Additional power used when screen is turned on at minimum brightness.</td>
+  <td>200mA</td>
+  <td>Includes touch controller and display backlight. At 0 brightness, not the Android minimum which tends to be 10 or 20%.</td>
+</tr>
+
+<tr>
+  <td>screen.full</td>
+  <td>Additional power used when screen is at maximum brightness, compared to screen at minimum brightness.</td>
+  <td>100mA-300mA</td>
+  <td>A fraction of this value (based on screen brightness) is added to the screen.on value to compute the power usage of the screen.</td>
+</tr>
+
+<tr>
+  <td>bluetooth.active</td>
+  <td>Additional power used when playing audio through bluetooth A2DP.</td>
+  <td>14mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>bluetooth.on</td>
+  <td>Additional power used when bluetooth is turned on but idle.</td>
+  <td>1.4mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>wifi.on</td>
+  <td>Additional power used when Wi-Fi is turned on but not receiving, transmitting, or scanning.</td>
+  <td>2mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>wifi.active</td>
+  <td>Additional power used when transmitting or receiving over Wi-Fi.</td>
+  <td>31mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>wifi.scan</td>
+  <td>Additional power used when Wi-Fi is scanning for access points.</td>
+  <td>100mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>dsp.audio</td>
+  <td>Additional power used when audio decoding/encoding via DSP.</td>
+  <td>14.1mA</td>
+  <td>Reserved for future use.</td>
+</tr>
+
+
+<tr>
+  <td>dsp.video</td>
+  <td>Additional power used when video decoding via DSP.</td>
+  <td>54mA</td>
+  <td>Reserved for future use.</td>
+</tr>
+
+<tr>
+  <td>gps.on</td>
+  <td>Additional power used when GPS is acquiring a signal.</td>
+  <td>50mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>radio.active</td>
+  <td>Additional power used when cellular radio is transmitting/receiving.</td>
+  <td>100mA-300mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>radio.scanning</td>
+  <td>Additional power used when cellular radio is paging the tower.</td>
+  <td>1.2mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>radio.on</td>
+  <td>Additional power used when the cellular radio is on. Multi-value entry, one per signal strength (no signal, weak, moderate, strong).</td>
+  <td>1.2mA</td>
+  <td>Some radios boost power when they search for a cell tower and do not detect a signal. These
+  numbers could all be the same or decreasing with increasing signal strength. If you provide only
+  one value, the same value will be used for all strengths. If you provide 2 values, the first will
+  be for no-signal and the second for all other strengths, and so on.</td>
+</tr>
+
+<tr>
+  <td>cpu.speeds</td>
+  <td>Multi-value entry that lists each possible CPU speed in KHz.</td>
+  <td>125000, 250000, 500000, 1000000, 1500000</td>
+  <td>The number and order of entries must correspond to the mA entries in cpu.active.</td>
+</tr>
+
+<tr>
+  <td>cpu.idle</td>
+  <td>Total power drawn by the system when CPUs (and the SoC) are in system suspend state.</td>
+  <td>3mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>cpu.awake</td>
+  <td>Additional power used when CPUs are in scheduling idle state (kernel idle loop); system is not
+  in system suspend state.</td>
+  <td>50mA</td>
+  <td></td>
+</tr>
+
+<tr>
+  <td>cpu.active</td>
+  <td>Additional power used by CPUs when running at different speeds.</td>
+  <td>100, 120, 140, 160, 200</td>
+  <td>Set the max speed in the kernel to each of the allowed speeds and peg the CPU at that
+speed. The number of entries here correspond to the number of entries in cpu.speeds, in the
+same order.</td>
+</tr>
+
+<tr>
+  <td>battery.capacity</td>
+  <td>The total battery capacity in mAh.</td>
+  <td>3000mAh</td>
+  <td></td>
+</tr>
+
+</table>
+ 
+<p>The power_profile.xml file is placed in an overlay in
+device///frameworks/base/core/res/res/xml/power_profile.xml</p>
+
+<h3 id="sample">Sample file</h3>
+
+<pre>
+&lt;!-- Most values are the incremental current used by a feature, in mA (measured at
+nominal voltage). OEMs must measure and provide actual values before shipping a device.
+Example real-world values are given, but are dependent on the platform
+and can vary significantly, so should be measured on the shipping platform with a power meter.
+--&gt;
+0
+200
+160
+10
+&lt;!-- Bluetooth stereo audio playback 10.0 mA --&gt;
+1.3
+0.5
+30
+100
+12
+50
+50
+75
+1.1
+&lt;!-- Strength 0 to BINS-1 (4) --&gt;
+1.1
+
+&lt;!-- Different CPU speeds as reported in
+/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state --&gt;
+
+250000  <!-- 250 MHz -->
+500000  <!-- 500 MHz -->
+750000  <!-- 750 MHz -->
+1000000 <!-- 1   GHz -->
+1200000 <!-- 1.2 GHz -->
+
+&lt;!-- Power consumption when CPU is idle --&gt;
+3.0
+50.1
+&lt;!-- Power consumption at different speeds --&gt;
+
+100 &lt;!-- 250 MHz --&gt;
+120 &lt;!-- 500 MHz --&gt;
+140 &lt;!-- 750 MHz --&gt;
+155 &lt;!-- 1   GHz --&gt;
+175 &lt;!-- 1.2 GHz --&gt;
+
+&lt;!-- This is the battery capacity in mAh --&gt;
+3000
+&lt;!-- Battery capacity is 3000 mAH (at 3.6 Volts) --&gt;
+
+</pre>

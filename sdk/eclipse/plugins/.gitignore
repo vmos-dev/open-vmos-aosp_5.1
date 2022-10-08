@@ -1,0 +1,7 @@
+*/bin
+
+com.android.ide.eclipse.tests/unittests/com/android/ddmlib
+com.android.ide.eclipse.tests/unittests/com/android/sdklib
+com.android.ide.eclipse.tests/unittests/com/android/sdkuilib
+com.android.ide.eclipse.tests/unittests/com/android/layoutlib
+

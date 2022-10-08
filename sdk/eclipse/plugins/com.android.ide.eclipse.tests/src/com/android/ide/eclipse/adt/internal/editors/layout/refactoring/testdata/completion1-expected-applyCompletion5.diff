@@ -1,0 +1,4 @@
+Code completion in completion1.xml for layout_marginLeft="50d^p" selecting 50dp:
+@@ -11 +11
+-         android:layout_marginLeft="50d^p"
++         android:layout_marginLeft="50dp"^

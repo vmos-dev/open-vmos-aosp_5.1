@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="^"></item> selecting android:background:
+@@ -11 +11
+-         <item name="^"></item>
++         <item name="android:background"^></item>

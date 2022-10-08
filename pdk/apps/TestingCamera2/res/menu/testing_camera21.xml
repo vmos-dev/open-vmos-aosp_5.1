@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.android.testingcamera2.TestingCamera21" >
+
+    <item
+        android:id="@+id/action_add_camera"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_add_camera"/>
+    <item
+        android:id="@+id/action_add_target"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_add_target"/>
+    <item
+        android:id="@+id/action_add_request"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_add_request"/>
+    <item
+        android:id="@+id/action_add_burst"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_add_burst"/>
+    <item
+        android:id="@+id/action_add_utility"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_add_utility"/>
+    <item
+        android:id="@+id/action_load_config"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_load_config"/>
+    <item
+        android:id="@+id/action_save_config"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_save_config"/>
+</menu>

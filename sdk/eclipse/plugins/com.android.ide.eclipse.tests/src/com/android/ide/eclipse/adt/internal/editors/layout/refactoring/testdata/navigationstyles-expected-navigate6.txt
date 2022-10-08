@@ -1,0 +1,7 @@
+Go To Declaration in navigationstyles.xml for parent="android:The^me.Light">:
+Open Declaration in values/themes.xml :  [android:Theme]
+    data/res/values/themes.xml
+
+
+After open, the selected text is:
+    <style name="Theme">^

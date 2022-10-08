@@ -1,0 +1,96 @@
+page.title=Android Interfaces
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+  <p>Android provides you with the freedom to implement your own device specifications
+  and the drivers to support them. The hardware abstraction layer (HAL) gives you a
+  standard way to create software hooks in between the Android
+  platform stack and your hardware. In addition, the Android operating system
+  is open-sourced to help you through your device's bringup.</p>
+
+  <p>To ensure that your devices maintain a high level of quality and offers a consistent
+  experience for your users, they must must also
+  pass the tests in the compatibility test suite (CTS). CTS ensures that anyone
+  building a device meets a quality standard that ensures apps run reliably well
+  and gives users a good experience. For more information, see the
+  <a href="{@docRoot}compatibility/index.html">Compatibility</a> section.</p>
+
+ <h2>Android Low-Level System Architecture</h2>
+
+<p>Before you begin porting Android to your hardware, it is important to have an
+understanding of how Android works at a high level. Because your drivers and HAL code interact
+with many layers of Android code, this understanding can help you find
+your way through the many layers of code that are available to you through the AOSP
+(Android Open Source Project) source tree. The following diagram shows a system
+level view of how Android works:
+</p>
+
+<img src="images/system-architecture.png">
+
+<p class="img-caption"><strong>Figure 1.</strong> Android System Architecture</p>
+
+  <h4>Application framework</h4>
+  <p>This is the level that most application developers concern themselves with. You should be
+    aware of the APIs available to developers as many of them map 1:1 to the underlying HAL
+    interfaces and can provide information as to how to implement your driver.
+  </p>
+
+  <h4>Binder IPC</h4>
+  <p>
+  The Binder Inter-Process Communication mechanism allows the application framework to
+  cross process boundaries and call into the Android system services code. This basically allows
+  high level framework APIs to interact with Android's system services. At the application framework level, all
+  of this communication is hidden from the developer and things appear to "just work."
+  </p>
+
+  <h4>System services</h4>
+  <p>Most of the functionality exposed through the application framework APIs  must
+    communicate with some sort of system service to access the underlying hardware. Services
+    are divided into modular components with focused functionality
+    such as the Window Manager, Search Service, or Notification Manager. System services are grouped
+    into two buckets: system and media. The system services include things such as the Window or
+    Notification Manager. The media services include all the services involved in playing and
+    recording media.
+  </p>
+
+<h4>Hardware abstraction layer (HAL)</h4>
+<p>The HAL serves as a standard interface that allows the Android system to call into the device
+  driver layer while being agnostic about the lower-level implementations of your drivers and hardware.
+  You must implement the corresponding HAL (and driver) for the particular piece of hardware that your product
+  provides. Android does not mandate a standard interaction between your HAL implementation and your device drivers, so
+  you have free reign to do what is best for your situation. However, you must abide by the contract
+  defined in each hardware-specific HAL interface for the Android system to be able
+  to correctly interact with your hardware. HAL implementations are typically built into
+  shared library modules (<code>.so</code> files).
+</p>
+<h4>Linux Kernel</h4>
+<p>For the most part, developing your device drivers is the same as developing a typical Linux device driver.
+  Android uses a specialized version of the Linux kernel with a few special additions such as
+  wakelocks, a memory management system that is more agressive in preserving memory,
+  the Binder IPC driver, and other features that are important for a mobile embedded platform like Android.
+  These additions have less to do with driver development than with the system's functionality. You can use any version of the kernel that you want as long as it supports the required features, such as the binder driver. However, we recommend
+  using the latest version of the Android kernel. For the latest Android kernel, see
+  <a href="{@docRoot}source/building-kernels.html" >Building Kernels</a>.
+</p>

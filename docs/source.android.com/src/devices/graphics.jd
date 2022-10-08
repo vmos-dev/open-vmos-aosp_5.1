@@ -1,0 +1,227 @@
+page.title=Graphics
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>The Android framework offers a variety of graphics rendering APIs for 2D and
+3D that interact with manufacturer implementations of graphics drivers, so it
+is important to have a good understanding of how those APIs work at a higher
+level. This page introduces the graphics hardware abstraction layer (HAL) upon
+which those drivers are built.</p>
+
+<p>Application developers draw images to the screen in two ways: with Canvas or
+OpenGL. See <a
+href="{@docRoot}devices/graphics/architecture.html">System-level graphics
+architecture</a> for a detailed description of Android graphics
+components.</p>
+
+<p><a
+href="http://developer.android.com/reference/android/graphics/Canvas.html">android.graphics.Canvas</a>
+is a 2D graphics API and is the most popular graphics API among developers.
+Canvas operations draw all the stock and custom <a
+href="http://developer.android.com/reference/android/view/View.html">android.view.View</a>s
+in Android. In Android, hardware acceleration for Canvas APIs is accomplished
+with a drawing library called OpenGLRenderer that translates Canvas operations
+to OpenGL operations so they can execute on the GPU.</p>
+
+<p>Beginning in Android 4.0, hardware-accelerated Canvas is enabled by default.
+Consequently, a hardware GPU that supports OpenGL ES 2.0 is mandatory for
+Android 4.0 and later devices. See the <a
+href="https://developer.android.com/guide/topics/graphics/hardware-accel.html">Hardware
+Acceleration guide</a> for an explanation of how the hardware-accelerated
+drawing path works and the differences in its behavior from that of the
+software drawing path.</p>
+
+<p>In addition to Canvas, the other main way that developers render graphics is
+by using OpenGL ES to directly render to a surface. Android provides OpenGL ES
+interfaces in the <a
+href="http://developer.android.com/reference/android/opengl/package-summary.html">android.opengl</a>
+package that developers can use to call into their GL implementations with the
+SDK or with native APIs provided in the <a
+href="https://developer.android.com/tools/sdk/ndk/index.html">Android
+NDK</a>.</p>
+
+<h2 id=android_graphics_components>Android graphics components</h2>
+
+<p>No matter what rendering API developers use, everything is rendered onto a
+"surface." The surface represents the producer side of a buffer queue that is
+often consumed by SurfaceFlinger. Every window that is created on the Android
+platform is backed by a surface. All of the visible surfaces rendered are
+composited onto the display by SurfaceFlinger.</p>
+
+<p>The following diagram shows how the key components work together:</p>
+
+<img src="graphics/images/graphics_surface.png" alt="image-rendering components">
+
+<p class="img-caption"><strong>Figure 1.</strong> How surfaces are rendered</p>
+
+<p>The main components are described below:</p>
+
+<h3 id=image_stream_producers>Image Stream Producers</h3>
+
+<p>An image stream producer can be anything that produces graphic buffers for
+consumption. Examples include OpenGL ES, Canvas 2D, and mediaserver video
+decoders.</p>
+
+<h3 id=image_stream_consumers>Image Stream Consumers</h3>
+
+<p>The most common consumer of image streams is SurfaceFlinger, the system
+service that consumes the currently visible surfaces and composites them onto
+the display using information provided by the Window Manager. SurfaceFlinger is
+the only service that can modify the content of the display. SurfaceFlinger
+uses OpenGL and the Hardware Composer to compose a group of surfaces.</p>
+
+<p>Other OpenGL ES apps can consume image streams as well, such as the camera
+app consuming a camera preview image stream. Non-GL applications can be
+consumers too, for example the ImageReader class.</p>
+
+<h3 id=window_manager>Window Manager</h3>
+
+<p>The Android system service that controls a window, which is a container for
+views. A window is always backed by a surface. This service oversees
+lifecycles, input and focus events, screen orientation, transitions,
+animations, position, transforms, z-order, and many other aspects of a window.
+The Window Manager sends all of the window metadata to SurfaceFlinger so
+SurfaceFlinger can use that data to composite surfaces on the display.</p>
+
+<h3 id=hardware_composer>Hardware Composer</h3>
+
+<p>The hardware abstraction for the display subsystem. SurfaceFlinger can
+delegate certain composition work to the Hardware Composer to offload work from
+OpenGL and the GPU. SurfaceFlinger acts as just another OpenGL ES client. So
+when SurfaceFlinger is actively compositing one buffer or two into a third, for
+instance, it is using OpenGL ES. This makes compositing lower power than having
+the GPU conduct all computation.</p>
+
+<p>The Hardware Composer HAL conducts the other half of the work. This HAL is
+the central point for all Android graphics rendering. Hardware Composer must
+support events, one of which is VSYNC. Another is hotplug for plug-and-play
+HDMI support.</p>
+
+<p>See the <a href="{@docRoot}devices/graphics.html#hardware_composer_hal">Hardware Composer
+HAL</a> section for more information.</p>
+
+<h3 id=gralloc>Gralloc</h3>
+
+<p>The graphics memory allocator is needed to allocate memory that is requested
+by image producers. See the <a
+href="{@docRoot}devices/graphics.html#gralloc">Gralloc HAL</a> section for more
+information.</p>
+
+<h2 id=data_flow>Data flow</h2>
+
+<p>See the following diagram for a depiction of the Android graphics
+pipeline:</p>
+
+<img src="graphics/images/graphics_pipeline.png" alt="graphics data flow">
+
+<p class="img-caption"><strong>Figure 2.</strong> How graphic data flow through
+Android</p>
+
+<p>The objects on the left are renderers producing graphics buffers, such as
+the home screen, status bar, and system UI. SurfaceFlinger is the compositor
+and Hardware Composer is the composer.</p>
+
+<h3 id=bufferqueue>BufferQueue</h3>
+
+<p>BufferQueues provide the glue between the Android graphics components. These
+are a pair of queues that mediate the constant cycle of buffers from the
+producer to the consumer. Once the producers hand off their buffers,
+SurfaceFlinger is responsible for compositing everything onto the display.</p>
+
+<p>See the following diagram for the BufferQueue communication process.</p>
+
+<img src="graphics/images/bufferqueue.png" alt="BufferQueue communication process">
+
+<p class="img-caption"><strong>Figure 3.</strong> BufferQueue communication
+process</p>
+
+<p>BufferQueue contains the logic that ties image stream producers and image
+stream consumers together. Some examples of image producers are the camera
+previews produced by the camera HAL or OpenGL ES games. Some examples of image
+consumers are SurfaceFlinger or another app that displays an OpenGL ES stream,
+such as the camera app displaying the camera viewfinder.</p>
+
+<p>BufferQueue is a data structure that combines a buffer pool with a queue and
+uses Binder IPC to pass buffers between processes. The producer interface, or
+what you pass to somebody who wants to generate graphic buffers, is
+IGraphicBufferProducer (part of <a
+href="http://developer.android.com/reference/android/graphics/SurfaceTexture.html">SurfaceTexture</a>).
+BufferQueue is often used to render to a Surface and consume with a GL
+Consumer, among other tasks.
+
+BufferQueue can operate in three different modes:</p>
+
+<p><em>Synchronous-like mode</em> - BufferQueue by default operates in a
+synchronous-like mode, in which every buffer that comes in from the producer
+goes out at the consumer. No buffer is ever discarded in this mode. And if the
+producer is too fast and creates buffers faster than they are being drained, it
+will block and wait for free buffers.</p>
+
+<p><em>Non-blocking mode</em> - BufferQueue can also operate in a non-blocking
+mode where it generates an error rather than waiting for a buffer in those
+cases. No buffer is ever discarded in this mode either. This is useful for
+avoiding potential deadlocks in application software that may not understand
+the complex dependencies of the graphics framework.</p>
+
+<p><em>Discard mode</em> - Finally, BufferQueue may be configured to discard
+old buffers rather than generate errors or wait. For instance, if conducting GL
+rendering to a texture view and drawing as quickly as possible, buffers must be
+dropped.</p>
+
+<p>To conduct most of this work, SurfaceFlinger acts as just another OpenGL ES
+client. So when SurfaceFlinger is actively compositing one buffer or two into a
+third, for instance, it is using OpenGL ES.</p>
+
+<p>The Hardware Composer HAL conducts the other half of the work. This HAL acts
+as the central point for all Android graphics rendering.</p>
+
+<h3 id=synchronization_framework>Synchronization framework</h3>
+
+<p>Since Android graphics offer no explicit parallelism, vendors have long
+implemented their own implicit synchronization within their own drivers. This
+is no longer required with the Android graphics synchronization framework. See
+the <a href="#explicit_synchronization">Explicit synchronization</a> section
+for implementation instructions.</p>
+
+<p>The synchronization framework explicitly describes dependencies between
+different asynchronous operations in the system. The framework provides a
+simple API that lets components signal when buffers are released. It also
+allows synchronization primitives to be passed between drivers from the kernel
+to userspace and between userspace processes themselves.</p>
+
+<p>For example, an application may queue up work to be carried out in the GPU.
+The GPU then starts drawing that image. Although the image hasn’t been drawn
+into memory yet, the buffer pointer can still be passed to the window
+compositor along with a fence that indicates when the GPU work will be
+finished. The window compositor may then start processing ahead of time and
+hand off the work to the display controller. In this manner, the CPU work can
+be done ahead of time. Once the GPU finishes, the display controller can
+immediately display the image.</p>
+
+<p>The synchronization framework also allows implementers to leverage
+synchronization resources in their own hardware components. Finally, the
+framework provides visibility into the graphics pipeline to aid in
+debugging.</p>

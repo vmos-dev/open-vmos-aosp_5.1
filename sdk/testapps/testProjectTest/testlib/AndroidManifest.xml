@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.android.tests.testprojecttest.testlib"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="15" />
+
+    <!--
+         We add an application tag here just so that we can indicate that
+         this package needs to link against the android.test library,
+         which is needed when building test cases.
+    -->
+    <application android:label="testProjectTest-testlib">
+        <uses-library android:name="android.test.runner" />
+    </application>
+
+    <!--
+    This declares that this app uses the instrumentation test runner targeting
+    the package of com.android.tests.testprojecttest.testlib.  To run the tests use the command:
+    "adb shell am instrument -w com.android.tests.testprojecttest.testlib/android.test.InstrumentationTestRunner"
+    -->
+    <instrumentation
+        android:name="android.test.InstrumentationTestRunner"
+        android:targetPackage="com.android.tests.testprojecttest.testlib" />
+
+</manifest>

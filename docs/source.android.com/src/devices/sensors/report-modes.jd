@@ -1,0 +1,66 @@
+page.title=Reporting modes
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Sensors can generate events in different ways called reporting modes; each
+  sensor type has one and only one reporting mode associated with it. Four
+  reporting modes exist.</p>
+<h2 id="continuous">Continuous</h2>
+<p>Events are generated at a constant rate defined by the <a href="hal-interface.html#sampling_period_ns">sampling_period_ns</a> parameter passed to the <code>batch</code> function. Example sensors using the continuous
+  reporting mode are <a href="sensor-types.html#accelerometer">accelerometers</a> and <a href="sensor-types.html#gyroscope">gyroscopes</a>.</p>
+<h2 id="on-change">On-change</h2>
+<p>Events are generated only if the measured values have changed. Activating the
+  sensor at the HAL level (calling <code>activate(..., enable=1)</code> on it) also triggers
+  an event, meaning the HAL must return an event immediately when an on-change
+  sensor is activated. Example sensors using the on-change reporting mode are the
+  step counter, proximity, and heart rate sensor types.</p>
+<p>The <a href="hal-interface.html#sampling_period_ns">sampling_period_ns</a>
+  parameter passed to the <code>batch</code> function is used to set the minimum
+  time between consecutive events, meaning an event should not be generated until
+  sampling_period_ns nanoseconds elapsed since the last event, even if the value
+  changed since then. If the value changed, an event must be generated as soon as
+  <code>sampling_period_ns</code> has elapsed since the last event.</p>
+<p>For example, suppose:</p>
+<ul>
+  <li> We activate the step counter with <code>sampling_period_ns = 10 * 10^9</code> (10 seconds). </li>
+  <li> And walk for 55 seconds, then stand still for one minute. </li>
+  <li> Then the events will be generated about every 10 seconds during the first
+    minute (including at time t=0 because of the activation of the sensor, and t=60
+    seconds), for a total of seven events, and no event will be generated in the second
+    minute because the value of the step count didn’t change after t=60 seconds. </li>
+</ul>
+<h2 id="one-shot">One-shot</h2>
+<p>Upon detection of an event, the sensor deactivates itself and then sends a
+  single event through the HAL. Order matters to avoid race conditions. (The
+  sensor must be deactivated before the event is reported through the HAL). No
+  other event is sent until the sensor is reactivated. <a href="sensor-types.html#significant_motion">Significant motion</a> is an example of this kind of sensor.</p>
+<p>One-shot sensors are sometimes referred to as trigger sensors.</p>
+<p>The <code>sampling_period_ns</code> and <code>max_report_latency_ns</code>
+  parameters passed to the <code>batch</code> function are ignored. Events from
+  one-shot events cannot be stored in hardware FIFOs; the events must be
+  reported as soon as they are generated.</p>
+<h2 id="special">Special</h2>
+<p>See the individual <a href="sensor-types.html">sensor type descriptions</a>
+for details on when the events are generated.</p>

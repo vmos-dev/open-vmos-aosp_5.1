@@ -1,0 +1,4 @@
+Code completion in broken3.xml for <EditT^ selecting EditText />:
+@@ -6 +6
+-     <EditT^
++     <EditText ^/>

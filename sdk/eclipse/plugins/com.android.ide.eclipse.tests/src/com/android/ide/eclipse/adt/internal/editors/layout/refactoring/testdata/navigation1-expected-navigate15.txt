@@ -1,0 +1,7 @@
+Go To Declaration in navigation1.xml for ?android:attr/alert^DialogStyle:
+Open Declaration in values/attrs.xml :  [?android:attr/alertDialogStyle]
+    data/res/values/attrs.xml
+
+
+After open, the selected text is:
+        <attr name="alertDialogStyle" format="reference" />^

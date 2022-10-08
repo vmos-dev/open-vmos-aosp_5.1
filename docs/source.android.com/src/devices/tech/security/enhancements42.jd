@@ -1,0 +1,60 @@
+page.title=Security Enhancements in Android 4.2
+@jd:body
+
+<p>
+Android provides a multi-layered security model described in the <a href="{@docRoot}devices/tech/security/index.html">Android
+Security Overview</a>. Each update to Android includes dozens of
+security enhancements to protect users.  The following are some of the security
+enhancements introduced in Android 4.2:</p>
+
+<ul>
+<li><strong>Application verification</strong> - Users can choose to enable “Verify Apps" and
+have applications screened by an application verifier, prior to installation.
+App verification can alert the user if they try to install an app that might be
+harmful; if an application is especially bad, it can block installation.</li>
+<li><strong>More control of premium SMS</strong> - Android will provide a notification if an
+application attempts to send SMS to a short code that uses premium services
+which might cause additional charges.  The user can choose whether to allow the
+application to send the message or block it.</li>
+
+<li><strong>Always-on VPN</strong> - VPN can be configured so that applications will not have
+access to the network until a VPN connection is established.  This prevents
+applications from sending data across other networks.</li>
+
+<li><strong>Certificate Pinning</strong> - The Android core libraries now support
+<a href="https://developer.android.com/reference/android/net/http/X509TrustManagerExtensions.html">certificate pinning</a>.
+Pinned domains will receive a certificate validation
+failure if the certificate does not chain to a set of expected certificates.
+This protects against possible compromise of Certificate Authorities.</li>
+
+<li><strong>Improved display of Android permissions</strong> - Permissions have been organized
+into groups that are more easily understood by users. During review of the
+permissions, the user can click on the permission to see more detailed
+information about the permission.</li>
+
+<li><strong>installd hardening</strong> - The <code>installd</code> daemon does not run as the root user,
+reducing potential attack surface for root privilege escalation.</li>
+
+<li><strong>init script hardening</strong> - init scripts now apply <code>O_NOFOLLOW</code> semantics to
+prevent symlink related attacks.</li>
+
+<li><strong>FORTIFY_SOURCE</strong> -  Android now implements <code>FORTIFY_SOURCE</code>. This is used by
+system libraries and applications to prevent memory corruption.</li>
+
+<li><strong>ContentProvider default configuration</strong> -  Applications which target API
+level 17 will have "export" set to "false" by default for each
+<a href="https://developer.android.com/reference/android/content/ContentProvider.html">Content 
+Provider</a>, reducing default attack surface for applications.</li>
+
+<li><strong>Cryptography</strong> - Modified the default implementations of SecureRandom and
+Cipher.RSA to use OpenSSL.  Added SSL Socket support for TLSv1.1 and TLSv1.2
+using OpenSSL 1.0.1</li>
+
+<li><strong>Security Fixes</strong> - Upgraded open source libraries with security fixes include
+WebKit, libpng, OpenSSL, and LibXML. Android 4.2 also includes fixes for
+Android-specific vulnerabilities. Information about these vulnerabilities has
+been provided to Open Handset Alliance members and fixes are available in
+Android Open Source Project.  To improve security, some devices with earlier
+versions of Android may also include these fixes.</li>
+
+</ul>

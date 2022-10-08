@@ -1,0 +1,9 @@
+# Talk to qmuxd (/dev/socket/qmux_radio)
+qmux_socket(radio)
+
+# The following 3 are needed for QXDM Logger
+userdebug_or_eng(`
+  allow radio radio_data_file:file { execute execute_no_trans };
+  allow radio kickstart_device:chr_file rw_file_perms;
+  allow radio su_exec:file getattr;
+')

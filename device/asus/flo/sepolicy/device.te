@@ -1,0 +1,18 @@
+type wlan_device, dev_type;
+
+type diag_device, dev_type;
+
+# Kickstart device used by QC qcks
+type kickstart_device, dev_type;
+
+# SMD device, used by hci_qcomm_init
+type smd_device, dev_type;
+
+# Radio related block device
+type efs_block_device, dev_type;
+type modem_block_device, dev_type;
+
+# Shared memory logger
+type shared_log_device, dev_type;
+
+type power_control_device, dev_type;

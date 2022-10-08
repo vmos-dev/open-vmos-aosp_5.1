@@ -1,0 +1,258 @@
+page.title=DRM
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>This document provides an overview of the Android DRM framework, and
+introduces the interfaces a DRM plug-in must implement. This document does not
+describe robustness rules or compliance rules that may be defined by a DRM
+scheme.</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>The Android platform provides an extensible DRM framework that lets
+applications manage rights-protected content according to the license
+constraints associated with the content. The DRM framework supports many DRM
+schemes; which DRM schemes a device supports is up to the device manufacturer.
+The DRM framework introduced in Android 3.0 provides a unified interface for
+application developers and hides the complexity of DRM operations. The DRM
+framework provides a consistent operation mode for protected and non-protected
+content. DRM schemes can define very complex usage models by license metadata.
+The DRM framework provides the association between DRM content and license, and
+handles the rights management. This enables the media player to be abstracted
+from DRM-protected or non-protected content. See <a
+href="https://developer.android.com/reference/android/media/MediaDrm.html">MediaDrm</a>
+for the class to obtain keys for decrypting protected media streams.</p>
+
+ <img src="images/drm_hal.png" alt="Android DRM HAL" />
+
+<p class="img-caption"><strong>Figure 1.</strong> DRM Hardware Abastraction
+Layer</p>
+
+<p>
+Availability of rich digital content is important to users on mobile devices. To
+make their content widely available, Android developers and digital content
+publishers need a consistent DRM implementation supported across the Android
+ecosystem. In order to make that digital content available on Android devices
+and to ensure that there is at least one consistent DRM available across all
+devices, Google provides DRM without any license fees on compatible Android devices.
+On Android 3.0 and higher platforms, the DRM plug-in is integrated with the
+Android DRM framework and can use hardware-backed protection to secure premium
+content and user credentials.
+</p>
+
+<p>
+The content protection provided by the DRM plug-in depends on the security and
+content protection capabilities of the underlying hardware platform. The
+hardware capabilities of the device include hardware secure boot to establish a
+chain of trust of security and protection of cryptographic keys. Content
+protection capabilities of the device include protection of decrypted frames in
+the device and content protection via a trusted output protection mechanism. Not
+all hardware platforms support all of the above security and content protection
+features. Security is never implemented in a single place in the
+stack, but instead relies on the integration of hardware, software, and
+services. The combination of hardware security functions, a trusted boot
+mechanism, and an isolated secure OS for handling security functions is critical
+to providing a secure device.</p>
+
+
+<h2 id="architecture">Architecture</h2>
+<p>The DRM framework is designed to be implementation agnostic and
+abstracts the details of the specific DRM scheme implementation in a
+scheme-specific DRM plug-in. The DRM framework includes simple APIs to handle
+complex DRM operations, register users and devices to online DRM services,
+extract constraint information from the license, associate DRM content and its
+license, and finally decrypt DRM content.</p>
+
+<p>The Android DRM framework is implemented in two architectural layers:</p>
+<ul>
+<li>A DRM framework API, which is exposed to applications through the Android
+  application framework and runs through the Dalvik VM for standard
+  applications.</li>
+<li>A native code DRM manager, which implements the DRM framework and exposes an
+  interface for DRM plug-ins (agents) to handle rights management and decryption
+  for various DRM schemes.</li>
+</ul>
+
+ <img src="images/drm_framework.png" alt="Android DRM Framework" />
+
+<p class="img-caption"><strong>Figure 2.</strong> DRM framework</p>
+
+<p>See the <a
+href="http://developer.android.com/reference/android/drm/package-summary.html">Android
+DRM package reference</a> for additional details.</p>
+
+<h2 id="plug-ins">Plug-ins</h2>
+<p>As shown in the figure below, the DRM framework uses a plug-in architecture
+to support various DRM schemes. The DRM manager service runs in an independent
+process to ensure isolated execution of DRM plug-ins. Each API call from
+DrmManagerClient to DrmManagerService goes across process boundaries by using
+the binder IPC mechanism. The DrmManagerClient provides a Java programming
+language implementation as a common interface to runtime applications; it
+also provides a DrmManagerClient-native implementation as the interface to
+native modules. The caller of DRM framework accesses only the DrmManagerClient
+and does not have to be aware of each DRM scheme. </p>
+
+ <img src="images/drm_plugin.png" alt="Android DRM Plug-in" />
+
+<p class="img-caption"><strong>Figure 3.</strong> DRM framework with plug-ins</p>
+
+<p>Plug-ins are loaded automatically when DrmManagerService is launched. As
+shown in the figure below, the DRM plug-in manager loads/unloads all the
+available plug-ins. The DRM framework loads plug-ins automatically by finding
+them under:<br/>
+<code>/system/lib/drm/plugins/native/</code></p>
+ 
+<img src="images/drm_plugin_lifecycle.png" alt="Android DRM Plug-in Lifecycle" />
+
+<p class="img-caption"><strong>Figure 4.</strong> DRM plug-in lifecycle</p>
+
+<p>The plug-in developer should ensure the plug-in is located in the DRM
+framework plug-in discovery directory. See implementation instructions below for details.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<h3 id="IDrmEngine">IDrmEngine</h3>
+
+<p>IDrmEngine is an interface with a set of APIs to suit DRM use cases. Plug-in
+developers must implement the interfaces specified in IDrmEngine and the
+listener interfaces specified below. This document assumes the plug-in developer
+has access to the Android source tree. The interface definition is available in
+the source tree at:<br/>
+<code>
+<&lt;platform_root&gt;/frameworks/base/drm/libdrmframework/plugins/common/include
+</code></p>
+
+<h3 id="DrmInfo">DRM Info</h3>
+<p>DrmInfo is a wrapper class that wraps the protocol for communicating with the
+DRM server. Server registration, deregistration, license acquisition, or any other
+server-related transaction can be achieved by processing an instance of DrmInfo.
+The protocol should be described by the plug-in in XML format. Each DRM plug-in
+would accomplish the transaction by interpreting the protocol. The DRM framework
+defines an API to retrieve an instance of DrmInfo called acquireDrmInfo().</p>
+
+<code>DrmInfo* acquireDrmInfo(int uniqueId, const DrmInfoRequest* drmInfoRequest);</code>
+<p>Retrieves necessary information for registration, deregistration or rights
+acquisition information. See <a
+href="http://developer.android.com/reference/android/drm/DrmInfoRequest.html">DrmInfoRequest</a> for more information.</p>
+
+<code>DrmInfoStatus* processDrmInfo(int uniqueId, const DrmInfo* drmInfo);</code>
+<p>processDrmInfo() behaves asynchronously and the results of the transaction can
+be retrieved either from OnEventListener or OnErrorListener.</p>
+
+<h3 id="drm-rights">DRM rights</h3>
+
+<p>The association of DRM content and the license is required to allow playback
+of DRM content. Once the association has been made, the license will be handled in
+the DRM framework so the Media Player application is abstracted from the existence
+of license.</p>
+
+<code>int checkRightsStatus(int uniqueId, const String8&amp; path, int
+action);</code>
+<p>Save DRM rights to the specified rights path and make association with content path.
+The input parameters are DrmRights to be saved, rights file path where rights
+are to be saved and content file path where content was saved.</p>
+
+<code>status_t saveRights(int uniqueId, const DrmRights&amp; drmRights,
+            const String8&amp; rightsPath, const String8&amp;
+contentPath);</code>
+<p>Save DRM rights to specified rights path and make association with content
+path.</p>
+
+<h3 id="metadata">License Metadata</h3>
+<p>License metadata such as license expiry time, repeatable count and etc., may be
+embedded inside the rights of the protected content. The Android DRM framework
+provides APIs to return constraints associated with input content. See <a
+href="http://developer.android.com/reference/android/drm/DrmManagerClient.html">DrmManagerClient</a>
+for more information.</p>
+
+<code>DrmConstraints* getConstraints(int uniqueId, const String path, int
+action);</code>
+<p>The getConstraint function call returns key-value pairs of constraints
+embedded in protected content. To retrieve the constraints, the uniqueIds (the
+Unique identifier for a session and path of the protected content) are required.
+The action, defined as Action::DEFAULT, Action::PLAY, etc., is also required.</p>
+
+ <img src="images/drm_license_metadata.png" alt="Android DRM License Metadata" />
+
+<p class="img-caption"><strong>Figure 5.</strong> Retrieve license metadata</p>
+
+<code>DrmMetadata* getMetadata(int uniqueId, const String path);</code>
+<p>Get metadata information associated with input content for a given path of the
+protected content to return key-value pairs of metadata.</p>
+
+<h3 id="metadata">Decrypt session</h3>
+<p>To maintain the decryption session, the caller of the DRM framework has to
+invoke openDecryptSession() at the beginning of the decryption sequence.
+openDecryptSession() asks each DRM plug-in if it can handle input DRM
+content.</p>
+<code>
+status_t openDecryptSession(
+   int uniqueId, DecryptHandle* decryptHandle, int fd, off64_t offset, off64_t length);
+</code>
+
+<p>The above call allows you to save DRM rights to specified rights path and make
+association with content path. DrmRights parameter is the rights to be saved,
+file path where rights should be and content file path where content should be
+saved.</p>
+
+<h3 id="listeners">DRM plug-in Listeners</h3>
+
+<p>Some APIs in DRM framework behave asynchronously in a DRM transaction. An
+application can register three listener classes to DRM framework.</p>
+
+<ul>
+<li>OnEventListener for results of asynchronous APIs</li>
+<li>OnErrorListener for recieving errors of asynchronous APIs</li>
+<li>OnInfoListener for any supplementary information during DRM
+transactions.</li>
+</ul>
+
+<h3 id="source">Source</h3>
+
+<p>The Android DRM framework includes a passthru plug-in as a sample plug-in.
+The implementation for passthru plug-in can be found in the Android source tree
+at:<br/>
+<code>
+&lt;platform_root&gt;/frameworks/base/drm/libdrmframework/plugins/passthru
+</code></p>
+
+<h3 id="build">Build and Integration</h3>
+
+<p>Add the following to the Android.mk of the plug-in implementation. The
+passthruplugin is used as a sample.</p>
+
+<code>
+PRODUCT_COPY_FILES +=
+$(TARGET_OUT_SHARED_LIBRARIES)/&lt;plugin_library&gt;:system/lib/drm/plugins/native/&lt;plugin_library&gt;
+e.g.,<br/>
+PRODUCT_COPY_FILES += $(TARGET_OUT_SHARED_LIBRARIES)/
+libdrmpassthruplugin.so:system/lib/drm/plugins/native/libdrmpassthruplugin.so
+</code>
+<br/>
+<br/>
+<p>Plug-in developers must  locate their respective plug-ins under this
+directory like so:<br/>
+<code>/system/lib/drm/plugins/native/libdrmpassthruplugin.so</code></p>

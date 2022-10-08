@@ -1,0 +1,107 @@
+page.title=Trade Federation Overview
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Trade Federation (tradefed or TF for short) is a continuous test framework designed for running tests
+on Android devices. It's a Java application which runs on a host computer, and communicates to one or
+more Android devices using ddmlib (the library behind DDMS) over adb.</p>
+
+<p>We've listed some of TF's main features below, along with a couple sample usecases.  That said,
+if you want to jump right in and get started, you can head straight for the
+<a href="/devices/tech/test_infra/tradefed/fundamentals/index.html">Start Here</a> page.</p>
+
+<h2>Features</h2>
+<ul>
+<li>modular, flexible, scalable design</li>
+<li>has built in support for running many different types of Android tests:
+  <a href="http://developer.android.com/tools/testing/testing_android.html#Instrumentation">instrumentation</a>,
+  <a href="http://developer.android.com/tools/testing/testing_ui.html">uiautomator</a>,
+  native/gtest, host-based JUnit, etc</li>
+<li>provides reliability and recovery mechanisms on top of adb</li>
+<li>supports scheduling and running tests on multiple devices in parallel</li>
+</ul>
+
+<h2>Sample Trade Federation Usecases</h2>
+<p>Trade Federation's modularity makes it straightforward to slot into environments with existing
+build, test, and reporting infrastructures.  We list below a few demonstrative
+usecases where tradefed could enable efficient, scalable test practices.</p>
+
+<p>First, it is useful to consider the landscape of potential usecases in terms of the question
+"which parts are modifiable, and what parts are static?"  For instance, a Device OEM can modify the
+framework, the system, and the hardware, but has little or no influence over existing applications.
+An application developer, on the other hand, can modify the app, but has little control over most
+aspects of the system or the framework.</p>
+
+<p>As a result, an entity in each usecase will have different testing goals, and will have different
+options in the case of a set of test failures.  Despite these differences, Trade Federation can
+help make each of their test processes efficient, flexible, and scalable.</p>
+
+<h3>Device OEM</h3>
+<p>A Device OEM builds hardware, and will often tweak the Android system and frameworks to run well
+on that hardware.  The OEM might strive to accomplish those goals while retaining stability
+and performance at the hardware and system levels, and making sure the framework changes don't break
+compatibility with existing applications.</p>
+
+<p>The OEM could implement a device flashing module that will execute during the Target Setup stage
+of the <a href="/devices/tech/test_infra/tradefed/fundamentals/lifecycle.html">lifecycle</a>.  That
+module would have complete control over the device during its execution period, which would allow
+it to potentially force the device into the bootloader, flash, and then force the device to reboot
+back into userspace mode.  Combined with a module to tie into a continuous build system, this would
+allow the OEM to run tests on their device as they make changes to the system-level firmware and
+Java-level frameworks.</p>
+
+<p>Once the device is fully booted, the OEM would be able to leverage existing JUnit-based tests,
+or write new ones, to verify the functionality of interest.  Finally, they could write one or more
+result reporting modules to tie into existing test-result repositories, or to report results
+directly (for instance,
+<a href="/reference/com/android/tradefed/result/EmailResultReporter.html">by email</a>).</p>
+
+<h3>App Developer</h3>
+<p>An Application Developer builds an app which needs to run well across a variety of platform
+versions and a variety of devices.  If an issue comes up on a particular platform version and/or
+device, the only remedy is to add a workaround and move on.  For larger developers, the test
+process might be incorporated into a continuous build sequence.  For smaller developers, it
+might be kicked off periodically or by hand.</p>
+
+<p>Most app developers would use the apk test installation modules that already exist in TF.
+There's a version that <a href="/reference/com/android/tradefed/targetprep/InstallApkSetup.html"
+>installs from the local filesystem</a>, as well as a version that can
+<a href="/reference/com/android/tradefed/targetprep/InstallBuildEnvApkSetup.html">install
+apks downloaded from a build service</a>.  It is important to note that the latter version would
+continue to work properly with arbitrarily many TF instances running on the same host machine.</p>
+
+<p>Because of TF's proficiency at dealing with multiple devices, it would be straightforward to
+classify each test result by the type of device that was used for that test.  Thus, TF could
+potentially generate a 2-dimensional (or multi-dimensional) compatibility matrix for every
+build of the application.</p>
+
+<h3>Testing Service</h3>
+<p>A Test Service might, for instance, allow app developers to submit apps and run tests on devices
+instrumented with power-measurement tools to determine power usage for the app.  This differs from
+the prior two usecases in that the service builder does not control the devices or the applications
+that are being run</p>
+
+<p>Because Trade Federation can run any Java class that implements the simple
+<a href="/reference/com/android/tradefed/testtype/IRemoteTest.html">IRemoteTest</a> interface, it's
+trivial to write drivers that can coordinate some external piece of hardware with the test case
+that's being run on the device.  The driver itself can spawn Threads, send requests to other
+servers, or do anything else that it might need.  Moreover, the simplicity and versatility of the
+result reporting interface,
+<a href="/reference/com/android/tradefed/result/ITestInvocationListener.html"
+>ITestInvocationListener</a>, means that it is likewise straightforward to
+represent arbitrary test results (including, for instance, numerical power metrics) into the
+standard result reporting pipeline.</p>

@@ -1,0 +1,9 @@
+#tell pde.build not to generate start levels
+org.eclipse.pde.build.append.startlevels=false
+
+requires.1.namespace=org.eclipse.equinox.p2.iu
+requires.1.name=org.eclipse.platform.ide
+requires.1.greedy=true
+
+instructions.configure=\
+org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(location:http${#58}//dl-ssl.google.com/android/eclipse/,type:0,name:Android Developer Tools Update Site,enabled:true);

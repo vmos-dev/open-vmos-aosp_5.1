@@ -1,0 +1,510 @@
+page.title=Encryption
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id=what_is_encryption>What is encryption?</h2>
+
+<p>Encryption is the process of encoding user data on an Android device using an
+encrypted key. Once a device is encrypted, all user-created data is
+automatically encrypted before committing it to disk and all reads
+automatically decrypt data before returning it to the calling process.</p>
+
+<h2 id=what_we’ve_added_for_android_l>What we’ve added for Android 5.0</h2>
+
+<ul>
+  <li>Created fast encryption, which only encrypts used blocks on the data partition
+to avoid first boot taking a long time. Only ext4 and f2fs filesystems
+currently support fast encryption.
+  <li>Added the <code>forceencrypt</code> flag to encrypt on first boot.
+  <li>Added support for patterns and encryption without a password.
+  <li>Added hardware-backed storage of the encryption key. See <a
+       href="#storing_the_encrypted_key">Storing the encrypted key</a> for more details.
+</ul>
+
+<p class="caution"><strong>Caution:</strong> Devices upgraded to Android 5.0 and then
+encrypted may be returned to an unencrypted state by factory data reset. New Android 5.0
+devices encrypted at first boot cannot be returned to an unencrypted state.</p>
+
+<h2 id=how_android_encryption_works>How Android encryption works</h2>
+
+<p>Android disk encryption is based on <code>dm-crypt</code>, which is a kernel feature that works at the block device layer. Because of
+this, encryption works with Embedded MultiMediaCard<strong> (</strong>eMMC) and similar flash devices that present themselves to the kernel as block
+devices. Encryption is not possible with YAFFS, which talks directly to a raw
+NAND flash chip. </p>
+
+<p>The encryption algorithm is 128 Advanced Encryption Standard (AES) with
+cipher-block chaining (CBC) and ESSIV:SHA256. The master key is encrypted with
+128-bit AES via calls to the OpenSSL library. You must use 128 bits or more for
+the key (with 256 being optional). </p>
+
+<p class="note"><strong>Note:</strong> OEMs can use 128-bit or higher to encrypt the master key.</p>
+
+<p>In the Android 5.0 release, there are four kinds of encryption states: </p>
+
+<ul>
+  <li>default
+  <li>PIN
+  <li>password
+  <li>pattern
+</ul>
+
+<p>Upon first boot, the device generates a 128-bit key. This key is then encrypted
+with a default password, and the encrypted key is stored in the crypto
+metadata. The 128-bit key generated is valid until the next factory reset. Upon
+factory reset, a new 128-bit key is generated.</p>
+
+<p>When the user sets the PIN/pass or password on the device, only the 128-bit key
+is re-encrypted and stored. (ie. user PIN/pass/pattern changes do NOT cause
+re-encryption of userdata.) </p>
+
+<p>Encryption is managed by <code>init</code> and <code>vold</code>. <code>init</code> calls <code>vold</code>, and vold sets properties to trigger events in init. Other parts of the system
+also look at the properties to conduct tasks such as report status, ask for a
+password, or prompt to factory reset in the case of a fatal error. To invoke
+encryption features in <code>vold</code>, the system uses the command line tool <code>vdc</code>’s <code>cryptfs</code> commands: <code>checkpw</code>, <code>restart</code>, <code>enablecrypto</code>, <code>changepw</code>, <code>cryptocomplete</code>, <code>verifypw</code>, <code>setfield</code>, <code>getfield</code>, <code>mountdefaultencrypted</code>, <code>getpwtype</code>, <code>getpw</code>, and <code>clearpw</code>.</p>
+
+<p>In order to encrypt, decrypt or wipe <code>/data</code>, <code>/data</code> must not be mounted. However, in order to show any user interface (UI), the
+framework must start and the framework requires <code>/data</code> to run. To resolve this conundrum, a temporary filesystem is mounted on <code>/data</code>. This allows Android to prompt for passwords, show progress, or suggest a data
+wipe as needed. It does impose the limitation that in order to switch from the
+temporary filesystem to the true <code>/data</code> filesystem, the system must stop every process with open files on the
+temporary filesystem and restart those processes on the real <code>/data</code> filesystem. To do this, all services must be in one of three groups: <code>core</code>, <code>main</code>, and <code>late_start</code>.</p>
+
+<ul>
+  <li><code>core</code>: Never shut down after starting.
+  <li><code>main</code>: Shut down and then restart after the disk password is entered.
+  <li><code>late_start</code>: Does not start until after <code>/data</code> has been decrypted and mounted.
+</ul>
+
+<p>To trigger these actions, the  <code>vold.decrypt</code> property is set to <a href="https://android.googlesource.com/platform/system/vold/+/master/cryptfs.c">various strings</a>. To kill and restart services, the <code>init</code> commands are:</p>
+
+<ul>
+  <li><code>class_reset</code>: Stops a service but allows it to be restarted with class_start.
+  <li><code>class_start</code>: Restarts a service.
+  <li><code>class_stop</code>: Stops a service and adds a <code>SVC_DISABLED</code> flag. Stopped services do not respond to <code>class_start</code>.
+</ul>
+
+<h2 id=flows>Flows</h2>
+
+<p>There are four flows for an encrypted device. A device is encrypted just once
+and then follows a normal boot flow.  </p>
+
+<ul>
+  <li>Encrypt a previously unencrypted device:
+  <ul>
+    <li>Encrypt a new device with <code>forceencrypt</code>: Mandatory encryption at first boot (starting in Android L).
+    <li>Encrypt an existing device: User-initiated encryption (Android K and earlier).
+  </ul>
+  <li>Boot an encrypted device:
+  <ul>
+    <li>Starting an encrypted device with no password: Booting an encrypted device that
+has no set password (relevant for devices running Android 5.0 and later).
+    <li> Starting an encrypted device with a password: Booting an encrypted device that
+has a set password.
+  </ul>
+</ul>
+
+<p>In addition to these flows, the device can also fail to encrypt <code>/data</code>. Each of the flows are explained in detail below.</p>
+
+<h3 id=encrypt_a_new_device_with_forceencrypt>Encrypt a new device with /forceencrypt</h3>
+
+<p>This is the normal first boot for an Android 5.0 device. </p>
+
+<ol>
+  <li><strong>Detect unencrypted filesystem with <code>/forceencrypt</code> flag</strong>
+
+<p>
+<code>/data</code> is not encrypted but needs to be because <code>/forceencrypt</code> mandates it.
+Unmount <code>/data</code>.</p>
+
+  <li><strong>Start encrypting <code>/data</code></strong>
+
+<p><code>vold.decrypt = "trigger_encryption"</code> triggers <code>init.rc</code>, which will cause <code>vold</code> to encrypt <code>/data</code> with no password. (None is set because this should be a new device.)</p>
+
+
+  <li><strong>Mount tmpfs</strong>
+
+
+<p><code>vold</code> mounts a tmpfs <code>/data</code> (using the tmpfs options from
+<code>ro.crypto.tmpfs_options</code>) and sets the property <code>vold.encrypt_progress</code> to 0.
+<code>vold</code> prepepares the tmpfs <code>/data</code> for booting an encrypted system and sets the
+property <code>vold.decrypt</code> to: <code>trigger_restart_min_framework</code>
+</p>
+
+  <li><strong>Bring up framework to show progress</strong>
+
+
+<p>Because the device has virtually no data to encrypt, the progress bar will
+often not actually appear because encryption happens so quickly. See <a href="#encrypt_an_existing_device">Encrypt an existing device</a> for more details about the progress UI. </p>
+
+  <li><strong>When <code>/data</code> is encrypted, take down the framework</strong>
+
+<p><code>vold</code>  sets <code>vold.decrypt</code> to
+<code>trigger_default_encryption</code> which starts the
+<code>defaultcrypto</code> service. (This starts the flow below for mounting a
+default encrypted userdata.) <code>trigger_default_encryption</code> checks the
+encryption type to see if <code>/data</code> is  encrypted with or without a
+password. Because Android 5.0 devices are encrypted on first boot, there should
+be no password set; therefore we decrypt and mount <code>/data</code>.</p>
+
+  <li><strong>Mount <code>/data</code></strong>
+
+<p><code>init</code> then mounts <code>/data</code> on a tmpfs RAMDisk using parameters it picks up from <code>ro.crypto.tmpfs_options</code>, which is set in <code>init.rc</code>.</p>
+
+  <li><strong>Start framework</strong>
+
+<p>Set <code>vold</code> to <code>trigger_restart_framework</code>, which continues the usual boot process.</p>
+</ol>
+
+<h3 id=encrypt_an_existing_device>Encrypt an existing device</h3>
+
+<p>This is what happens when you encrypt an unencrypted Android K or earlier
+device that has been migrated to L. Note that this is the same flow as used in
+K.</p>
+
+<p>This process is user-initiated and is referred to as “inplace encryption” in
+the code. When a user selects to encrypt a device, the UI makes sure the
+battery is fully charged and the AC adapter is plugged in so there is enough
+power to finish the encryption process.</p>
+
+<p class="warning"><strong>Warning:</strong> If the device runs out of power and shuts down before it has finished
+encrypting, file data is left in a partially encrypted state. The device must
+be factory reset and all data is lost.</p>
+
+<p>To enable inplace encryption, <code>vold</code> starts a loop to read each sector of the real block device and then write it
+to the crypto block device. <code>vold</code> checks to see if a sector is in use before reading and writing it, which makes
+encryption much faster on a new device that has little to no data. </p>
+
+<p><strong>State of device</strong>: Set <code>ro.crypto.state = "unencrypted"</code> and execute the <code>on nonencrypted</code> <code>init</code> trigger to continue booting.</p>
+
+<ol>
+  <li><strong>Check password</strong>
+
+<p>The UI calls <code>vold</code> with the command <code>cryptfs enablecrypto inplace</code> where <code>passwd</code> is the user's lock screen password.</p>
+
+  <li><strong>Take down the framework</strong>
+
+<p><code>vold</code> checks for errors, returns -1 if it can't encrypt, and prints a reason in the
+log. If it can encrypt, it sets the property <code>vold.decrypt</code> to <code>trigger_shutdown_framework</code>. This causes <code>init.rc</code> to stop services in the classes <code>late_start</code> and <code>main</code>. </p>
+
+  <li><strong>Unmount <code>/data</code></strong>
+
+<p><code>vold</code> unmounts <code>/mnt/sdcard</code> and then <code>/data</code>.</p>
+
+  <li><strong>Start encrypting <code>/data</code></strong>
+
+<p><code>vold</code> then sets up the crypto mapping, which creates a virtual crypto block device
+that maps onto the real block device but encrypts each sector as it is written,
+and decrypts each sector as it is read. <code>vold</code> then creates and writes out the crypto metadata.</p>
+
+  <li><strong>While it’s encrypting, mount tmpfs</strong>
+
+<p><code>vold</code> mounts a tmpfs <code>/data</code> (using the tmpfs options from <code>ro.crypto.tmpfs_options</code>) and sets the property <code>vold.encrypt_progress</code> to 0. <code>vold</code> prepares the tmpfs <code>/data</code> for booting an encrypted system and sets the property <code>vold.decrypt</code> to: <code>trigger_restart_min_framework</code> </p>
+
+  <li><strong>Bring up framework to show progress</strong>
+
+<p><code>trigger_restart_min_framework </code>causes <code>init.rc</code> to start the <code>main</code> class of services. When the framework sees that <code>vold.encrypt_progress</code> is set to 0, it brings up the progress bar UI, which queries that property
+every five seconds and updates a progress bar. The encryption loop updates <code>vold.encrypt_progress</code> every time it encrypts another percent of the partition. </p>
+
+  <li><strong>When<code> /data</code> is encrypted, reboot</strong>
+
+<p>When <code>/data</code> is successfully encrypted, <code>vold</code> clears the flag <code>ENCRYPTION_IN_PROGRESS</code> in the metadata and reboots the system. </p>
+
+<p> If the reboot fails for some reason, <code>vold</code> sets the property <code>vold.encrypt_progress</code> to <code>error_reboot_failed</code> and the UI should display a message asking the user to press a button to
+reboot. This is not expected to ever occur.</p>
+</ol>
+
+<h3 id=starting_an_encrypted_device_with_default_encryption>Starting an encrypted device with default encryption</h3>
+
+<p>This is what happens when you boot up an encrypted device with no password.
+Because Android 5.0 devices are encrypted on first boot, there should be no set
+password and therefore this is the <em>default encryption</em> state.</p>
+
+<ol>
+  <li><strong>Detect encrypted <code>/data</code> with no password</strong>
+
+<p>Detect that the Android device is encrypted because <code>/data</code>
+cannot be mounted and one of the flags <code>encryptable</code> or
+<code>forceencrypt</code> is set.</p>
+
+<p><code>vold</code> sets <code>vold.decrypt</code> to <code>trigger_default_encryption</code>, which starts the <code>defaultcrypto</code> service. <code>trigger_default_encryption</code> checks the encryption type to see if <code>/data</code> is  encrypted with or without a  password. </p>
+
+  <li><strong>Decrypt /data</strong>
+
+<p>Creates the <code>dm-crypt</code> device over the block device so the device is ready for use.</p>
+
+  <li><strong>Mount /data</strong>
+
+<p><code>vold</code> then mounts the decrypted real <code>/data </code>partition and then prepares the new partition. It sets the property <code>vold.post_fs_data_done</code> to 0 and then sets <code>vold.decrypt</code> to <code>trigger_post_fs_data</code>. This causes <code>init.rc</code> to run its <code>post-fs-data</code> commands. They will create any necessary directories or links and then set <code>vold.post_fs_data_done</code> to 1.</p>
+
+<p>Once <code>vold</code> sees the 1 in that property, it sets the property <code>vold.decrypt</code> to: <code>trigger_restart_framework.</code> This causes <code>init.rc</code> to start services in class <code>main</code> again and also start services in class <code>late_start</code> for the first time since boot.</p>
+
+  <li><strong>Start framework</strong>
+
+<p>Now the framework boots all its services using the decrypted <code>/data</code>, and the system is ready for use.</p>
+</ol>
+
+<h3 id=starting_an_encrypted_device_without_default_encryption>Starting an encrypted device without default encryption</h3>
+
+<p>This is what happens when you boot up an encrypted device that has a set
+password. The device’s password can be a pin, pattern, or password. </p>
+
+<ol>
+  <li><strong>Detect encrypted device with a password</strong>
+
+<p>Detect that the Android device is encrypted because the flag <code>ro.crypto.state = "encrypted"</code></p>
+
+<p><code>vold</code> sets <code>vold.decrypt</code> to <code>trigger_restart_min_framework</code> because <code>/data</code> is  encrypted with a password.</p>
+
+  <li><strong>Mount tmpfs</strong>
+
+<p><code>init</code> sets five properties to save the initial mount options given for <code>/data</code> with parameters passed from <code>init.rc</code>.  <code>vold</code> uses these properties to set up the crypto mapping:</p>
+
+<ol>
+  <li><code>ro.crypto.fs_type</code>
+  <li><code>ro.crypto.fs_real_blkdev</code>
+  <li><code>ro.crypto.fs_mnt_point</code>
+  <li><code>ro.crypto.fs_options</code>
+  <li><code>ro.crypto.fs_flags </code>(ASCII 8-digit hex number preceded by 0x)
+  </ol>
+
+  <li><strong>Start framework to prompt for password</strong>
+
+<p>The framework starts up and sees that <code>vold.decrypt</code> is set to <code>trigger_restart_min_framework</code>. This tells the framework that it is booting on a tmpfs <code>/data</code> disk and it needs to get the user password.</p>
+
+<p>First, however, it needs to make sure that the disk was properly encrypted. It
+sends the command <code>cryptfs cryptocomplete</code> to <code>vold</code>. <code>vold</code> returns 0 if encryption was completed successfully, -1 on internal error, or
+-2 if encryption was not completed successfully. <code>vold</code> determines this by looking in the crypto metadata for the <code>CRYPTO_ENCRYPTION_IN_PROGRESS</code> flag. If it's set, the encryption process was interrupted, and there is no
+usable data on the device. If <code>vold</code> returns an error, the UI should display a message to the user to reboot and
+factory reset the device, and give the user a button to press to do so.</p>
+
+  <li><strong>Decrypt data with password</strong>
+
+<p>Once <code>cryptfs cryptocomplete</code> is successful, the framework displays a UI asking for the disk password. The
+UI checks the password by sending the command <code>cryptfs checkpw</code> to <code>vold</code>. If the password is correct (which is determined by successfully mounting the
+decrypted <code>/data</code> at a temporary location, then unmounting it), <code>vold</code> saves the name of the decrypted block device in the property <code>ro.crypto.fs_crypto_blkdev</code> and returns status 0 to the UI. If the password is incorrect, it returns -1 to
+the UI.</p>
+
+  <li><strong>Stop framework</strong>
+
+<p>The UI puts up a crypto boot graphic and then calls <code>vold</code> with the command <code>cryptfs restart</code>. <code>vold</code> sets the property <code>vold.decrypt</code> to <code>trigger_reset_main</code>, which causes <code>init.rc</code> to do <code>class_reset main</code>. This stops all services in the main class, which allows the tmpfs <code>/data</code> to be unmounted. </p>
+
+  <li><strong>Mount <code>/data</code></strong>
+
+<p><code>vold</code> then mounts the decrypted real <code>/data </code>partition and prepares the new partition (which may never have been prepared if
+it was encrypted with the wipe option, which is not supported on first
+release). It sets the property <code>vold.post_fs_data_done</code> to 0 and then sets <code>vold.decrypt</code> to <code>trigger_post_fs_data</code>. This causes <code>init.rc</code> to run its <code>post-fs-data</code> commands. They will create any necessary directories or links and then set <code>vold.post_fs_data_done</code> to 1. Once <code>vold</code> sees the 1 in that property, it sets the property <code>vold.decrypt</code> to <code>trigger_restart_framework</code>. This causes <code>init.rc</code> to start services in class <code>main</code> again and also start services in class <code>late_start</code> for the first time since boot.</p>
+
+  <li><strong>Start full framework</strong>
+
+<p>Now the framework boots all its services using the decrypted <code>/data</code> filesystem, and the system is ready for use.</p>
+</ol>
+
+<h3 id=failure>Failure</h3>
+
+<p>A device that fails to decrypt might be awry for a few reasons. The device
+starts with the normal series of steps to boot:</p>
+
+<ol>
+  <li>Detect encrypted device with a password
+  <li>Mount tmpfs
+  <li>Start framework to prompt for password
+</ol>
+
+<p>But after the framework opens, the device can encounter some errors:</p>
+
+<ul>
+  <li>Password matches but cannot decrypt data
+  <li>User enters wrong password 30 times
+</ul>
+
+<p>If these errors are not resolved, <strong>prompt user to factory wipe</strong>:</p>
+
+<p>If <code>vold</code> detects an error during the encryption process, and if no data has been
+destroyed yet and the framework is up, <code>vold</code> sets the property <code>vold.encrypt_progress </code>to <code>error_not_encrypted</code>. The UI prompts the user to reboot and alerts them the encryption process
+never started. If the error occurs after the framework has been torn down, but
+before the progress bar UI is up, <code>vold</code> will reboot the system. If the reboot fails, it sets <code>vold.encrypt_progress</code> to <code>error_shutting_down</code> and returns -1; but there will not be anything to catch the error. This is not
+expected to happen.</p>
+
+<p>If <code>vold</code> detects an error during the encryption process, it sets <code>vold.encrypt_progress</code> to <code>error_partially_encrypted</code> and returns -1. The UI should then display a message saying the encryption
+failed and provide a button for the user to factory reset the device. </p>
+
+<h2 id=storing_the_encrypted_key>Storing the encrypted key</h2>
+
+<p>The encrypted key is stored in the crypto metadata. Hardware backing is implemented by using Trusted Execution Environment’s (TEE) signing capability.
+Previously, we encrypted the master key with a key generated by applying scrypt to the user's password and the stored salt. In order to make the key resilient
+against off-box attacks, we extend this algorithm by signing the resultant key with a stored TEE key. The resultant signature is then turned into an appropriate length key by one more application of scrypt. This key is then used to encrypt and decrypt the master key. To store this key:</p>
+
+<ol>
+  <li>Generate random 16-byte disk encryption key (DEK) and 16-byte salt.
+  <li>Apply scrypt to the user password and the salt to produce 32-byte intermediate
+key 1 (IK1).
+  <li>Pad IK1 with zero bytes to the size of the hardware-bound private key (HBK).
+Specifically, we pad as: 00 || IK1 || 00..00; one zero byte, 32 IK1 bytes, 223
+zero bytes.
+  <li>Sign padded IK1 with HBK to produce 256-byte IK2.
+  <li>Apply scrypt to IK2 and salt (same salt as step 2) to produce 32-byte IK3.
+  <li>Use the first 16 bytes of IK3 as KEK and the last 16 bytes as IV.
+  <li>Encrypt DEK with AES_CBC, with key KEK, and initialization vector IV.
+</ol>
+
+<h2 id=changing_the_password>Changing the password</h2>
+
+<p>When a user elects to change or remove their password in settings, the UI sends
+the command <code>cryptfs changepw</code>  to <code>vold</code>, and <code>vold</code> re-encrypts the disk master key with the new password.</p>
+
+<h2 id=encryption_properties>Encryption properties</h2>
+
+<p><code>vold</code> and <code>init</code> communicate with each other by setting properties. Here is a list of available
+properties for encryption.</p>
+
+<h3 id=vold_properties>Vold properties </h3>
+
+<table>
+  <tr>
+    <th>Property</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_encryption</code></td>
+    <td>Encrypt the drive with no
+    password.</td>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_default_encryption</code></td>
+    <td>Check the drive to see if it is encrypted with no password.
+If it is, decrypt and mount it,
+else set <code>vold.decrypt</code> to trigger_restart_min_framework.</td>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_reset_main</code></td>
+    <td>Set by vold to shutdown the UI asking for the disk password.</td>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_post_fs_data</code></td>
+    <td> Set by vold to prep /data with necessary directories, et al.</td>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_restart_framework</code></td>
+    <td>Set by vold to start the real framework and all services.</td>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_shutdown_framework</code></td>
+    <td>Set by vold to shutdown the full framework to start encryption.</td>
+  </tr>
+  <tr>
+    <td><code>vold.decrypt  trigger_restart_min_framework</code></td>
+    <td>Set by vold to start the
+progress bar UI for encryption or
+prompt for password, depending on
+the value of <code>ro.crypto.state</code>.</td>
+  </tr>
+  <tr>
+    <td><code>vold.encrypt_progress</code></td>
+    <td>When the framework starts up,
+if this property is set, enter
+the progress bar UI mode.</td>
+  </tr>
+  <tr>
+    <td><code>vold.encrypt_progress  0 to 100</code></td>
+    <td>The progress bar UI should
+display the percentage value set.</td>
+  </tr>
+  <tr>
+    <td><code>vold.encrypt_progress  error_partially_encrypted</code></td>
+    <td>The progress bar UI should display a message that the encryption failed, and
+give the user an option to
+factory reset the device.</td>
+  </tr>
+  <tr>
+    <td><code>vold.encrypt_progress  error_reboot_failed</code></td>
+    <td>The progress bar UI should
+display a message saying encryption completed, and give the user a button to reboot the device. This error is not expected to happen.</td>
+  </tr>
+  <tr>
+    <td><code>vold.encrypt_progress  error_not_encrypted</code></td>
+    <td>The progress bar UI should
+display a message saying an error
+occured,  no data was encrypted or
+lost, and give the user a button to reboot the system.</td>
+  </tr>
+  <tr>
+    <td><code>vold.encrypt_progress  error_shutting_down</code></td>
+    <td>The progress bar UI is not running, so it is unclear who will respond to this error. And it should never happen anyway.</td>
+  </tr>
+  <tr>
+    <td><code>vold.post_fs_data_done  0</code></td>
+    <td>Set by <code>vold</code> just before setting <code>vold.decrypt</code> to <code>trigger_post_fs_data</code>.</td>
+  </tr>
+  <tr>
+    <td><code>vold.post_fs_data_done  1</code></td>
+    <td>Set by <code>init.rc</code> or
+    <code>init.rc</code> just after finishing the task <code>post-fs-data</code>.</td>
+  </tr>
+</table>
+<h3 id=init_properties>init properties</h3>
+
+<table>
+  <tr>
+    <th>Property</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>ro.crypto.fs_crypto_blkdev</code></td>
+    <td>Set by the <code>vold</code> command <code>checkpw</code> for later use by the <code>vold</code> command <code>restart</code>.</td>
+  </tr>
+  <tr>
+    <td><code>ro.crypto.state unencrypted</code></td>
+    <td>Set by <code>init</code> to say this system is running with an unencrypted
+    <code>/data ro.crypto.state encrypted</code>. Set by <code>init</code> to say this system is running with an encrypted <code>/data</code>.</td>
+  </tr>
+  <tr>
+    <td><p><code>ro.crypto.fs_type<br>
+      ro.crypto.fs_real_blkdev      <br>
+      ro.crypto.fs_mnt_point<br>
+      ro.crypto.fs_options<br>
+      ro.crypto.fs_flags      <br>
+    </code></p></td>
+    <td> These five properties are set by
+      <code>init</code> when it tries to mount <code>/data</code> with parameters passed in from
+    <code>init.rc</code>. <code>vold</code> uses these to setup the crypto mapping.</td>
+  </tr>
+  <tr>
+    <td><code>ro.crypto.tmpfs_options</code></td>
+    <td>Set by <code>init.rc</code> with the options init should use when mounting the tmpfs /data filesystem.</td>
+  </tr>
+</table>
+<h2 id=init_actions>Init actions</h2>
+
+<pre>
+on post-fs-data
+on nonencrypted
+on property:vold.decrypt=trigger_reset_main
+on property:vold.decrypt=trigger_post_fs_data
+on property:vold.decrypt=trigger_restart_min_framework
+on property:vold.decrypt=trigger_restart_framework
+on property:vold.decrypt=trigger_shutdown_framework
+on property:vold.decrypt=trigger_encryption
+on property:vold.decrypt=trigger_default_encryption
+</pre>

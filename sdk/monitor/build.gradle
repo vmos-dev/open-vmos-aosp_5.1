@@ -1,0 +1,114 @@
+apply plugin: 'sdk-files'
+
+// See $ANDROID_SRC/tools/buildSrc/base/version.gradle for definition of baseVersion
+// However, if Eclipse bundles don't get the same version as tools baseVersion, then this
+// will have to be hard coded and fixed by sdk/eclipse/scripts/update_version.sh
+def basePath = "../../out/host/maven/bundles-${rootProject.ext.baseVersion}-SNAPSHOT/products/"
+
+sdk {
+    linux {
+        item('monitor') {
+            notice null
+            executable true
+        }
+        item(basePath + 'lin64/monitor') {
+            into 'lib/monitor-x86_64'
+            notice null
+            builtBy 'unzipLinux64'
+        }
+        item(basePath + 'lin/monitor') {
+            into 'lib/monitor-x86'
+            notice null
+            builtBy 'unzipLinux'
+        }
+    }
+
+    mac {
+        item('monitor') {
+            notice null
+            executable true
+        }
+        item(basePath + 'mac64/monitor') {
+            into 'lib/monitor-x86_64'
+            notice null
+            builtBy 'unzipMac64'
+        }
+    }
+
+
+    windows {
+        item('monitor.bat') {
+            notice null
+            executable true
+        }
+        item(basePath + 'win64/monitor') {
+            into 'lib/monitor-x86_64'
+            notice null
+            builtBy 'unzipWin64'
+        }
+        item(basePath + 'win/monitor') {
+            into 'lib/monitor-x86'
+            notice null
+            builtBy 'unzipWin'
+        }
+    }
+}
+
+// Using PDE build, the size of monitor was 43M
+// With Tycho, we are at close to 75M. Until we figure out the proper way
+// to exclude unnecessary content, we just remove these plugins from the final build.
+def pluginsToRemove = [
+    'org.eclipse.platform.doc.user_4.2.2.v20130121-200410.jar',
+    'org.eclipse.debug.ui_3.8.2.v20130130-171415.ja',
+    'org.apache.jasper.glassfish_2.2.2.v201205150955.jar',
+    'org.eclipse.team.ui_3.6.201.v20130125-135424.jar',
+    'org.apache.lucene.core_2.9.1.v201101211721.jar',
+    'org.eclipse.help.webapp_3.6.101.v20130116-182509.jar',
+    'org.eclipse.help.ui_3.5.201.v20130108-092756.jar',
+    'org.eclipse.help.base_3.6.101.v201302041200.jar',
+    'org.eclipse.team.core_3.6.100.v20120524-0627.jar',
+    'org.eclipse.jetty.server_8.1.3.v20120522.jar',
+    'org.eclipse.ui.intro_3.4.200.v20120521-2344.jar',
+    'org.eclipse.ui.cheatsheets_3.4.200.v20120521-2344.jar',
+    'org.apache.ant_1.8.3.v201301120609/**'
+]
+
+task unzipLinux64(type: Copy) {
+    from zipTree(file(basePath + 'monitorproduct-linux.gtk.x86_64.zip'))
+    into file(basePath + 'lin64/')
+    pluginsToRemove.each {
+        exclude "**/$it"
+    }
+}
+
+task unzipLinux(type: Copy) {
+    from zipTree(file(basePath + 'monitorproduct-linux.gtk.x86.zip'))
+    into file(basePath + 'lin/')
+    pluginsToRemove.each {
+        exclude "**/$it"
+    }
+}
+
+task unzipMac64(type: Copy) {
+    from zipTree(file(basePath + 'monitorproduct-macosx.cocoa.x86_64.zip'))
+    into file(basePath + 'mac64/')
+    pluginsToRemove.each {
+        exclude "**/$it"
+    }
+}
+
+task unzipWin64(type: Copy) {
+    from zipTree(file(basePath + 'monitorproduct-win32.win32.x86_64.zip'))
+    into file(basePath + 'win64/')
+    pluginsToRemove.each {
+        exclude "**/$it"
+    }
+}
+
+task unzipWin(type: Copy) {
+    from zipTree(file(basePath + 'monitorproduct-win32.win32.x86.zip'))
+    into file(basePath + 'win/')
+    pluginsToRemove.each {
+        exclude "**/$it"
+    }
+}

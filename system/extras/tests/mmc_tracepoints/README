@@ -1,0 +1,27 @@
+The code in this directory is used to process data from the mmc tracepoints
+in the kernel.  To turn on mmc tracing, do this:
+
+  adb shell echo 1 >/d/tracing/events/mmc/enable
+  adb shell echo 1 >/d/tracing/tracing_on
+
+To get the trace:
+
+  adb pull /d/tracing/trace
+
+To turn it back off, do:
+
+  adb shell echo 0 >/d/tracing/tracing_enabled
+
+The output is in a form of start/stop pairs.  The ops with rw in the name are
+read or write ops, and the ones with erase in the name are the various erase
+opts.
+
+The mmc_trace_reduce script will take the output from the kernel, and convert it
+to a single line per event, which includes the duration of the event.
+
+This can then be fed into other tools for further analysis.
+
+The file mmc_trace_sample_data contains sample mmc trace data from a Nexus 10.
+It includes read, write and discard entries.  The discard entries came from
+invoking fstrim in vold with "vdc fstrim dotrim".
+

@@ -1,0 +1,75 @@
+page.title=Getting Started with TF
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>Trade Federation is a large test infrastructure that can be adapted to a great variety of
+different usecases, and most people will probably only need some subset of its functionality.  First
+off, we envision that TF users will fulfill any of three primary roles: Developer, Integrator, and
+Test Runner.  A particular individual might wear any (or all) of those three hats, but we feel the
+distinction will help make it easier to navigate the documentation.</p>
+
+<h2>Developers</h2>
+<p>Developers spend the majority of their time creating TF modules that are written in Java.
+They may write configurations and execute tests, but will typically only do so to verify that their
+modules are being invoked properly and are functioning as expected.</p>
+
+<h2>Integrators</h2>
+<p>Integrators spend the majority of their time creating XML test configurations, or command
+files (which are written in a simple shell-like language).  They tie together TF modules written
+by the Developer with specific configurations that are required for particular test requirements and
+goals.</p>
+
+<h2>Test Runners</h2>
+<p>Test Runners spend the majority of their time executing tests and generally making sure
+that test results are being generated, and that the generated test results are relevant,
+reproducible, and accurate.  They spend the majority of their time interacting with tradefed's
+command line interface, and will also verify that the results make sense.</p>
+
+
+<p>In order to get the most out of Trade Federation, all three roles will need to be represented.
+It will take Developers and Integrators to make TF interoperate with other pieces of infrastructure,
+like build systems and test result repositories.  It will take Integrators and Test Runners to get
+TF to actually run the desired tests and produce the desired test results.  It will take Test
+Runners to identify results that don't make sense, and to work with the Developers and
+Integrators to figure out where the bugs may lie and get them fixed.</p>
+
+<h2>What's Next</h2>
+<p>People in all three roles should at least glance through all the rest of the docs.
+<a href="/devices/tech/test_infra/tradefed/fundamentals/machine_setup.html"
+>Machine Setup</a> will get you to the point where you can run TF.
+<a href="/devices/tech/test_infra/tradefed/fundamentals/devices.html"
+>Working with Devices</a> will explain how to run tests with a physical device, with an emulator, or
+with no device at all.  The
+<a href="/devices/tech/test_infra/tradefed/fundamentals/lifecycle.html"
+>Test Lifecycle</a> page will explain from a theoretical perspective how the roles of the
+Developer, Integrator, and Test Runner interact, and then
+<a href="/devices/tech/test_infra/tradefed/fundamentals/options.html"
+>Option Handling</a> will demonstrate how to put that theory into practice.</p>
+
+
+<p>Finally, the <a href="/devices/tech/test_infra/tradefed/full_example.html"
+>End-to-End Example</a> takes you through the development, integration, and deployment of a sample
+test.  It involves aspects of each role, and should offer hints at how to do more complicated
+things that aren't directly discussed in the documentation.</p>
+
+<p>If you've gotten through everything here and still have unanswered questions, first try taking
+a look at the <a href="https://android.googlesource.com/platform/tools/tradefederation/+/master"
+>Trade Federation source code.</a>.  Beyond that, feel free to try asking on the
+<a href="/source/community/index.html">android-platform</a> Google Group.  For best results, make
+sure to mention "Trade Federation" (or "tradefed", or "TF") in the message subject.</p>
+

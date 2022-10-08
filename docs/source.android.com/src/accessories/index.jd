@@ -1,0 +1,42 @@
+page.title=Accessories for Android
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Implement compelling accessories to extend the capabilities of your users'
+Android-powered devices. Android relies on a suite of standard protocols you
+can implement in your accessories to be compatible with a wide range of
+Android-powered devices.
+</p>
+
+<div class="layout-content-row">  
+
+  <div class="layout-content-col span-6">
+	<h4 id="audio-accessories">Audio Accessories</h4>
+	<p>Android supports local on-device audio and remote off-device audio
+        over a wired 3.5 mm headset jack, USB connection, or Bluetooth.</p>
+	<p><a href="{@docRoot}accessories/audio.html">&raquo; Audio Accessories</a></p>
+  </div>
+    
+  <div class="layout-content-col span-6">
+	<h4 id="custom-accessories">Custom Accessories</h4>
+	<p>What do you want to connect to your Android device? Alarm clock? Keyboard? Thermostat? Robot?
+	Learn how to connect existing equipment or your own unique hardware to
+        Android using the Android Open Accessory Protocol.</p>
+	<p><a href="{@docRoot}accessories/custom.html">&raquo; Custom Accessories</a></p>
+ </div>
+
+</div>

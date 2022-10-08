@@ -1,0 +1,7 @@
+Quick assistant in sample1a.xml for <Button andr^oid:text="FirstButton":
+Wrap in Container : Initiates the "Wrap in Container" refactoring
+Remove Container : Initiates the "Remove Container" refactoring
+Change Widget Type : Initiates the "Change Widget Type" refactoring
+Change Layout : Initiates the "Change Layout" refactoring
+Extract as Include : Initiates the "Extract as Include" refactoring
+Extract Style : Initiates the "Extract Style" refactoring

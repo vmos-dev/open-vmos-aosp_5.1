@@ -1,0 +1,4 @@
+Code completion in completion1.xml for layout_width=^"fill_parent":
+"fill_parent"
+"match_parent"
+"wrap_content"

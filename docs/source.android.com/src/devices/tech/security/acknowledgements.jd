@@ -1,0 +1,280 @@
+page.title=Android Security Acknowledgements
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>The Android Security Team would like to thank the following people and
+parties for helping to improve Android security. They have done this either by
+finding and responsibly reporting security vulnerabilities to <a
+href="mailto:security@android.com">security@android.com</a> or by committing code
+that has a positive impact on Android security, including code that qualifies
+for the <a href="https://www.google.com/about/appsecurity/patch-rewards/">Patch
+Rewards</a> program.</p>
+
+<h2>2014</h2>
+
+<div style="LINE-HEIGHT:25px;">
+<p>Jeff Forristal of <a href="http://www.bluebox.com/blog/">Bluebox
+Security</a></p>
+
+<p>Aaron Mangel of <a href="https://banno.com/">Banno</a> (<a
+href="mailto:amangel@gmail.com">amangel@gmail.com</a>)</p>
+
+<p><a href="http://www.linkedin.com/in/tonytrummer/">Tony Trummer</a> of <a
+href="http://www.themeninthemiddle.com">The Men in the Middle</a> <br>(<a
+href="https://twitter.com/SecBro1">@SecBro1</a>)</p>
+
+<p><a href="http://www.samsung.com">Samsung Mobile</a></p>
+
+<p>Henry Hoggard of <a href="https://labs.mwrinfosecurity.com/">MWR Labs</a> (<a
+href="https://twitter.com/henryhoggard">@HenryHoggard</a>)</p>
+
+<p><a href="http://www.androbugs.com">Yu-Cheng Lin 林禹成</a> (<a
+href="https://twitter.com/AndroBugs">@AndroBugs</a>)</p>
+
+<p><a
+href="http://www.ec-spride.tu-darmstadt.de/en/research-groups/secure-software-engineering-group/staff/siegfried-rasthofer/">Siegfried
+Rasthofer</a> of <a href="http://sseblog.ec-spride.de/">Secure Software
+Engineering Group</a>, EC SPRIDE Technische Universität Darmstadt (<a
+href="mailto:siegfried.rasthofer@gmail.com">siegfried.rasthofer@gmail.com</a>)</p>
+
+<p>Steven Arzt of <a href="http://sseblog.ec-spride.de/">Secure Software
+Engineering Group</a>, EC SPRIDE Technische Universität Darmstadt (<a
+href="mailto:Steven.Arzt@ec-spride.de">Steven.Arzt@ec-spride.de</a>)</p>
+
+<p><a href="http://blog.redfern.me/">Joseph Redfern</a> of <a
+href="https://labs.mwrinfosecurity.com/">MWR Labs</a> <br>(<a
+href="https://twitter.com/JosephRedfern">@JosephRedfern</a>)</p>
+
+<p><a href="https://plus.google.com/u/0/109528607786970714118">Valera
+Neronov</a></p>
+
+<p><a href="https://github.com/michalbednarski">Michał Bednarski</a></p>
+
+<p><a href="http://www.linkedin.com/in/luander">Luander Michel Ribeiro</a> (<a
+href="https://twitter.com/luanderock">@luanderock</a>)</p>
+
+<p>Stephan Huber of Testlab Mobile Security, <a
+href="https://www.sit.fraunhofer.de/">Fraunhofer SIT</a> (<a
+href="mailto:Stephan.Huber@sit.fraunhofer.de">Stephan.Huber@sit.fraunhofer.de</a>)
+</p>
+
+<p><a href="http://www.corkami.com">Ange Albertini</a> (<a
+href="https://twitter.com/angealbertini">@angealbertini</a>)</p>
+
+<p><a href="https://www.linkedin.com/in/tdalvi">Tushar Dalvi</a> (<a
+href="https://twitter.com/tushardalvi">@tushardalvi</a>)</p>
+
+<p>Axelle Apvrille of Fortinet, FortiGuards Labs</p>
+
+<p>Tongxin Li of Peking University (<a
+href="mailto:litongxin1991@gmail.com">litongxin1991@gmail.com</a>)</p>
+
+<p><a href="https://www.facebook.com/zhou.xiaoyong">Xiaoyong Zhou</a> of <a
+href="http://www.cs.indiana.edu/~zhou/">Indiana University Bloomington</a> <br>(<a
+href="https://twitter.com/xzhou">@xzhou</a>, <a
+href="mailto:zhou.xiaoyong@gmail.com">zhou.xiaoyong@gmail.com</a>)</p>
+
+<p><a href="http://homes.soic.indiana.edu/luyixing">Luyi Xing</a> of Indiana
+University Bloomington (<a
+href="mailto:xingluyi@gmail.com">xingluyi@gmail.com</a>)</p>
+
+<p>Yeonjoon Lee of Indiana University Bloomington (<a
+href="mailto:luc2yj@gmail.com">luc2yj@gmail.com</a>)</p>
+
+<p><a href="http://www.informatics.indiana.edu/xw7/">Xiaofeng Wang</a> of
+Indiana University Bloomington (<a
+href="mailto:xw7@indiana.edu">xw7@indiana.edu</a>)</p>
+
+<p>Xinhui Han of Peking University (<a
+href="mailto:hanxinhui@pku.edu.cn">hanxinhui@pku.edu.cn</a>)</p>
+
+<p><a href="http://thejh.net/">Jann Horn</a> <a href="https://android-review.googlesource.com/#/c/98197/">
+<img style="vertical-align:middle;" src="images/tiny-robot.png"
+alt="Green Droid Patch Symbol"
+title="This person contributed code that improved Android security">
+</a></p>
+
+<p>Robert Craig of <a href="https://www.nsa.gov/research/ia_research/">
+Trusted Systems Research Group</a>, US National Security Agency
+<a href="https://android-review.googlesource.com/#/q/owner:%22Robert+Craig+%253Crpcraig%2540tycho.ncsc.mil%253E%22+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png" alt="Patch Symbol"
+title="This person contributed code that improved Android security"></a></p>
+
+<p>Stephen Smalley of <a href="https://www.nsa.gov/research/ia_research/">
+Trusted Systems Research Group</a>, US National Security Agency
+<a href=
+"https://android-review.googlesource.com/#/q/owner:%22Stephen+Smalley+%253Csds%2540tycho.nsa.gov%253E%22+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png"
+alt="Patch Symbol" title="This person contributed code that improved Android security"></a></p>
+
+<p><a href="http://www.linkedin.com/in/billcroberts">
+William Roberts</a> (<a href="mailto:bill.c.roberts@gmail.com">bill.c.roberts@gmail.com</a>)
+<a href=
+"https://android-review.googlesource.com/#/q/owner:bill.c.roberts%2540gmail.com+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png"
+alt="Patch Symbol" title="This person contributed code that improved Android security"></a></p>
+
+<p>Scotty Bauer of University of Utah (<a href="mailto:sbauer@eng.utah.edu">sbauer@eng.utah.edu</a>)</p>
+
+<p><a href="http://www.cs.utah.edu/~rsas/">Raimondas Sasnauskas</a> of University of Utah</p>
+
+<p><a href="http://www.subodh.io">Subodh Iyengar</a> of <a href="https://www.facebook.com">Facebook</a></p>
+
+<p><a href="http://www.shackleton.io/">Will Shackleton</a> of <a href="https://www.facebook.com">Facebook</a></p>
+
+<p>Kunal Patel of <a href="https://www.samsungknox.com/">Samsung KNOX Security Team</a> (<a href="mailto:kunal.patel1@samsung.com">kunal.patel1@samsung.com</a>)</p>
+
+<p>Sebastian Brenza</p>
+
+<p>Wang Tao of <a href="http://sec.baidu.com">Baidu AdLab</a> (<a href="mailto:wintao@gmail.com">wintao@gmail.com</a>)</p>
+
+<p><a href="http://www.linkedin.com/in/danamodio">Dan Amodio</a> of <a href="https://www.aspectsecurity.com/">Aspect Security</a> (<a href="https://twitter.com/DanAmodio">@DanAmodio</a>)</p>
+
+<p><a href="http://davidmurdoch.com">David Murdoch</a></p>
+
+<p>Alexandru Gheorghita</p>
+
+<p>Mathew Solnik (<a href="https://twitter.com/msolnik">@msolnik</a>)</p>
+
+<p>Marc Blanchou (<a href="https://twitter.com/marcblanchou">@marcblanchou</a>)</p>
+
+</div>
+
+<h2>2013</h2>
+
+<div style="LINE-HEIGHT:25px;">
+
+<p>Jon Sawyer of <a href="http://appliedcybersecurity.com/">Applied Cybersecurity LLC
+</a> (<a href="mailto:jon@cunninglogic.com">jon@cunninglogic.com</a>)</p>
+
+<p>Joshua J. Drake of <a href="http://www.accuvant.com/">Accuvant LABS
+</a> (<a href="https://twitter.com/jduck">@jduck</a>)
+<a href="https://android-review.googlesource.com/#/q/change:72228+OR+change:72229">
+<img style="vertical-align:middle" src="images/patchreward.png"
+alt="Patch Rewards Symbol" title="This person qualified for the Patch Rewards program!"></a></p>
+
+<p>Ruben Santamarta of IOActive
+(<a href="https://twitter.com/reversemode">@reversemode</a>)</p>
+
+<p>Lucas Yang (amadoh4ck) of
+<a href="http://raonsecurity.com/">RaonSecurity</a>
+(<a href="mailto:amadoh4ck@gmail.com">amadoh4ck@gmail.com</a>)</p>
+
+<p><a href="https://tsarstva.bg/sh/">Ivaylo Marinkov</a>
+of <a href="http://www.ecommera.com/">eCommera</a> <br>
+(<a href="mailto:ivo@tsarstva.bg">ivo@tsarstva.bg</a>)</p>
+
+<p><a href="http://roeehay.blogspot.com/">Roee Hay</a>
+<br>(<a href="https://twitter.com/roeehay">@roeehay</a>,
+<a href="mailto:roeehay@gmail.com">roeehay@gmail.com</a>)</p>
+
+<p>Qualcomm Product Security Initiative</p>
+
+<p><a href="https://lacklustre.net/">Mike Ryan</a> of
+<a href="https://isecpartners.com/">iSEC Partners</a>
+<br>(<a href="https://twitter.com/mpeg4codec">@mpeg4codec</a>,
+<a href="mailto:mikeryan@isecpartners.com">mikeryan@isecpartners.com
+</a>)</p>
+
+<p><a href="http://cryptoonline.com/">Muhammad Naveed</a>
+of <a href="http://illinois.edu/">University of Illinois
+at Urbana-Champaign</a>
+<br>(<a href="mailto:naveed2@illinois.edu">naveed2@illinois.edu</a>)</p>
+
+<p>Robert Craig of <a href="https://www.nsa.gov/research/ia_research/">
+Trusted Systems Research Group</a>, US National Security Agency
+<a href="https://android-review.googlesource.com/#/q/owner:%22Robert+Craig+%253Crpcraig%2540tycho.ncsc.mil%253E%22+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png" alt="Patch Symbol"
+title="This person contributed code that improved Android security"></a></p>
+
+<p>Stephen Smalley of <a href="https://www.nsa.gov/research/ia_research/">
+Trusted Systems Research Group</a>, US National Security Agency
+<a href=
+"https://android-review.googlesource.com/#/q/owner:%22Stephen+Smalley+%253Csds%2540tycho.nsa.gov%253E%22+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png"
+alt="Patch Symbol" title="This person contributed code that improved Android security"></a></p>
+
+<p><a href="http://www.linkedin.com/in/billcroberts">
+William Roberts</a> (<a href="mailto:bill.c.roberts@gmail.com">bill.c.roberts@gmail.com</a>)
+<a href=
+"https://android-review.googlesource.com/#/q/owner:bill.c.roberts%2540gmail.com+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png"
+alt="Patch Symbol" title="This person contributed code that improved Android security"></a></p>
+
+<p><a href="http://roeehay.blogspot.com/">Roee Hay</a>
+<br>(<a href="https://twitter.com/roeehay">@roeehay</a>,
+<a href="mailto:roeehay@gmail.com">roeehay@gmail.com</a>)</p>
+
+</div>
+<h2>2012</h2>
+
+<div style="LINE-HEIGHT:25px;">
+
+<p>Robert Craig of <a href="https://www.nsa.gov/research/ia_research/">
+Trusted Systems Research Group</a>, US National Security Agency
+<a href="https://android-review.googlesource.com/#/q/owner:%22Robert+Craig+%253Crpcraig%2540tycho.ncsc.mil%253E%22+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png" alt="Patch Symbol"
+title="This person contributed code that improved Android security"></a></p>
+
+<p>Stephen Smalley of <a href="https://www.nsa.gov/research/ia_research/">
+Trusted Systems Research Group</a>, US National Security Agency
+<a href=
+"https://android-review.googlesource.com/#/q/owner:%22Stephen+Smalley+%253Csds%2540tycho.nsa.gov%253E%22+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png"
+alt="Patch Symbol" title="This person contributed code that improved Android security"></a></p>
+
+<p><a href="http://www.linkedin.com/in/billcroberts">
+William Roberts</a> (<a href="mailto:bill.c.roberts@gmail.com">bill.c.roberts@gmail.com</a>)
+<a href=
+"https://android-review.googlesource.com/#/q/owner:bill.c.roberts%2540gmail.com+status:merged">
+<img style="vertical-align:middle" src="images/tiny-robot.png"
+alt="Patch Symbol" title="This person contributed code that improved Android security"></a></p>
+
+<p><a href="http://thejh.net/">Jann Horn</a></p>
+
+<p><a href="http://web.ict.kth.se/~rbbo/ussdvul.html">Ravishankar
+Borgaonkar</a> of TU Berlin
+(<a href="https://twitter.com/raviborgaonkar">@raviborgaonkar</a>)</p>
+
+<p><a href="http://roeehay.blogspot.com/">Roee Hay</a>
+<br>(<a href="https://twitter.com/roeehay">@roeehay</a>,
+<a href="mailto:roeehay@gmail.com">roeehay@gmail.com</a>)</p>
+
+</div>
+
+<h2>2011</h2>
+
+<div style="LINE-HEIGHT:25px;">
+
+<p>Collin Mulliner of <a href="http://www.mulliner.org/collin/academic">MUlliNER.ORG</a> (<a href="https://twitter.com/collinrm">@collinrm</a>)</p>
+
+</div>
+
+<h2>2009</h2>
+
+<div style="LINE-HEIGHT:25px;">
+
+<p>Collin Mulliner of <a href="http://www.mulliner.org/collin/academic">MUlliNER.ORG</a> (<a href="https://twitter.com/collinrm">@collinrm</a>)</p>
+
+<p>Charlie Miller (<a href="https://twitter.com/0xcharlie">@0xcharlie</a>)</p>
+
+</div>
+
+<br>
+<p><small>If you have reported a vulnerability prior to 2014 and want to be
+included on this list, or to report a vulnerability in Android, contact <a href="mailto:security@android.com">security@android.com</a></small></p>

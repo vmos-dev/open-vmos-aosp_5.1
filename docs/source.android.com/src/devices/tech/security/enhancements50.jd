@@ -1,0 +1,56 @@
+page.title=Security Enhancements in Android 5.0
+@jd:body
+
+<p>Every Android release includes dozens of security enhancements to protect
+users.  Here are some of the major security enhancements available in Android
+5.0:</p>
+
+<ul>
+  <li><strong>Encrypted by default.</strong> On devices that ship with L
+out-of-the-box, full disk encryption is enabled by default to improve
+protection of data on lost or stolen devices. Devices that
+update to L can be encrypted in <strong>Settings</strong> &gt; <strong>Security</strong>. 
+  <li><strong>Improved full disk encryption.</strong> The user password is
+protected against brute-force attacks using <code>scrypt</code> and, where
+available, the key is bound to the hardware keystore to prevent
+off-device attacks.  As always, the Android screen lock secret and the device
+encryption key are not sent off the device or exposed to any application.
+  <li><strong>Android sandbox reinforced with SELinux</strong>. Android now
+requires SELinux in enforcing mode for all domains. SELinux is a
+mandatory access control (MAC) system in the Linux kernel used to augment the
+existing discretionary access control (DAC) security model. This new layer
+provides additional protection against potential security vulnerabilities.
+  <li><strong>Smart Lock. </strong>Android now includes trustlets that provide
+more flexibility for unlocking devices.  For example, trustlets can allow
+devices to be unlocked automatically when close to another trusted device (via
+NFC, Bluetooth) or being used by someone with a trusted face.
+  <li><strong>Multi user, restricted profile, and guest modes for phones &
+tablets.</strong> Android now provides for multiple users on phones and
+includes a guest mode that can be used to provide easy temporary access to your
+device without granting access to your data and apps.
+  <li><strong>Updates to WebView without OTA. </strong> WebView can now be
+updated independent of the framework and without a system
+OTA.  This will allow for faster response to potential security issues in
+WebView.
+  <li><strong>Updated cryptography for HTTPS and TLS/SSL.</strong> TLSv1.2 and
+TLSv1.1 is now enabled, Forward Secrecy is now preferred, AES-GCM
+is now enabled, and weak cipher suites (MD5, 3DES, and export cipher suites)
+are now disabled. See <a
+href="https://developer.android.com/reference/javax/net/ssl/SSLSocket.html">https://developer.android.com/reference/javax/net/ssl/SSLSocket.html</a>
+for more details.
+  <li><strong>non-PIE linker support removed.</strong> Android now requires all
+dynamically linked executables to support PIE
+(position-independent executables). This enhances Android’s address space
+layout randomization (ASLR) implementation.
+  <li><strong>FORTIFY_SOURCE improvements.</strong> The following libc
+functions now implement FORTIFY_SOURCE protections: <code>stpcpy()</code>,
+<code>stpncpy()</code>, <code>read()</code>, <code>recvfrom()</code>,
+<code>FD_CLR()</code>, <code>FD_SET()</code>, and <code>FD_ISSET()</code>. This
+provides protection against memory-corruption vulnerabilities involving
+those functions.
+  <li><strong>Security Fixes.</strong> Android 5.0 also includes fixes for
+Android-specific vulnerabilities. Information about these vulnerabilities has
+been provided to Open Handset Alliance members, and fixes are available in
+Android Open Source Project. To improve security, some devices with earlier
+versions of Android may also include these fixes.
+</ul>

@@ -1,0 +1,4 @@
+Code completion in completion1.xml for ^<TextView selecting <RadioGroup ></RadioGroup>:
+@@ -7 +7
+-     ^<TextView
++     <RadioGroup ^></RadioGroup><TextView

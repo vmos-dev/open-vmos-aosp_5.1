@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- DO NOT TRANSLATE -->
+    <string name="font" translatable="false">sans-serif-condensed</string>
+    <!-- DO NOT TRANSLATE -->
+    <string name="light_font" translatable="false">sans-serif-light</string>
+    <!-- DO NOT TRANSLATE -->
+    <string name="regular_font" translatable="false">sans-serif</string>
+
+    <string name="widget_12_hours_format" translatable="false">h:mm</string>
+    <string name="widget_24_hours_format" translatable="false">kk:mm</string>
+
+</resources>

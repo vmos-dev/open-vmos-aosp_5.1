@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DeviceConfig</string>
+    <string name="dock">DEFAULT</string>
+    <string name="nav_state">DEFAULT</string>
+    <string name="generate_config">Generate Config</string>
+    <string name="type">Type</string>
+    <string name="resource">Resource</string>
+</resources>

@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="an^"> selecting android:animateOnClick:
+@@ -9 +9
+-         <item name="an^">@color/title_color</item>
++         <item name="android:animateOnClick"^>@color/title_color</item>

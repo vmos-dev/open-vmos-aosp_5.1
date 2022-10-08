@@ -1,0 +1,91 @@
+<mixer>
+  <!-- These are the initial mixer settings -->
+  <ctl name="Headphone Jack Switch" value="0"/>
+  <ctl name="Int Mic Switch" value="0"/>
+  <ctl name="Mic Jack Switch" value="0"/>
+  <ctl name="Mono ADC MIXR ADC1 Switch" value="0"/>
+  <ctl name="Mono ADC MIXL ADC2 Switch" value="0"/>
+  <ctl name="TDM1 Mode" value="Normal"/>
+  <ctl name="Mono ADC Capture Volume" value="77"/>
+
+  <!-- TODO other defaults -->
+
+  <path name="speaker">
+  </path>
+
+  <path name="headphones">
+    <ctl name="Headphone Jack Switch" value="1"/>
+  </path>
+
+  <path name="speaker-and-headphones">
+    <ctl name="Headphone Jack Switch" value="1"/>
+  </path>
+
+  <path name="bt-sco-headset">
+  </path>
+
+  <path name="bt-sco-mic">
+  </path>
+
+  <path name="speaker-mic">
+    <ctl name="Mono ADC Capture Volume" value="93"/>
+    <ctl name="Mono ADC MIXL ADC2 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="LL Copy"/>
+    <ctl name="Int Mic Switch" value="1"/>
+  </path>
+
+  <path name="handset-mic">
+    <ctl name="Mono ADC Capture Volume" value="93"/>
+    <ctl name="Mono ADC MIXL ADC2 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="LL Copy"/>
+    <ctl name="Int Mic Switch" value="1"/>
+  </path>
+
+  <path name="headset-mic">
+    <ctl name="IN2 Boost" value="1"/>
+    <ctl name="Mono ADC Capture Volume" value="82"/>
+    <ctl name="Mono ADC MIXR ADC1 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="RR Copy"/>
+    <ctl name="Mic Jack Switch" value="1"/>
+  </path>
+
+  <path name="camcorder-mic">
+    <ctl name="Mono ADC MIXL ADC2 Switch" value="1"/>
+    <ctl name="Mono ADC MIXR ADC2 Switch" value="1"/>
+    <ctl name="Mono DMIC L Mux" value="DMIC2"/>
+    <ctl name="Mono DMIC R Mux" value="DMIC1"/>
+    <ctl name="TDM1 Mode" value="Normal"/>
+    <ctl name="Int Mic Switch" value="1"/>
+  </path>
+
+  <path name="voice-rec-headset-mic">
+    <ctl name="IN2 Boost" value="1"/>
+    <ctl name="Mono ADC Capture Volume" value="66"/>
+    <ctl name="Mono ADC MIXR ADC1 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="RR Copy"/>
+    <ctl name="Mic Jack Switch" value="1"/>
+  </path>
+
+  <path name="voice-rec-mic">
+    <ctl name="Mono ADC MIXL ADC2 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="LL Copy"/>
+    <ctl name="Int Mic Switch" value="1"/>
+  </path>
+
+  <path name="voice-speaker-mic">
+    <ctl name="Mono ADC Capture Volume" value="47"/>
+    <ctl name="Mono ADC MIXL ADC2 Switch" value="1"/>
+    <ctl name="Mono ADC MIXR ADC2 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="Normal"/>
+    <ctl name="Int Mic Switch" value="1"/>
+  </path>
+
+  <path name="voice-headset-mic">
+    <ctl name="IN2 Boost" value="1"/>
+    <ctl name="Mono ADC Capture Volume" value="66"/>
+    <ctl name="Mono ADC MIXR ADC1 Switch" value="1"/>
+    <ctl name="TDM1 Mode" value="RR Copy"/>
+    <ctl name="Mic Jack Switch" value="1"/>
+  </path>
+
+</mixer>

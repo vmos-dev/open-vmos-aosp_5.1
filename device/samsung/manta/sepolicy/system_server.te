@@ -1,0 +1,4 @@
+# Label the .gps.interface.pipe.to_jni pipe with gps_data_file.
+type_transition system_server system_data_file:fifo_file gps_data_file ".gps.interface.pipe.to_jni";
+allow system_server gps_data_file:fifo_file create_file_perms;
+allow system_server gps_data_file:dir rw_dir_perms;

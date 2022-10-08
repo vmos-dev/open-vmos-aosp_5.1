@@ -1,0 +1,43 @@
+.title {
+    color:#333;
+    font-size: 34px;
+    margin: 36px 0 27px;
+    padding:0 0 10px;
+    font-weight:300;
+}
+
+#header {
+  padding: 1.2em 0 0.2em 0;
+  margin: 10px 120px;
+}
+
+a:hover,
+acronym:hover {
+  color: #7aa1b0 !important; }
+
+a:link, a:visited {
+  color: #258aaf;
+  text-decoration: none;
+}
+
+a:focus, a:hover, a:active {
+  color: #33b5e5;
+  text-decoration: none;
+}
+
+a.toptab {
+  color: #333;
+  font-size: 16px;
+}
+
+a.devices {
+  color: #F80;
+  font-size: 16px;
+}
+
+hr.light {
+    border: 0;
+    height: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}

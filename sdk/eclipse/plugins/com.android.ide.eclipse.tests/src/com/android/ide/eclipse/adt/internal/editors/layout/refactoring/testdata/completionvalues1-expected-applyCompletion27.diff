@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="android:gravity">^  </item> selecting center_vertical:
+@@ -7 +7
+-         <item name="android:gravity">^  </item>
++         <item name="android:gravity">center_vertical^</item>

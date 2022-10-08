@@ -1,0 +1,18 @@
+on property:ro.boot.svelte=1
+   # Configure and enable KSM
+   write /sys/kernel/mm/ksm/pages_to_scan 100
+   write /sys/kernel/mm/ksm/sleep_millisecs 500
+   write /sys/kernel/mm/ksm/run 1
+
+   # Reduce screen resolution
+   setprop ro.config.density_override 144
+   setprop ro.config.size_override 768,1024
+
+   # Set CPU frequency for PowerHAL
+   setprop ro.config.svelte.max_cpu_freq 1190400
+   setprop ro.config.svelte.low_power_max_cpu_freq 1190400
+
+   # Cap GPU frequency, possible values:
+   # 72000 108000 180000 252000 324000 396000 468000 540000 612000 648000 684000 708000 756000 804000 852000 (kHz) 
+   write /d/clock/cap.gbus/state 1
+   write /d/clock/cap.gbus/max 648000000

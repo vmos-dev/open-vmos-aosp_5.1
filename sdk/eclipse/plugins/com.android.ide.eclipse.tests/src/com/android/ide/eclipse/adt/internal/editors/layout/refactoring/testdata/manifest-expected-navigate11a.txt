@@ -1,0 +1,6 @@
+Go To Declaration in manifest.xml for <action android:name="android.intent.ac^tion.MAIN" />:
+Open XML Declaration :  [android.intent.action.MAIN]
+
+
+After open, a browser is shown with this URL:
+  reference/android/content/Intent.html#ACTION_MAIN

@@ -1,0 +1,114 @@
+page.title=Media
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+  Android provides a media playback engine at the native level called Stagefright that comes built-in with
+  software-based codecs for several popular media formats. Stagefright features for audio and video playback
+  include integration with OpenMAX codecs, session management, time-synchronized rendering, transport control,
+  and DRM. In addition, Stagefright supports integration with custom hardware codecs that you provide.
+  There actually isn't a HAL to implement for custom codecs, but to provide a hardware path to encode and
+  decode media, you must implement your hardware-based codec as an OpenMax IL (Integration Layer) component.
+</p>
+<h2 id="overview">
+Overview
+</h2>
+<p>The following diagram shows how media applications interact with the Android native multimedia framework.</p>
+<p>
+  <img src="images/media.png">
+</p>
+<dl>
+<dt>Application Framework</dt>
+  <dd>At the application framework level is the app's code, which utilizes the
+  <a href="http://developer.android.com/reference/android/media/package-summary.html">android.media</a>
+  APIs to interact with the multimedia hardware.</dd>
+  <dt>Binder IPC</dt>
+  <dd>The Binder IPC proxies facilitate communication over process boundaries. They are located in 
+    the <code>frameworks/av/media/libmedia</code> directory and begin with the letter "I".</dd>
+  <dt>Native Multimedia Framework</dt>
+  <dd>At the native level, Android provides a multimedia framework that utilizes the Stagefright engine for
+  audio and video recording and playback. Stagefright comes with a default list of supported software codecs
+  and you can implement your own hardware codec by using the OpenMax integration layer standard. For more
+  implementation details, see the various MediaPlayer and Stagefright components located in
+  <code>frameworks/av/media</code>.
+  </dd>
+  <dt>OpenMAX Integration Layer (IL)</dt>
+  <dd>The OpenMAX IL provides a standardized way for Stagefright to recognize and use custom hardware-based
+  multimedia codecs called components. You must provide an OpenMAX plugin in the form of a shared library
+  named <code>libstagefrighthw.so</code>. This plugin links your custom codec components to Stagefright.
+  Your custom codecs must be implemented according to the OpenMAX IL component standard.
+   </dd>
+</dl>
+
+
+<h2 id="codecs">
+Implementing Custom Codecs
+</h2>
+<p>Stagefright comes with built-in software codecs for common media formats, but you can also add your
+  own custom hardware codecs as OpenMAX components. To do this, you need to create OMX components and also an
+  OMX plugin that hooks together your custom codecs with the Stagefright framework. For an example, see
+  the <code>hardware/ti/omap4xxx/domx/</code> for example components and <code>hardware/ti/omap4xx/libstagefrighthw</code>
+  for an example plugin for the Galaxy Nexus.
+</p>
+  <p>To add your own codecs:</p>
+<ol>
+<li>Create your components according to the OpenMAX IL component standard. The component interface is located in the
+  <code>frameworks/native/include/media/OpenMAX/OMX_Component.h</code> file. To learn more about the
+  OpenMAX IL specification, see the <a href="http://www.khronos.org/openmax/">OpenMAX website</a>.</li>
+<li>Create a OpenMAX plugin that links your components with the Stagefright service.
+  See the <code>frameworks/native/include/media/hardware/OMXPluginBase.h</code> and <code>HardwareAPI.h</code> header
+  files for the interfaces to create the plugin.
+</li>
+<li>Build your plugin as a shared library with the name <code>libstagefrighthw.so</code> in your product Makefile. For example:
+<pre>LOCAL_MODULE := libstagefrighthw</pre>
+
+<p>In your device's Makefile, ensure that you declare the module as a product package:</p>
+<pre>
+PRODUCT_PACKAGES += \
+  libstagefrighthw \
+  ...
+</pre>
+</li>
+</ol>
+
+<h2 id="expose">Exposing Codecs to the Framework</h2>
+<p>The Stagefright service parses the <code>system/etc/media_codecs.xml</code> and <code>system/etc/media_profiles.xml</code>
+  to expose the supported codecs and profiles on the device to app developers via the <code>android.media.MediaCodecList</code> and
+  <code>android.media.CamcorderProfile</code> classes. You need to create both files in the
+  <code>device/&lt;company_name&gt;/&lt;device_name&gt;/</code> directory
+ and copy this over to the system image's <code>system/etc</code> directory in your device's Makefile.
+ For example:</p>
+
+ <pre>
+PRODUCT_COPY_FILES += \
+  device/samsung/tuna/media_profiles.xml:system/etc/media_profiles.xml \
+  device/samsung/tuna/media_codecs.xml:system/etc/media_codecs.xml \
+</pre>
+
+<p>See the <code>device/samsung/tuna/media_codecs.xml</code> and
+  <code>device/samsung/tuna/media_profiles.xml</code> file for complete examples.</p>
+
+<p class="note"><strong>Note:</strong> The <code>&lt;Quirk&gt;</code> element for media codecs is no longer supported
+  by Android starting in Jelly Bean.</p>

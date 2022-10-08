@@ -1,0 +1,7 @@
+Code completion in completionvalues1.xml for 17^sp:
+17dp : <b>Density-independent Pixels</b> - an abstract unit that is based on the physical density of the screen.
+17sp : <b>Scale-independent Pixels</b> - this is like the dp unit, but it is also scaled by the user's font size preference.
+17pt : <b>Points</b> - 1/72 of an inch based on the physical size of the screen.
+17mm : <b>Millimeters</b> - based on the physical size of the screen.
+17in : <b>Inches</b> - based on the physical size of the screen.
+17px : <b>Pixels</b> - corresponds to actual pixels on the screen. Not recommended.

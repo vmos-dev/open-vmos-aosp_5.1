@@ -1,0 +1,8 @@
+# Motorola AoV solution
+unix_socket_connect(untrusted_app, adspd, adspd)
+
+# b/17630431: The unix_socket_connect line above needs to be
+# deleted. Generate audit entries to see if these permissions
+# are actually being used.
+auditallow untrusted_app adspd_socket:sock_file write;
+auditallow untrusted_app adspd:unix_stream_socket connectto;

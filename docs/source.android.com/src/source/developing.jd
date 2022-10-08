@@ -1,0 +1,160 @@
+page.title=Developing
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>To work with the Android code, you will need to use both Git and Repo.  In most situations, you can use Git instead of Repo, or mix Repo and Git commands to form complex commands. Using Repo for basic across-network operations will make your work much simpler, however.</p>
+<p><strong>Git</strong> is an open-source version-control system designed to handle very large projects that are distributed over multiple repositories. In the context of Android, we use Git for local operations such as local branching, commits, diffs, and edits.  One of the challenges in setting up the Android project was figuring out how to best support the outside community--from the hobbiest community to large OEMs building mass-market consumer devices. We wanted components to be replaceable, and we wanted interesting components to be able to grow a life of their own outside of Android. We first chose a distributed revision control system, then further narrowed it down to Git.</p>
+<p><strong>Repo</strong> is a repository management tool that we built on top of Git. Repo
+unifies the many Git repositories when necessary, does the uploads to our
+<a href="https://android-review.googlesource.com/">revision control system</a>, and
+automates parts of the Android development workflow. Repo is not meant to
+replace Git, only to make it easier to work with Git in the context of
+Android. The repo command is an executable Python script that you can put
+anywhere in your path. In working with the Android source files, you will
+use Repo for across-network operations. For example, with a single Repo
+command you can download files from multiple repositories into your local
+working directory.</p>
+<p><strong>Gerrit</strong> is a web-based code review system for projects that use git. Gerrit encourages more centralized use of Git by allowing all authorized users to submit changes, which are automatically merged if they pass code review. In addition, Gerrit makes reviewing easier by displaying changes side by side in-browser and enabling inline comments. </p>
+<h2 id="basic-workflow">Basic Workflow</h2>
+<div style="float:right">
+  <img src="{@docRoot}images/submit-patches-0.png" alt="basic workflow diagram">
+</div>
+
+<p>The basic pattern of interacting with the repositories is as follows:</p>
+<ol>
+<li>
+<p>Use <code>repo start</code> to start a new topic branch.</p>
+</li>
+<li>
+<p>Edit the files.</p>
+</li>
+<li>
+<p>Use <code>git add</code> to stage changes.</p>
+</li>
+<li>
+<p>Use <code>git commit</code> to commit changes.</p>
+</li>
+<li>
+<p>Use <code>repo upload</code> to upload changes to the review server.</p>
+</li>
+</ol>
+<h2 id="task-reference">Task reference</h2>
+<p>The task list below shows a summary of how to do common Repo and Git tasks.
+For information about using repo to download source, see <a href="{@docRoot}source/downloading.html">Downloading the Source</a> and
+<a href="{@docRoot}source/using-repo.html">Using Repo</a>.</p>
+<h2 id="synchronizing-your-client">Synchronizing your client</h2>
+<p>To synchronize the files for all available projects: </p>
+<pre><code>$ repo sync
+</code></pre>
+<p>To synchronize the files for selected projects:</p>
+<pre><code>$ repo sync PROJECT0 PROJECT1 PROJECT2 ...
+</code></pre>
+<h2 id="creating-topic-branches">Creating topic branches</h2>
+<p>Start a topic branch in your local work environment whenever you begin a change, for example when you begin work on a bug or new feature. A topic branch is not a copy of the original files; it is a pointer to a particular commit. This makes creating local branches and switching among them a light-weight operation. By using branches, you can isolate one aspect of your work from the others. For an interesting article about using topic branches, see <a href="http://www.kernel.org/pub/software/scm/git/docs/howto/separating-topic-branches.txt">Separating topic branches</a>.</p>
+<p>To start a topic branch using Repo, navigate into the project to be modified and issue: </p>
+<pre><code>$ repo start BRANCH_NAME .
+</code></pre>
+<p>Please note, the period represents the project in the current working directory. To verify your new branch was created:</p>
+<pre><code>$ repo status .
+</code></pre>
+<h2 id="using-topic-branches">Using topic branches</h2>
+<p>To assign the branch to a particular project:</p>
+<pre><code>$ repo start BRANCH_NAME PROJECT_NAME
+</code></pre>
+<p>See <a href="https://android.googlesource.com/">android.googlesource.com</a> for a list of all projects. Again, if you've already navigated into a particular project directory, you may simply pass a period to represent the current project.</p>
+
+<p>To switch to another branch that you have created in your local work environment:</p>
+<pre><code>$ git checkout BRANCH_NAME
+</code></pre>
+<p>To see a list of existing branches:</p>
+<pre><code>$ git branch
+</code></pre>
+<p>or </p>
+<pre><code>$ repo branches
+</code></pre>
+<p>The name of the current branch will be preceded by an asterisk.</p>
+<p><em>Note: A bug might be causing <code>repo sync</code> to reset the local topic branch. If <code>git branch</code> shows * (no branch) after you run <code>repo sync</code>, then run <code>git checkout</code> again.</em></p>
+<h2 id="staging-files">Staging files</h2>
+<p>By default, Git notices but does not track the changes you make in a project. In order to tell git to preserve your changes, you must mark them for inclusion in a commit. This is also called "staging". </p>
+<p>You can stage your changes by running</p>
+<pre><code>git add
+</code></pre>
+<p>which accepts as arguments any files or directories within the project directory. Despite the name, <code>git add</code> does not simply add files to the git repository; it can also be used to stage file modifications and deletions.</p>
+<h2 id="viewing-client-status">Viewing client status</h2>
+<p>To list the state of your files:</p>
+<pre><code>$ repo status
+</code></pre>
+<p>To see uncommitted edits:</p>
+<pre><code>$ repo diff
+</code></pre>
+<p>The <code>repo diff</code> command shows every local edit that you have made that would <em>not</em> go into the commit, if you were to commit right now. To see every edit that would go into the commit if you were to commit right now, you need a Git command, <code>git diff</code>. Before running it, be sure you are in the project directory:</p>
+<pre><code>$ cd ~/WORKING_DIRECTORY/PROJECT  
+$ git diff --cached
+</code></pre>
+<h2 id="committing-changes">Committing changes</h2>
+<p>A commit is the basic unit of revision control in git, consisting of a snapshot of directory structure and file contents for the entire project. Creating a commit in git is as simple as typing</p>
+<pre><code>git commit
+</code></pre>
+<p>You will be prompted for a commit message in your favorite editor; please provide a helpful message for any changes you submit to the AOSP. If you do not add a log message, the commit will be aborted. </p>
+<h2 id="uploading-changes-to-gerrit">Uploading changes to Gerrit</h2>
+<p>Before uploading, update to the latest revisions:</p>
+<pre><code>repo sync
+</code></pre>
+<p>Next run</p>
+<pre><code>repo upload
+</code></pre>
+<p>This will list the changes you have committed and prompt you to select which branches to upload to the review server. If there is only one branch, you will see a simple <code>y/n</code> prompt.</p>
+<h2 id="recovering-sync-conflicts">Recovering sync conflicts</h2>
+<p>If a <code>repo sync</code> shows sync conflicts:</p>
+<ul>
+<li>View the files that are unmerged (status code = U).</li>
+<li>Edit the conflict regions as necessary.</li>
+<li>
+<p>Change into the relevant project directory, run <code>git add</code> and <code>git commit</code> for the files in question, and then "rebase" the changes. For example:</p>
+<pre><code>$ git add .
+$ git commit 
+$ git rebase --continue
+</code></pre>
+</li>
+<li>
+<p>When the rebase is complete start the entire sync again:</p>
+<pre><code>$ repo sync PROJECT0 PROJECT1 ... PROJECTN
+</code></pre>
+</li>
+</ul>
+<h2 id="cleaning-up-your-client-files">Cleaning up your client files</h2>
+<p>To update your local working directory after changes are merged in Gerrit:</p>
+<pre><code>$ repo sync
+</code></pre>
+<p>To safely remove stale topic branches: </p>
+<pre><code>$ repo prune
+</code></pre>
+<h2 id="deleting-a-client">Deleting a client</h2>
+<p>Because all state information is stored in your client, you only need to delete the directory from your filesystem:</p>
+<pre><code>$ rm -rf WORKING_DIRECTORY
+</code></pre>
+<p>Deleting a client will <em>permanently delete</em> any changes you have not yet uploaded for review.</p>
+<h2 id="git-and-repo-cheatsheet">Git and Repo cheatsheet</h2>
+<p><img src="{@docRoot}images/git-repo-1.png" alt="list of basic git and repo commands"></p>

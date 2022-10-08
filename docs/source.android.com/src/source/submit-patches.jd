@@ -1,0 +1,221 @@
+page.title=Submitting Patches
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+<p>This page describes the full process of submitting a patch to the AOSP, including
+reviewing and tracking changes with <a href="https://android-review.googlesource.com/">Gerrit</a>.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>
+<p>Before you follow the instructions on this page, you need to <a href="{@docRoot}source/initializing.html">
+initialize your build environment</a> and <a href="{@docRoot}source/downloading.html">download the source</a>.</p>
+</li>
+<li>
+<p>For details about Repo and Git, see the <a href="{@docRoot}source/developing.html">Developing</a> section.</p>
+</li>
+<li>
+<p>For information about the different roles you can play within the Android
+Open Source community, see <a href="{@docRoot}source/roles.html">Project roles</a>.</p>
+</li>
+<li>
+<p>If you plan to contribute code to the Android platform, be sure to read
+the <a href="{@docRoot}source/licenses.html">AOSP's licensing information</a>.</p>
+</li>
+<li>
+<p>Note that changes to some of the upstream projects used by Android should be
+made directly to that project, as described in <a href="#upstream-projects">Upstream Projects</a>.</p>
+</li>
+</ul>
+<h1 id="for-contributors">For contributors</h1>
+<h2 id="authenticate-with-the-server">Authenticate with the server</h2>
+<p>Before you can upload to Gerrit, you need to establish a password that
+will identify you with the server. You only need to do this once.</p>
+<ul>
+<li>
+<p>Sign in on the <a href="https://android-review.googlesource.com/">AOSP Gerrit Server</a>.</p>
+</li>
+<li>
+<p>Go to Settings -&gt; HTTP Password -&gt; Obtain Password</p>
+</li>
+<li>
+<p>Follow the instructions on the subsquent pages, and copy-paste your
+password in <code>~/.netrc</code>. If there are two password lines, copy both.</p>
+</li>
+</ul>
+<h2 id="start-a-repo-branch">Start a repo branch</h2>
+<p>For each change you intend to make, start a new branch within the relevant git repository:</p>
+<pre><code>$ repo start NAME .
+</code></pre>
+<p>You can start several independent branches at the same time in the same
+repository. The branch NAME is local to your workspace and will not be included
+on gerrit or the final source tree.</p>
+<h2 id="make-your-change">Make your change</h2>
+<p>Once you have modified the source files (and validated them, please) commit
+the changes to your local repository:</p>
+<pre><code>$ git add -A
+$ git commit -s
+</code></pre>
+<p>Provide a detailed description of the change in your commit message. This
+description will be pushed to the public AOSP repository, so please follow our
+guidelines for writing changelist descriptions: </p>
+<ul>
+<li>
+<p>Start with a one-line summary (60 characters max), followed by a blank line.
+This format is used by git and gerrit for various displays. </p>
+<pre><code>short description on first line
+
+more detailed description of your patch,
+which is likely to take up multiple lines.
+</code></pre>
+</li>
+<li>
+<p>The description should focus on what issue it solves, and how it solves it. The second part is somewhat optional when implementing new features, though desirable.</p>
+</li>
+<li>
+<p>Include a brief note of any assumptions or background information that may be important when another contributor works on this feature next year. </p>
+</li>
+</ul>
+<p>A unique change ID and your name and email as provided during <code>repo init</code> will be automatically added to your commit message. </p>
+<h2 id="upload-to-gerrit">Upload to gerrit</h2>
+<p>Once you have committed your change to your personal history, upload it to gerrit with</p>
+<pre><code>$ repo upload
+</code></pre>
+<p>If you have started multiple branches in the same repository, you will be prompted to select which one(s) to upload.</p>
+<p>After a successful upload, repo will provide you the URL of a new page on
+<a href="https://android-review.googlesource.com/">Gerrit</a>. Visit this link to view
+your patch on the review server, add comments, or request specific reviewers
+for your patch.</p>
+<h2 id="uploading-a-replacement-patch">Uploading a replacement patch</h2>
+<p>Suppose a reviewer has looked at your patch and requested a small modification. You can amend your commit within git, which will result in a new patch on gerrit with the same change ID as the original.</p>
+<p><em>Note that if you have made other commits since uploading this patch, you will need to manually move your git HEAD.</em></p>
+<pre><code>$ git add -A
+$ git commit --amend
+</code></pre>
+<p>When you upload the amended patch, it will replace the original on gerrit and in your local git history.</p>
+<h2 id="resolving-sync-conflicts">Resolving sync conflicts</h2>
+<p>If other patches are submitted to the source tree that conflict with yours, you will need to rebase your patch on top of the new HEAD of the source repository. The easy way to do this is to run</p>
+<pre><code>$ repo sync
+</code></pre>
+<p>This command first fetches the updates from the source server, then attempts to automatically rebase your HEAD onto the new remote HEAD.</p>
+<p>If the automatic rebase is unsuccessful, you will have to perform a manual rebase.</p>
+<pre><code>$ git rebase master
+</code></pre>
+<p>Using <code>git mergetool</code> may help you deal with the rebase conflict. Once you have successfully merged the conflicting files,</p>
+<pre><code>$ git rebase --continue
+</code></pre>
+<p>After either automatic or manual rebase is complete, run <code>repo upload</code> to submit your rebased patch.</p>
+<h2 id="after-a-submission-is-approved">After a submission is approved</h2>
+<p>After a submission makes it through the review and verification process, Gerrit automatically merges the change into the public repository. Other users will be able to run <code>repo sync</code> to pull the update into their local client.</p>
+<h1 id="for-reviewers-and-verifiers">For reviewers and verifiers</h1>
+<h2 id="reviewing-a-change">Reviewing a change</h2>
+<p>If you are assigned to be the Approver for a change, you need to determine the following:</p>
+<ul>
+<li>
+<p>Does this change fit within this project's stated purpose?</p>
+</li>
+<li>
+<p>Is this change valid within the project's existing architecture?</p>
+</li>
+<li>
+<p>Does this change introduce design flaws that will cause problems in the future?</p>
+</li>
+<li>
+<p>Does this change follow the best practices that have been established for this project?</p>
+</li>
+<li>
+<p>Is this change a good way to perform the described function?</p>
+</li>
+<li>
+<p>Does this change introduce any security or instability risks?</p>
+</li>
+</ul>
+<p>If you approve of the change, mark it with LGTM ("Looks Good to Me") within Gerrit.</p>
+<h2 id="verifying-a-change">Verifying a change</h2>
+<p>If you are assigned to be the Verifier for a change, you need to do the following:</p>
+<ul>
+<li>
+<p>Patch the change into your local client using one of the Download commands.</p>
+</li>
+<li>
+<p>Build and test the change.</p>
+</li>
+<li>
+<p>Within Gerrit use Publish Comments to mark the commit as "Verified" or "Fails," and add a message explaining what problems were identified.</p>
+</li>
+</ul>
+<h2 id="downloading-changes-from-gerrit">Downloading changes from Gerrit</h2>
+<p>A submission that has been verified and merged will be downloaded with the next <code>repo sync</code>. If you wish to download a specific change that has not yet been approved, run</p>
+<pre><code>$ repo download TARGET CHANGE
+</code></pre>
+<p>where TARGET is the local directory into which the change should be downloaded and CHANGE is the
+change number as listed in <a href="https://android-review.googlesource.com/">Gerrit</a>. For more information,
+see the <a href="{@docRoot}source/using-repo.html">Repo reference</a>.</p>
+<h2 id="how-do-i-become-a-verifier-or-approver">How do I become a Verifier or Approver?</h2>
+<p>In short, contribute high-quality code to one or more of the Android projects.
+For details about the different roles in the Android Open Source community and
+who plays them, see <a href="{@docRoot}source/roles.html">Project Roles</a>.</p>
+<h2 id="diffs-and-comments">Diffs and comments</h2>
+<p>To open the details of the change within Gerrit, click on the "Id number" or "Subject" of a change. To compare the established code with the updated code, click the file name under "Side-by-side diffs."</p>
+<h2 id="adding-comments">Adding comments</h2>
+<p>Anyone in the community can use Gerrit to add inline comments to code submissions. A good comment will be relevant to the line or section of code to which it is attached in Gerrit. It might be a short and constructive suggestion about how a line of code could be improved, or it might be an explanation from the author about why the code makes sense the way it is.</p>
+<p>To add an inline comment, double-click the relevant line of the code and write your comment in the text box that opens. When you click Save, only you can see your comment.</p>
+<p>To publish your comments so that others using Gerrit will be able to see them, click the Publish Comments button. Your comments will be emailed to all relevant parties for this change, including the change owner, the patch set uploader (if different from the owner), and all current reviewers.</p>
+<p><a name="upstream-projects"></a></p>
+<h1 id="upstream-projects">Upstream Projects</h1>
+<p>Android makes use of a number of other open-source projects, such as the Linux kernel and WebKit, as described in
+<a href="{@docRoot}source/code-lines.html">Codelines, Branches, and Releases</a>. For most projects under <code>external/</code>, changes should be made upstream and then the Android maintainers informed of the new upstream release containing these changes. It may also be useful to upload patches that move us to track a new upstream release, though these can be difficult changes to make if the project is widely used within Android like most of the larger ones mentioned below, where we tend to upgrade with every release.</p>
+<p>One interesting special case is bionic. Much of the code there is from BSD, so unless the change is to code that's new to bionic, we'd much rather see an upstream fix and then pull a whole new file from the appropriate BSD. (Sadly we have quite a mix of different BSDs at the moment, but we hope to address that in future, and get into a position where we track upstream much more closely.)</p>
+<h2 id="icu4c">ICU4C</h2>
+<p>All changes to the ICU4C project at <code>external/icu4c</code> should be made upstream at
+<a href="http://site.icu-project.org/">icu-project.org/</a>.
+See <a href="http://site.icu-project.org/bugs">Submitting ICU Bugs and Feature Requests</a> for more.</p>
+
+<h2 id="llvmclangcompiler-rt">LLVM/Clang/Compiler-rt</h2>
+<p>All changes to LLVM-related projects (<code>external/clang</code>, <code>external/compiler-rt</code>,
+<code>external/llvm</code>) should be made upstream at
+<a href="http://llvm.org/">llvm.org/</a>.</p>
+
+<h2 id="mksh">mksh</h2>
+<p>All changes to the MirBSD Korn Shell project at <code>external/mksh</code> should be made upstream
+either by sending an email to miros-mksh on the mirbsd.org domain (no subscription
+required to submit there) or (optionally) at <a href="https://launchpad.net/mksh">Launchpad</a>.
+</p>
+<h2 id="openssl">OpenSSL</h2>
+<p>All changes to the OpenSSL project at <code>external/openssl</code> should be made upstream at
+<a href="http://www.openssl.org">openssl.org</a>.</p>
+<h2 id="v8">V8</h2>
+<p>All changes to the V8 project at <code>external/v8</code> should be submitted upstream at
+<a href="https://code.google.com/p/v8">code.google.com/p/v8</a>. See <a href="https://code.google.com/p/v8/wiki/Contributing">Contributing to V8</a>
+for details.</p>
+<h2 id="webkit">WebKit</h2>
+<p>All changes to the WebKit project at <code>external/webkit</code> should be made
+upstream at <a href="http://www.webkit.org">webkit.org</a>. The process begins by filing a WebKit bug. 
+This bug should use <code>Android</code> for the <code>Platform</code> and <code>OS</code> 
+fields only if the bug is specific to Android. Bugs are far more likely to receive the reviewers'
+attention once a proposed fix is added and tests are included. See
+<a href="http://webkit.org/coding/contributing.html">Contributing Code to WebKit</a> for details.</p>
+<h2 id="zlib">zlib</h2>
+<p>All changes to the zlib project at <code>external/zlib</code> should be made upstream at
+<a href="http://zlib.net">zlib.net</a>.</p>

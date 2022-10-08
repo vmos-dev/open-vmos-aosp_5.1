@@ -1,0 +1,9 @@
+Code completion in completion8.xml for android:mar^="50dp":
+android:layout_margin : Specifies extra space on the left, top, right and bottom sides  of this view.  [dimension]
+android:layout_marginLeft : Specifies extra space on the left side of this view.  [dimension]
+android:layout_marginTop : Specifies extra space on the top side of this view.  [dimension]
+android:layout_marginRight : Specifies extra space on the right side of this view.  [dimension]
+android:layout_marginBottom : Specifies extra space on the bottom side of this view.  [dimension]
+android:layout_marginStart : Specifies extra space on the start side of this view.  [dimension]
+android:layout_marginEnd : Specifies extra space on the end side of this view.  [dimension]
+android:marqueeRepeatLimit : The number of times to repeat the marquee animation.  [integer, enum]

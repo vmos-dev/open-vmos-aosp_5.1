@@ -1,0 +1,109 @@
+page.title=CTS Development
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project     
+
+    Licensed under the Apache License, Version 2.0 (the "License");    
+    you may not use this file except in compliance with the License.   
+    You may obtain a copy of the License at    
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software    
+    distributed under the License is distributed on an "AS IS" BASIS,    
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   
+    See the License for the specific language governing permissions and    
+    limitations under the License.   
+-->
+
+<h2 id="initializing-your-repo-client">Initializing Your Repo Client</h2>
+<p>Follow the <a href="{@docRoot}source/downloading.html">instructions</a>
+to get and build the Android source code but specify <code>-b android-4.3_r1</code>
+when issuing the <code>repo init</code> command. This assures that your CTS
+changes will be included in the next CTS release and beyond.</p>
+<h2 id="setting-up-eclipse">Setting Up Eclipse</h2>
+<p>Follow the <a href="{@docRoot}source/using-eclipse.html">instructions</a>
+to setup Eclipse but execute the following command to generate the
+<code>.classpath</code> file rather than copying the one from the development
+project:</p>
+<pre><code>cd /path/to/android/root
+./cts/development/ide/eclipse/genclasspath.sh &gt; .classpath
+chmod u+w .classpath
+</code></pre>
+<p>This <code>.classpath</code> file will contain both the Android framework
+packages and the CTS packages.</p>
+<h2 id="building-and-running-cts">Building and Running CTS</h2>
+<p>Execute the following commands to build CTS and start the interactive
+CTS console:</p>
+<pre><code>cd /path/to/android/root
+make cts
+cts-tradefed
+</code></pre>
+<p>At the cts-tf console, enter e.g.:</p>
+<pre><code>run cts --plan CTS
+</code></pre>
+<h2 id="writing-cts-tests">Writing CTS Tests</h2>
+<p>CTS tests use JUnit and the Android testing APIs. Review the 
+<a href="https://developer.android.com/guide/topics/testing/testing_android.html">Testing and Instrumentation</a>
+tutorial while perusing the existing tests under the
+<code>cts/tests/tests</code> directory. You will see that CTS tests mostly follow the same
+conventions used in other Android tests.</p>
+<p>Since CTS runs across many production devices, the tests must follow
+these rules:</p>
+<ul>
+<li>Must take into account varying screen sizes, orientations, and keyboard layouts.</li>
+<li>Only use public API methods. In other words, avoid all classes, methods, and fields that are annotated with the "hide" annotation.</li>
+<li>Avoid relying upon particular view layouts or depend on the dimensions of assets that may not be on some device.</li>
+<li>Don't rely upon root privileges.</li>
+</ul>
+<h3 id="test-naming-and-location">Test Naming and Location</h3>
+<p>Most CTS test cases target a specific class in the Android API. These tests
+have Java package names with a <code>cts</code> suffix and class
+names with the <code>Test</code> suffix. Each test case consists of
+multiple tests, where each test usually exercises a particular API method of
+the API class being tested. These tests are arranged in a directory structure
+where tests are grouped into different categories like "widgets" and "views."</p>
+<p>For example, the CTS test for <code>android.widget.TextView</code> is
+<code>android.widget.cts.TextViewTest</code> found under the
+<code>cts/tests/tests/widget/src/android/widget/cts</code> directory with its
+Java package name as <code>android.widget.cts</code> and its class name as
+<code>TextViewTest</code>. The <code>TextViewTest</code> class has a test called <code>testSetText</code>
+that exercises the "setText" method and a test named "testSetSingleLine" that
+calls the <code>setSingleLine</code> method. Each of those tests have <code>@TestTargetNew</code>
+annotations indicating what they cover.</p>
+<p>Some CTS tests do not directly correspond to an API class but are placed in
+the most related package possible. For instance, the CTS test,
+<code>android.net.cts.ListeningPortsTest</code>, is in the <code>android.net.cts</code>, because it
+is network related even though there is no <code>android.net.ListeningPorts</code> class.
+You can also create a new test package if necessary. For example, there is an
+"android.security" test package for tests related to security. Thus, use your
+best judgement when adding new tests and refer to other tests as examples.</p>
+<p>Finally, a lot of tests are annotated with @TestTargets and @TestTargetNew.
+These are no longer necessary so do not annotate new tests with these.</p>
+<h3 id="new-test-packages">New Test Packages</h3>
+<p>When adding new tests, there may not be an existing directory to place your
+test. In that case, refer to the example under <code>cts/tests/tests/example</code> and
+create a new directory. Furthermore, make sure to add your new package's
+module name from its <code>Android.mk</code> to <code>CTS_COVERAGE_TEST_CASE_LIST</code> in
+<code>cts/CtsTestCaseList.mk</code>. This Makefile is used by <code>build/core/tasks/cts.mk</code>
+to glue all the tests together to create the final CTS package.</p>
+<h3 id="test-stubs-and-utilities">Test Stubs and Utilities</h3>
+<p>Some tests use additional infrastructure like separate activities
+and various utilities to perform tests. These are located under the
+<code>cts/tests/src</code> directory. These stubs aren't separated into separate test
+APKs like the tests, so the <code>cts/tests/src</code> directory does not have additional
+top level directories like "widget" or "view." Follow the same principle of
+putting new classes into a package with a name that correlates to the purpose
+of your new class. For instance, a stub activity used for testing OpenGL like
+<code>GLSurfaceViewStubActivity</code> belongs in the <code>android.opengl.cts</code> package under
+the <code>cts/tests/src/android/opengl</code> directory.</p>
+<h2 id="other-tasks">Other Tasks</h2>
+<p>Besides adding new tests there are other ways to contribute to CTS:</p>
+<ul>
+<li>Fix or remove tests annotated with BrokenTest and KnownFailure.</li>
+</ul>
+<h2 id="submitting-your-changes">Submitting Your Changes</h2>
+<p>Follow the <a href="{@docRoot}source/submit-patches.html">Android Contributors' Workflow</a>
+to contribute changes to CTS. A reviewer
+will be assigned to your change, and your change should be reviewed shortly!</p>

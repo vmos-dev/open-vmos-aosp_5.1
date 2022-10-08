@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.google.android.DemoKit" android:versionCode="1"
+	android:versionName="1.0">
+
+	<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="11" />
+
+	<application android:icon="@drawable/ic_launcher_demokit"
+		android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar">
+		<uses-library android:name="com.android.future.usb.accessory" />
+		<activity android:name=".DemoKitLaunch" android:label="@string/app_name">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity android:name=".DemoKitActivity" android:label="@string/app_name"
+			android:screenOrientation="portrait">
+		</activity>
+		<activity android:name=".DemoKitPhone" android:label="@string/app_name"
+			android:screenOrientation="portrait">
+		</activity>
+		<activity android:name=".DemoKitTablet" android:label="@string/app_name"
+			android:screenOrientation="landscape" android:theme="@android:style/Theme.Holo">
+		</activity>
+		<activity android:name="UsbAccessoryActivity" android:label="DemoKit"
+			android:taskAffinity="" android:launchMode="singleInstance">
+			<intent-filter>
+				<action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+			</intent-filter>
+
+			<meta-data android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
+				android:resource="@xml/accessory_filter" />
+		</activity>
+
+	</application>
+</manifest>

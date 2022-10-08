@@ -1,0 +1,58 @@
+page.title=Working with Devices
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>Trade Federation uses an abstraction called
+<code><a href="/reference/com/android/tradefed/device/ITestDevice.html">ITestDevice</a></code> to
+run tests.  This abstraction objectifies the lowest-common-denominator Android device:</p>
+<ul>
+<li>It has a serial number</li>
+<li>It has a state: Online, Available, Recovery, or Not Available</li>
+<li>It has some notion of reliability.  For instance, if we run a command, we can differentiate
+  between the case where the command hasn't finished yet, the case where the device doesn't support
+  running commands, and the case where the device has become unresponsive while running the
+  command.</li>
+</ul>
+
+<h2>Different Classes of Devices</h2>
+<p>The three primary implementations of <code>ITestDevice</code> represent three common
+usecases.</p>
+
+<h3>Physical Device</h3>
+<p>This is an actual piece of hardware, connected to the TF host machine either by USB, or by using
+adb's TCP feature.  The <a href="/reference/com/android/tradefed/device/TestDevice.html"
+>TestDevice</a> class sits atop the ddmlib library, which is a Java interface to adb.  So any
+physical device listed in <code>adb devices</code> can be instantiated and used as a
+<code>TestDevice</code>.
+</p>
+
+<h3>Emulator</h3>
+<p>Emulators are handled specially by TF because they live in another process.  To interact with an
+Emulator, specify the <code>--emulator</code> argument for the command.  See
+<a href="/reference/com/android/tradefed/build/LocalSdkBuildProvider.html"
+>LocalSdkBuildProvider</a> and
+<a href="/reference/com/android/tradefed/targetprep/SdkAvdPreparer.html"
+>SdkAvdPreparer</a> for more info.</p>
+
+<h3>No Device</h3>
+<p>Suppose you have a test that doesn't interact with a device at all.  For instance, it might just
+download a file from some service and verify that the file itself is valid.  The
+<a href="/reference/com/android/tradefed/device/NullDevice.html"
+>NullDevice</a> is an <code>ITestDevice</code> that is just a stub.  It has a serial number like
+<code>null-device-N</code>, and most attempted operations either no-op silently or throw.
+</p>

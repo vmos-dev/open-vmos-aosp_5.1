@@ -1,0 +1,16 @@
+allow tee drm_block_device:blk_file rw_file_perms;
+
+# tee starts as root, and drops privileges
+allow tee self:capability { setuid setgid };
+
+# Need to directly minipulate certain block devices
+# for anti-rollback protection
+allow tee block_device:dir search;
+allow tee self:capability sys_rawio;
+allow tee drm_block_device:blk_file rw_file_perms;
+
+allow tee persist_file:dir r_dir_perms;
+r_dir_file(tee, persist_data_file)
+# Write to drm related pieces of persist partition
+allow tee persist_drm_file:dir create_dir_perms;
+allow tee persist_drm_file:file create_file_perms;

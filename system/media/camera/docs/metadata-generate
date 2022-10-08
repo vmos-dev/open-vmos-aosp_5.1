@@ -1,0 +1,222 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2012 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#
+# Generate all files we have templates for:
+#   docs.html
+#   ../src/camera_metadata_tag_info.c
+#   ../src/camera_metadata_tags.h
+#   ../../../../cts/tests/tests/hardware/src/android/hardware/camera2/cts/CaptureResultTest.java
+#   ../../../../frameworks/base/core/java/android/hardware/camera2/CameraCharacteristics.java
+#   ../../../../frameworks/base/core/java/android/hardware/camera2/CaptureRequest.java
+#   ../../../../frameworks/base/core/java/android/hardware/camera2/CaptureResult.java
+
+if [[ -z $ANDROID_BUILD_TOP ]]; then
+    echo "Please source build/envsetup.sh before running script" >& 2
+    exit 1
+fi
+
+thisdir=$(cd "$(dirname "$0")"; pwd)
+fwkdir="$ANDROID_BUILD_TOP/frameworks/base/core/java/android/hardware/camera2/"
+fwkdir_html="$ANDROID_BUILD_TOP/frameworks/base/docs/html"
+ctsdir="$ANDROID_BUILD_TOP/cts/tests/tests/hardware/src/android/hardware/camera2/cts"
+outdir="$ANDROID_PRODUCT_OUT/obj/ETC/system-media-camera-docs_intermediates"
+out_files=()
+
+function relpath() {
+    python -c "import os.path; print os.path.relpath('$1', '$PWD')"
+}
+
+# Generates a file. Appends to $out_files array as a side effect.
+function gen_file() {
+    local in=$thisdir/$1
+    local out=$thisdir/$2
+
+    gen_file_abs "$in" "$out"
+    return $?
+}
+
+function gen_file_abs() {
+    local in="$1"
+    local out="$2"
+    local intermediates="$3"
+
+    python $thisdir/metadata_parser_xml.py $thisdir/metadata_properties.xml $in $out
+
+    local succ=$?
+
+    if [[ $succ -eq 0 ]]
+    then
+        echo "OK: Generated $(relpath "$out")"
+        if [[ "$intermediates" != "no" ]]; then
+          out_files+=$'\n'" $out"
+        fi
+    else
+        echo "FAIL: Errors while generating $(relpath "$out")" >& 2
+    fi
+
+    return $succ
+}
+
+# Print a list of git repository paths which were affected after file generation
+function affected_git_directories() {
+    local input_files=($@)
+    local git_directories=()
+
+    for file in "${input_files[@]}"; do
+        local dir_path="$(dirname "$file")"
+        echo "Trying to cd into $dir_path" >& /dev/null
+        # Absolute path to the git repository root of that file
+        local git_path="$(cd "$dir_path";
+                          git rev-parse --show-toplevel 2> /dev/null)"
+        if [[ $? -eq 0 ]]; then
+            # Both staged and unstaged changes
+            local diff_result="$(cd "$dir_path";
+                                 git status --porcelain | egrep -c -v '^[?][?]')"
+            echo "Diff result was $diff_result" >& /dev/null
+            echo "Diff result was $diff_result" >& /dev/null
+            if [[ $diff_result -eq 0 ]]; then
+                echo "No changes in ${git_path}" >& /dev/null
+            else
+                echo "There are changes in ${git_path}" >& /dev/null
+                git_directories+=("$git_path")
+            fi
+        fi
+    done
+
+    # print as result the unique list of git directories affected
+    printf %s\\n "${git_directories[@]}" | sort | uniq
+}
+
+# Insert a file into the middle of another, starting at the line containing the
+# start delim and ending on the end delim, both of which are replaced
+function insert_file() {
+    local src_part="$1"
+    local dst_file="$2"
+    local start_delim="/*@O~"
+    local end_delim="~O@*/"
+
+    local start_line="$(grep -n -F "${start_delim}" "${dst_file}" | cut -d: -f1)"
+    local end_line="$(grep -n -F "${end_delim}" "${dst_file}" | cut -d: -f1)"
+
+    # Adjust cutoff points to use start/end line from inserted file
+    (( start_line-- ))
+    (( end_line++ ))
+
+    # Do some basic sanity checks
+
+    if [[ -z "$start_line" ]]; then
+       echo "No starting delimiter found in ${dst_file}" >& 2
+       echo "FAIL: Errors in inserting into $(relpath ${dst_file})" >& 2
+       return 1
+    fi
+
+    if [[ -z "$end_line" ]]; then
+       echo "No ending delimiter found in ${dst_file}" >& 2
+       echo "FAIL: Errors in inserting into $(relpath ${dst_file})" >& 2
+       return 1
+    fi
+
+    if [[ "$start_line" -ge "$end_line" ]]; then
+       echo "Starting delim later than ending delim: $start_line vs $end_line" >& 2
+       echo "FAIL: Errors in inserting into $(relpath ${dst_file})" >& 2
+       return 1
+    fi
+
+    local tmp_name=$(mktemp -t XXXXXXXX)
+
+    # Compose the three parts of the final file together
+
+    head -n "$start_line" "${dst_file}" > "${tmp_name}"
+    cat "${src_part}" >> "${tmp_name}"
+    tail -n "+${end_line}" "${dst_file}" >> "${tmp_name}"
+
+    # And replace the destination file with the new version
+
+    mv "${tmp_name}" "${dst_file}"
+    echo "OK: Inserted $(relpath "$src_part") into $(relpath "$dst_file")"
+    out_files+=$'\n'" $dst_file"
+}
+
+# Recursively copy a directory tree from $1 to $2. Pretty-prints status.
+function copy_directory() {
+    local src="$thisdir/$1" # Relative to directory of this script
+    local dst="$2" # Absolute path
+
+    if ! [[ -d $src ]]; then
+        echo "FAIL: Source directory $src does not exist" >& 2
+        return 1
+    fi
+    if ! [[ -d $dst ]]; then
+        echo "FAIL: Destination directory $dst does not exist" >& 2
+        return 1
+    fi
+
+    cp -R "$src" "$dst"
+    local retval=$?
+
+    if [[ $retval -ne 0 ]]; then
+        echo "ERROR: Failed to copy $(relpath "$src") to $(relpath "$dst")" >& 2
+    else
+        echo "OK: Copied $(relpath "$src") to $(relpath "$dst")"
+    fi
+
+    return $retval
+}
+
+$thisdir/metadata-check-dependencies || exit 1
+$thisdir/metadata-validate $thisdir/metadata_properties.xml || exit 1
+$thisdir/metadata-parser-sanity-check || exit 1
+
+# Generate HTML properties documentation
+gen_file html.mako docs.html || exit 1
+
+# Generate C API headers and implementation
+gen_file camera_metadata_tag_info.mako ../src/camera_metadata_tag_info.c || exit 1
+gen_file camera_metadata_tags.mako ../include/system/camera_metadata_tags.h || exit 1
+
+# Generate Java API definitions
+mkdir -p "${outdir}"
+gen_file_abs CameraMetadataEnums.mako "$outdir/CameraMetadataEnums.java.part" no || exit 1
+gen_file_abs CameraCharacteristicsKeys.mako "$outdir/CameraCharacteristicsKeys.java.part" no || exit 1
+gen_file_abs CaptureRequestKeys.mako "$outdir/CaptureRequestKeys.java.part" no || exit 1
+gen_file_abs CaptureResultKeys.mako "$outdir/CaptureResultKeys.java.part" no || exit 1
+gen_file_abs CaptureResultTest.mako "$outdir/CaptureResultTest.java.part" no || exit 1
+
+insert_file "$outdir/CameraMetadataEnums.java.part" "$fwkdir/CameraMetadata.java" || exit 1
+insert_file "$outdir/CameraCharacteristicsKeys.java.part" "$fwkdir/CameraCharacteristics.java" || exit 1
+insert_file "$outdir/CaptureRequestKeys.java.part" "$fwkdir/CaptureRequest.java" || exit 1
+insert_file "$outdir/CaptureResultKeys.java.part" "$fwkdir/CaptureResult.java" || exit 1
+
+# Copy ./images directory into javadoc directory
+copy_directory "images" "$fwkdir_html" || exit 1
+
+echo ""
+echo "===================================================="
+echo "Successfully generated all metadata source files"
+echo "===================================================="
+echo ""
+
+echo "****************************************************"
+echo "The following git repositories need to be committed:"
+echo "****************************************************"
+echo ""
+affected_git_directories "${out_files[@]}"
+echo ""
+
+exit 0

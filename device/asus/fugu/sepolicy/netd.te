@@ -1,0 +1,2 @@
+# we don't allow modules
+dontaudit netd self:capability sys_module;

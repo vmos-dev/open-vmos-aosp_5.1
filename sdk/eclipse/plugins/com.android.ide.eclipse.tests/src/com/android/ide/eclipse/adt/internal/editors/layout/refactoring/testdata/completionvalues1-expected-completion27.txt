@@ -1,0 +1,15 @@
+Code completion in completionvalues1.xml for <item name="android:gravity">^  </item>:
+top
+bottom
+left
+right
+center_vertical
+fill_vertical
+center_horizontal
+fill_horizontal
+center
+fill
+clip_vertical
+clip_horizontal
+start
+end

@@ -1,0 +1,6 @@
+To build using Tycho, perform:
+
+ $ cd sdk/eclipse
+ $ make -f maven.mk
+
+The resulting artifacts will be in $OUT/host/maven/bundles-<version>-SNAPSHOT/products/

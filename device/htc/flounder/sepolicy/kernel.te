@@ -1,0 +1,2 @@
+# kernel has a hard coded entry for /system/vendor/bin/touch_fusion
+domain_auto_trans(kernel, touch_fusion_exec, touch_fusion)

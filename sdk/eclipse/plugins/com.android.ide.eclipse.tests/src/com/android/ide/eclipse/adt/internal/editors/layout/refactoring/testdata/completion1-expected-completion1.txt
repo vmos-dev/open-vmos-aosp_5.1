@@ -1,0 +1,3 @@
+Code completion in completion1.xml for layout_w^idth="fill_parent":
+android:layout_width : Specifies the basic width of the view.  [dimension, enum]
+android:layout_weight : [float]

@@ -1,0 +1,66 @@
+page.title=The Android Source Code
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>
+Android is an open-source software stack created for a wide array of devices
+with different form factors. The primary purposes of Android are to create an
+open software platform available for carriers, OEMs, and developers to make
+their innovative ideas a reality and to introduce a successful,
+real-world product that improves the mobile experience for users.
+
+We also wanted to make sure there was
+no central point of failure, where one industry player could restrict or
+control the innovations of any other. The result is a full, production-quality
+consumer product with source code open for customization and porting.
+</p>
+
+
+
+
+<h2 id="governance-philosophy">Governance Philosophy</h2
+<p>Android was originated by a group of companies known as the Open
+Handset Alliance, led by Google. Today, many companies -- both original members
+of the OHA and others -- have invested heavily in Android. These companies have
+allocated significant engineering resources to improve Android and bring Android
+devices to market.
+</p>
+<p>The companies that have invested in Android have done so on its merits
+because we believe an open platform is necessary. Android is
+intentionally and explicitly an open-source -- as opposed to a free software --
+effort; a group of organizations with shared needs has pooled
+resources to collaborate on a single implementation of a shared product.
+The Android philosophy is pragmatic, first and foremost. The objective is
+a shared product that each contributor can tailor and customize.</p>
+
+<p>Uncontrolled customization can, of course, lead to incompatible
+implementations. To prevent this, the Android Open Source Project also maintains the <a href="{@docRoot}compatibility/index.html">Android
+Compatibility Program</a>, which spells out what it means to be "Android
+compatible" and what is required of device builders to achieve that status.
+Anyone can (and will!) use the Android source code for any purpose, and we
+welcome all legitimate uses. However, in order to take part in the shared
+ecosystem of applications we are building around Android, device builders
+must participate in the Android Compatibility Program.</p>
+
+<p>The Android Open Source Project is led by Google, who
+maintains and further develops Android.
+Although Android consists of multiple subprojects, this is strictly a
+project management technique. We view and manage Android as a single,
+holistic software product, not a "distribution", specification, or collection
+of replaceable parts. Our intent is that device builders port
+Android to a device; they don't implement a specification or curate a
+distribution.</p>

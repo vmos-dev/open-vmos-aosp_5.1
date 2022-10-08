@@ -1,0 +1,425 @@
+page.title=Key Character Map Files
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Key character map files (<code>.kcm</code> files) are responsible for mapping combinations
+of Android key codes with modifiers to Unicode characters.</p>
+<p>Device-specific key layout files are <em>required</em> for all internal (built-in)
+input devices that have keys, if only to tell the system that the device
+is special purpose only (not a full keyboard).</p>
+<p>Device-specific key layout files are <em>optional</em> for external keyboards, and
+often aren't needed at all.  The system provides a generic key character map
+that is suitable for many external keyboards.</p>
+<p>If no device-specific key layout file is available, then the system will
+choose a default instead.</p>
+<h2 id="location">Location</h2>
+<p>Key character map files are located by USB vendor, product (and optionally version)
+id or by input device name.</p>
+<p>The following paths are consulted in order.</p>
+<ul>
+<li><code>/system/usr/keychars/Vendor_XXXX_Product_XXXX_Version_XXXX.kcm</code></li>
+<li><code>/system/usr/keychars/Vendor_XXXX_Product_XXXX.kcm</code></li>
+<li><code>/system/usr/keychars/DEVICE_NAME.kcm</code></li>
+<li><code>/data/system/devices/keychars/Vendor_XXXX_Product_XXXX_Version_XXXX.kcm</code></li>
+<li><code>/data/system/devices/keychars/Vendor_XXXX_Product_XXXX.kcm</code></li>
+<li><code>/data/system/devices/keychars/DEVICE_NAME.kcm</code></li>
+<li><code>/system/usr/keychars/Generic.kcm</code></li>
+<li><code>/data/system/devices/keychars/Generic.kcm</code></li>
+<li><code>/system/usr/keychars/Virtual.kcm</code></li>
+<li><code>/data/system/devices/keychars/Virtual.kcm</code></li>
+</ul>
+<p>When constructing a file path that contains the device name, all characters
+in the device name other than '0'-'9', 'a'-'z', 'A'-'Z', '-' or '<em>' are replaced by '</em>'.</p>
+<h2 id="generic-key-character-map-file">Generic Key Character Map File</h2>
+<p>The system provides a special built-in key character map file called <code>Generic.kcm</code>.
+This key character map is intended to support a variety of standard external
+keyboards.</p>
+<p><em>Do not modify the generic key character map!</em></p>
+<h2 id="virtual-key-character-map-file">Virtual Key Character Map File</h2>
+<p>The system provides a special built-in key character map file called <code>Virtual.kcm</code>
+that is used by the virtual keyboard devices.</p>
+<p>The virtual keyboard device is a synthetic input device whose id is -1
+(see <code>KeyCharacterMap.VIRTUAL_KEYBOARD</code>).  It is present on all Android devices
+beginning with Android Honeycomb 3.0.  The purpose of the virtual keyboard device
+is to provide a known built-in input device that can be used for injecting
+keystokes into applications by the IME or by test instrumentation, even
+for devices that do not have built-in keyboards.</p>
+<p>The virtual keyboard is assumed to have a full QWERTY layout that is the
+same on all devices.  This makes it possible for applications to inject
+keystrokes using the virtual keyboard device and always get the same results.</p>
+<p><em>Do not modify the virtual key character map!</em></p>
+<h2 id="syntax">Syntax</h2>
+<p>A key character map file is a plain text file consisting of a keyboard type
+declaration and a set of key declarations.</p>
+<h3 id="keyboard-type-declaration">Keyboard Type Declaration</h3>
+<p>A keyboard type declaration describes the overall behavior of the keyboard.
+A character map file must contain a keyboard type declaration.  For clarity,
+it is often placed at the top of the file.</p>
+<pre><code>type FULL
+</code></pre>
+<p>The following keyboard types are recognized:</p>
+<ul>
+<li>
+<p><code>NUMERIC</code>: A numeric (12-key) keyboard.</p>
+<p>A numeric keyboard supports text entry using a multi-tap approach.
+It may be necessary to tap a key multiple times to generate the desired letter or symbol.</p>
+<p>This type of keyboard is generally designed for thumb typing.</p>
+<p>Corresponds to <code>KeyCharacterMap.NUMERIC</code>.</p>
+</li>
+<li>
+<p><code>PREDICTIVE</code>: A keyboard with all the letters, but with more than one letter per key.</p>
+<p>This type of keyboard is generally designed for thumb typing.</p>
+<p>Corresponds to <code>KeyCharacterMap.PREDICTIVE</code>.</p>
+</li>
+<li>
+<p><code>ALPHA</code>: A keyboard with all the letters, and maybe some numbers.</p>
+<p>An alphabetic keyboard supports text entry directly but may have a condensed
+layout with a small form factor.  In contrast to a <code>FULL</code> keyboard, some
+symbols may only be accessible using special on-screen character pickers.
+In addition, to improve typing speed and accuracy, the framework provides
+special affordances for alphabetic keyboards such as auto-capitalization
+and toggled / locked SHIFT and ALT keys.</p>
+<p>This type of keyboard is generally designed for thumb typing.</p>
+</li>
+<li>
+<p><code>FULL</code>: A full PC-style keyboard.</p>
+<p>A full keyboard behaves like a PC keyboard.  All symbols are accessed directly
+by pressing keys on the keyboard without on-screen support or affordances such
+as auto-capitalization.</p>
+<p>This type of keyboard is generally designed for full two hand typing.</p>
+</li>
+<li>
+<p><code>SPECIAL_FUNCTION</code>: A keyboard that is only used to perform system control functions
+    rather than for typing.</p>
+<p>A special function keyboard consists only of non-printing keys such as
+HOME and POWER that are not actually used for typing.</p>
+</li>
+</ul>
+<p>The <code>Generic.kcm</code> and <code>Virtual.kcm</code> key character maps are both <code>FULL</code> keyboards.</p>
+<h3 id="key-declarations">Key Declarations</h3>
+<p>Key declarations each consist of the keyword <code>key</code> followed by an Android key code
+name, an open curly brace, a set of properties and behaviors and a close curly brace.</p>
+<pre><code>key A {
+    label:                              'A'
+    base:                               'a'
+    shift, capslock:                    'A'
+    ctrl, alt, meta:                    none
+}
+</code></pre>
+<h4 id="properties">Properties</h4>
+<p>Each key property establishes a mapping from a key to a behavior.  To make the
+key character map files more compact, several properties can be mapped to the
+same behavior by separating them with a comma.</p>
+<p>In the above example, the <code>label</code> property is assigned the <code>'A'</code> behavior.
+Likewise, the <code>ctrl</code>, <code>alt</code> and <code>meta</code> properties are all simultaneously assigned
+the <code>none</code> behavior.</p>
+<p>The following properties are recognized:</p>
+<ul>
+<li>
+<p><code>label</code>: Specifies the label that is physically printed on the key, when it
+    consists of a single character.  This is the value that is returned by
+    the <code>KeyCharacterMap.getDisplayLabel</code> method.</p>
+</li>
+<li>
+<p><code>number</code>: Specifies the behavior (character that should be typed) when a numeric
+    text view has focus, such as when the user is typing a phone number.</p>
+<p>Compact keyboards often combine multiple symbols into a single key, such that
+the same key might be used to type <code>'1'</code> and <code>'a'</code> or <code>'#'</code> and <code>'q'</code>, perhaps.
+For these keys, the <code>number</code> property should be set to indicate which symbol
+should be typed in a numeric context, if any.</p>
+<p>Some typical "numeric" symbols are digits <code>'0'</code> through <code>'9'</code>, <code>'#'</code>, <code>'+'</code>,
+<code>'('</code>, <code>')'</code>, <code>','</code>, and <code>'.'</code>.</p>
+</li>
+<li>
+<p><code>base</code>: Specifies the behavior (character that should be typed) when no modifiers
+    are pressed.</p>
+</li>
+<li>
+<p>&lt;modifier&gt; or &lt;modifier1&gt;<code>+</code>&lt;modifier2&gt;<code>+</code>...: Specifies the
+    behavior (character that should be typed) when the key is pressed and all of the
+    specified modifiers are active.</p>
+<p>For example, the modifier property <code>shift</code> specifies a behavior that applies when
+the either the LEFT SHIFT or RIGHT SHIFT modifier is pressed.</p>
+<p>Similarly, the modifier property <code>rshift+ralt</code> specifies a behavior that applies
+when the both RIGHT SHIFT and RIGHT ALT modifiers are pressed together.</p>
+</li>
+</ul>
+<p>The following modifiers are recognized in modifier properties:</p>
+<ul>
+<li><code>shift</code>: Applies when either the LEFT SHIFT or RIGHT SHIFT modifier is pressed.</li>
+<li><code>lshift</code>: Applies when the LEFT SHIFT modifier is pressed.</li>
+<li><code>rshift</code>: Applies when the RIGHT SHIFT modifier is pressed.</li>
+<li><code>alt</code>: Applies when either the LEFT ALT or RIGHT ALT modifier is pressed.</li>
+<li><code>lalt</code>: Applies when the LEFT ALT modifier is pressed.</li>
+<li><code>ralt</code>: Applies when the RIGHT ALT modifier is pressed.</li>
+<li><code>ctrl</code>: Applies when either the LEFT CONTROL or RIGHT CONTROL modifier is pressed.</li>
+<li><code>lctrl</code>: Applies when the LEFT CONTROL modifier is pressed.</li>
+<li><code>rctrl</code>: Applies when the RIGHT CONTROL modifier is pressed.</li>
+<li><code>meta</code>: Applies when either the LEFT META or RIGHT META modifier is pressed.</li>
+<li><code>lmeta</code>: Applies when the LEFT META modifier is pressed.</li>
+<li><code>rmeta</code>: Applies when the RIGHT META modifier is pressed.</li>
+<li><code>sym</code>: Applies when the SYMBOL modifier is pressed.</li>
+<li><code>fn</code>: Applies when the FUNCTION modifier is pressed.</li>
+<li><code>capslock</code>: Applies when the CAPS LOCK modifier is locked.</li>
+<li><code>numlock</code>: Applies when the NUM LOCK modifier is locked.</li>
+<li><code>scrolllock</code>: Applies when the SCROLL LOCK modifier is locked.</li>
+</ul>
+<p>The order in which the properties are listed is significant.  When mapping a key to
+a behavior, the system scans all relevant properties in order and returns the last
+applicable behavior that it found.</p>
+<p>Consequently, properties that are specified later override properties that are
+specified earlier for a given key.</p>
+<h4 id="behaviors">Behaviors</h4>
+<p>Each property maps to a behavior.  The most common behavior is typing a character
+but there are others.</p>
+<p>The following behaviors are recognized:</p>
+<ul>
+<li>
+<p><code>none</code>: Don't type a character.</p>
+<p>This behavior is the default when no character is specified.  Specifying <code>none</code>
+is optional but it improves clarity.</p>
+</li>
+<li>
+<p><code>'X'</code>: Type the specified character literal.</p>
+<p>This behavior causes the specified character to be entered into the focused
+text view.  The character literal may be any ASCII character, or one of the
+following escape sequences:</p>
+<ul>
+<li><code>'\\'</code>: Type a backslash character.</li>
+<li><code>'\n'</code>: Type a new line character (use this for ENTER / RETURN).</li>
+<li><code>'\t'</code>: Type a TAB character.</li>
+<li><code>'\''</code>: Type an apostrophe character.</li>
+<li><code>'\"'</code>: Type a quote character.</li>
+<li><code>'\uXXXX'</code>: Type the Unicode character whose code point is given in hex by XXXX.</li>
+</ul>
+</li>
+<li>
+<p><code>fallback</code> &lt;Android key code name&gt;: Perform a default action if the key is not
+    handled by the application.</p>
+<p>This behavior causes the system to simulate a different key press when an application
+does not handle the specified key natively.  It is used to support default behavior
+for new keys that not all applications know how to handle, such as ESCAPE or
+numeric keypad keys (when numlock is not pressed).</p>
+<p>When a fallback behavior is performed, the application will receive two key presses:
+one for the original key and another for the fallback key that was selected.
+If the application handles the original key during key up, then the fallback key
+event will be canceled (<code>KeyEvent.isCanceled</code> will return <code>true</code>).</p>
+</li>
+</ul>
+<p>The system reserves two Unicode characters to perform special functions:</p>
+<ul>
+<li>
+<p><code>'\uef00'</code>: When this behavior is performed, the text view consumes and removes the
+    four characters preceding the cursor, interprets them as hex digits, and inserts the
+    corresponding Unicode code point.</p>
+</li>
+<li>
+<p><code>'\uef01'</code>: When this behavior is performed, the text view displays a
+    character picker dialog that contains miscellaneous symbols.</p>
+</li>
+</ul>
+<p>The system recognizes the following Unicode characters as combining diacritical dead
+key characters:</p>
+<ul>
+<li><code>'\u0300'</code>: Grave accent.</li>
+<li><code>'\u0301'</code>: Acute accent.</li>
+<li><code>'\u0302'</code>: Circumflex accent.</li>
+<li><code>'\u0303'</code>: Tilde accent.</li>
+<li><code>'\u0308'</code>: Umlaut accent.</li>
+</ul>
+<p>When a dead key is typed followed by another character, the dead key and the following
+characters are composed.  For example, when the user types a grave accent dead
+key followed by the letter 'a', the result is '&agrave;'.</p>
+<p>Refer to <code>KeyCharacterMap.getDeadChar</code> for more information about dead key handling.</p>
+<h3 id="comments">Comments</h3>
+<p>Comment lines begin with '#' and continue to the end of the line.  Like this:</p>
+<pre><code># A comment!
+</code></pre>
+<p>Blank lines are ignored.</p>
+<h3 id="how-key-combinations-are-mapped-to-behaviors">How Key Combinations are Mapped to Behaviors</h3>
+<p>When the user presses a key, the system looks up the behavior associated with
+the combination of that key press and the currently pressed modifiers.</p>
+<h4 id="shift-a">SHIFT + A</h4>
+<p>Suppose the user pressed A and SHIFT together.  The system first locates
+the set of properties and behaviors associated with <code>KEYCODE_A</code>.</p>
+<pre><code>key A {
+    label:                              'A'
+    base:                               'a'
+    shift, capslock:                    'A'
+    ctrl, alt, meta:                    none
+}
+</code></pre>
+<p>The system scans the properties from first to last and left to right, ignoring
+the <code>label</code> and <code>number</code> properties, which are special.</p>
+<p>The first property encountered is <code>base</code>.  The <code>base</code> property always applies to
+a key, no matter what modifiers are pressed.  It essentially specifies the default
+behavior for the key unless it is overridden by following properties.
+Since the <code>base</code> property applies to this key press, the system makes note
+of the fact that its behavior is <code>'a'</code> (type the character <code>a</code>).</p>
+<p>The system then continues to scan subsequent properties in case any of them
+are more specific than <code>base</code> and override it.  It encounters <code>shift</code> which
+also applies to the key press SHIFT + A.  So the system decides to ignore
+the <code>base</code> property's behavior and chooses the behavior associated with
+the <code>shift</code> property, which is <code>'A'</code> (type the character <code>A</code>).</p>
+<p>It then continues to scan the table, however no other properties apply to this
+key press (CAPS LOCK is not locked, neither CONTROL key is pressed, neither
+ALT key is pressed and neither META key is pressed).</p>
+<p>So the resulting behavior for the key combination SHIFT + A is <code>'A'</code>.</p>
+<h4 id="control-a">CONTROL + A</h4>
+<p>Now consider what would happen if the user pressed A and CONTROL together.</p>
+<p>As before, the system would scan the table of properties.  It would notice
+that the <code>base</code> property applied but would also continue scanning until
+it eventually reached the <code>control</code> property.  As it happens, the <code>control</code>
+property appears after <code>base</code> so its behavior overrides the <code>base</code> behavior.</p>
+<p>So the resulting behavior for the key combination CONTROL + A is <code>none</code>.</p>
+<h4 id="escape">ESCAPE</h4>
+<p>Now suppose the user pressed ESCAPE.</p>
+<pre><code>key ESCAPE {
+    base:                               fallback BACK
+    alt, meta:                          fallback HOME
+    ctrl:                               fallback MENU
+}
+</code></pre>
+<p>This time the system obtains the behavior <code>fallback BACK</code>, a fallback behavior.
+Because no character literal appears, no character will be typed.</p>
+<p>When processing the key, the system will first deliver <code>KEYCODE_ESCAPE</code> to the
+application.  If the application does not handle it, then the system will try
+again but this time it will deliver <code>KEYCODE_BACK</code> to the application as
+requested by the fallback behavior.</p>
+<p>So applications that recognize and support <code>KEYCODE_ESCAPE</code> have the
+opportunity to handle it as is, but other applications that do not can instead
+perform the fallback action of treating the key as if it were <code>KEYCODE_BACK</code>.</p>
+<h4 id="numpad_0-with-or-without-num-lock">NUMPAD_0 with or without NUM LOCK</h4>
+<p>The numeric keypad keys have very different interpretations depending on whether
+the NUM LOCK key is locked.</p>
+<p>The following key declaration ensures that <code>KEYCODE_NUMPAD_0</code> types <code>0</code>
+when NUM LOCK is pressed.  When NUM LOCK is not pressed, the key is delivered
+to the application as usual, and if it is not handled, then the fallback
+key <code>KEYCODE_INSERT</code> is delivered instead.</p>
+<pre><code>key NUMPAD_0 {
+    label, number:                      '0'
+    base:                               fallback INSERT
+    numlock:                            '0'
+    ctrl, alt, meta:                    none
+}
+</code></pre>
+<p>As we can see, fallback key declarations greatly improve compatibility
+with older applications that do not recognize or directly support all of the keys
+that are present on a full PC style keyboard.</p>
+<h3 id="examples">Examples</h3>
+<h4 id="full-keyboard">Full Keyboard</h4>
+<pre><code># This is an example of part of a key character map file for a full keyboard
+# include a few fallback behaviors for special keys that few applications
+# handle themselves.
+
+type FULL
+
+key C {
+    label:                              'C'
+    base:                               'c'
+    shift, capslock:                    'C'
+    alt:                                '\u00e7'
+    shift+alt:                          '\u00c7'
+    ctrl, meta:                         none
+}
+
+key SPACE {
+    label:                              ' '
+    base:                               ' '
+    ctrl:                               none
+    alt, meta:                          fallback SEARCH
+}
+
+key NUMPAD_9 {
+    label, number:                      '9'
+    base:                               fallback PAGE_UP
+    numlock:                            '9'
+    ctrl, alt, meta:                    none
+}
+</code></pre>
+<h4 id="alphanumeric-keyboard">Alphanumeric Keyboard</h4>
+<pre><code># This is an example of part of a key character map file for an alphanumeric
+# thumb keyboard.  Some keys are combined, such as `A` and `2`.  Here we
+# specify `number` labels to tell the system what to do when the user is
+# typing a number into a dial pad.
+#
+# Also note the special character '\uef01' mapped to ALT+SPACE.
+# Pressing this combination of keys invokes an on-screen character picker.
+
+type ALPHA
+
+key A {
+    label:                              'A'
+    number:                             '2'
+    base:                               'a'
+    shift, capslock:                    'A'
+    alt:                                '#'
+    shift+alt, capslock+alt:            none
+}
+
+key SPACE {
+    label:                              ' '
+    number:                             ' '
+    base:                               ' '
+    shift:                              ' '
+    alt:                                '\uef01'
+    shift+alt:                          '\uef01'
+}
+</code></pre>
+<h4 id="game-pad">Game Pad</h4>
+<pre><code># This is an example of part of a key character map file for a game pad.
+# It defines fallback actions that enable the user to navigate the user interface
+# by pressing buttons.
+
+type SPECIAL_FUNCTION
+
+key BUTTON_A {
+    base:                               fallback BACK
+}
+
+key BUTTON_X {
+    base:                               fallback DPAD_CENTER
+}
+
+key BUTTON_START {
+    base:                               fallback HOME
+}
+
+key BUTTON_SELECT {
+    base:                               fallback MENU
+}
+</code></pre>
+<h2 id="compatibility-note">Compatibility Note</h2>
+<p>Prior to Android Honeycomb 3.0, the Android key character map was specified
+using a very different syntax and was compiled into a binary file format
+(<code>.kcm.bin</code>) at build time.</p>
+<p>Although the new format uses the same extension <code>.kcm</code>, the syntax is quite
+different (and much more powerful).</p>
+<p>As of Android Honeycomb 3.0, all Android key character map files must use
+the new syntax and plain text file format that is described in this document.
+The old syntax is not supported and the old <code>.kcm.bin</code> files are not recognized
+by the system.</p>
+<h2 id="language-note">Language Note</h2>
+<p>Android does not currently support multilingual keyboards.  Moreover, the
+built-in generic key character map assumes a US English keyboard layout.</p>
+<p>OEMs are encouraged to provide custom key character maps for their keyboards
+if they are designed for other languages.</p>
+<p>Future versions of Android may provide better support for multilingual keyboards
+or user-selectable keyboard layouts.</p>
+<h2 id="validation">Validation</h2>
+<p>Make sure to validate your key character map files using the
+<a href="validate-keymaps.html">Validate Keymaps</a> tool.</p>

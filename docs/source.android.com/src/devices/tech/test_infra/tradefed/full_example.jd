@@ -1,0 +1,440 @@
+page.title=End-to-End Test Example
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>This tutorial guides you through the construction of a "hello world" Trade Federation test
+configuration, and gives you a hands-on introduction to the Trade Federation framework.  Starting
+from the TF development environment, it guides you through the process of creating a simple Trade
+Federation config and gradually adding more features to it.</p>
+
+<p>The tutorial presents the TF test development process as a set of exercises, each consisting of
+several steps.  The exercises demonstrate how to gradually build and refine your configuration, and
+provide all the sample code you need to complete the test configuration.  The title of each
+exercise is annotated with a letter describing which roles are involved in that step: <b>D</b> for
+Developer, <b>I</b> for Integrator, and/or <b>R</b> for Test Runner.</p>
+
+<p>When you are finished with the tutorial, you will have created a functioning TF configuration and
+will have learned many of the most important concepts in the TF framework.</p>
+
+<h2>Set up TradeFederation development environment</h2>
+<p>See the <a href="/devices/tech/test_infra/tradefed/fundamentals/machine_setup.html"
+>Machine Setup</a> page for how to setup the development environment. The rest of this tutorial
+assumes you have a shell open that has been initialized to the Trade Federation environment.</p>
+
+<p>For simplicity, this tutorial will illustrate adding a configuration and its classes to the
+Trade Federation framework core library.  This can be extended to developing modules outside the
+source tree by simply compiling the tradefed JAR, and compiling your modules against that JAR.</p>
+
+<h2>Creating a test class (D)</h2>
+<p>Lets create a hello world test that just dumps a message to stdout. A tradefed test will
+generally implement the <a href="/reference/com/android/tradefed/testtype/IRemoteTest.html"
+>IRemoteTest</a> interface.</p>
+
+<p>Here's an implementation for the HelloWorldTest:</p>
+<pre><code>package com.android.tradefed.example;
+
+import com.android.tradefed.device.DeviceNotAvailableException;
+import com.android.tradefed.result.ITestInvocationListener;
+import com.android.tradefed.testtype.IRemoteTest;
+
+public class HelloWorldTest implements IRemoteTest {
+    &#64;Override
+    public void run(ITestInvocationListener listener) throws DeviceNotAvailableException {
+        System.out.println("Hello, TF World!");
+    }
+}
+</code></pre>
+
+<p>Save this sample code to
+<code>&lt;tree&gt;/tools/tradefederation/prod-tests/src/com/android/tradefed/example/HelloWorldTest.java</code>
+and rebuild tradefed from your shell:</p>
+<pre><code>m -jN</code></pre>
+
+<p>If the build does not succeed, consult the
+<a href="/devices/tech/test_infra/tradefed/fundamentals/machine_setup.html">Machine Setup</a> page
+to ensure that you didn't miss any steps.</p>
+
+<h2>Creating a Configuration (I)</h2>
+<p>Trade Federation tests are made executable by creating a <b>Configuration</b>, which is an XML file
+that instructs tradefed on which test (or tests) to run, as well as which other modules to
+execute, and in what order.</p>
+
+<p>Lets create a new Configuration for our HelloWorldTest:</p>
+<pre><code>&lt;configuration description="Runs the hello world test"&gt;
+    &lt;test class="com.android.tradefed.example.HelloWorldTest" /&gt;
+&lt;/configuration&gt;</code></pre>
+
+<p>TF will parse the Configuration XML file (aka <b>config</b>), load the specified class using
+reflection, instantiate it, cast it to a <code>IRemoteTest</code>, and call its <code>run</code>
+method.</p>
+
+<p>Note that we've specified the full class name of the HelloWorldTest. Save this data to a
+<code>helloworld.xml</code> file anywhere on your local filesystem (eg <code>/tmp/helloworld.xml</code>).</p>
+
+<h2>Running the config (R)</h2>
+<p>From your shell, launch the tradefed console</p>
+<pre><code>$ tradefed.sh
+</code></pre>
+
+<p>Ensure that a device is connected to the host machine and is visible to tradefed</p>
+<pre><code>tf &gt;list devices
+Serial            State      Product   Variant   Build   Battery  
+004ad9880810a548  Available  mako      mako      JDQ39   100
+</code></pre>
+
+<p>Configurations can be executed using the <code>run &lt;config&gt;</code> console command.  Try this:</p>
+<p>FIXME: redo this</p>
+<pre><code>tf&gt; run /tmp/helloworld.xml
+05-12 13:19:36 I/TestInvocation: Starting invocation for target stub on build 0 on device 004ad9880810a548
+Hello, TF World!
+</code></pre>
+<p>You should see "Hello, TF World!" outputted on the terminal.</p>
+
+<h2>Adding the config to the Classpath (D, I, R)</h2>
+<p>For convenience of deployment, you can also bundle configs into the tradefed jars
+themselves. Tradefed will automatically recognize all configurations placed in 'config' folders on
+the classpath.</p>
+
+<p>Lets illustrate this now by moving the helloworld.xml into the tradefed core library.</p>
+<p>Move the <code>helloworld.xml</code> file into 
+<code>&lt;tree&gt;/tools/tradefederation/prod-tests/res/config/example/helloworld.xml</code>.</p>
+<p>Rebuild tradefed, and restart the tradefed console. </p>
+<p>Ask tradefed to display the list of configurations from the classpath:</p>
+<pre><code>tf&gt; list configs
+[…]
+example/helloworld: Runs the hello world test
+</code></pre>
+
+<p>You can now run the helloworld config via the following command</p>
+<pre><code>tf &gt;run example/helloworld
+05-12 13:21:21 I/TestInvocation: Starting invocation for target stub on build 0 on device 004ad9880810a548
+Hello, TF World!
+</code></pre>
+
+<h2>Interacting with a Device (D, R)</h2>
+<p>So far our hello world test isn't doing anything interesting. Tradefed's specialty is running
+tests using Android devices, so lets add an Android device to the test.</p>
+
+<p>Tests can get a reference to an Android device by implementing the
+<a href="/reference/com/android/tradefed/testtype/IDeviceTest.html">IDeviceTest</a> interface.</p>
+
+<p>Here's a sample implementation of what this looks like:</p>
+<pre><code>public class HelloWorldTest implements IRemoteTest, IDeviceTest {
+    private ITestDevice mDevice;
+    &#64;Override
+    public void setDevice(ITestDevice device) {
+        mDevice = device;
+    }
+
+    &#64;Override
+    public ITestDevice getDevice() {
+        return mDevice;
+    }
+…
+}
+</code></pre>
+
+<p>The Trade Federation framework will inject the <code>ITestDevice</code> reference into your
+test via the <code>IDeviceTest#setDevice</code> method, before the <code>IRemoteTest#run</code>
+method is called.</p>
+
+<p>Let's modify the HelloWorldTest print message to display the serial number of the device.</p>
+<pre><code>&#64;Override
+public void run(ITestInvocationListener listener) throws DeviceNotAvailableException {
+    System.out.println("Hello, TF World! I have device " + getDevice().getSerialNumber());
+}
+</code></pre>
+
+<p>Now rebuild tradefed, and check the list of devices:</p>
+<pre><code>$ tradefed.sh
+tf &gt;list devices
+Serial            State      Product   Variant   Build   Battery  
+004ad9880810a548  Available  mako      mako      JDQ39   100
+</code></pre>
+
+<p>Take note of the serial number listed as Available above. That is the device that should be
+allocated to HelloWorld.</p>
+<pre><code>tf &gt;run example/helloworld
+05-12 13:26:18 I/TestInvocation: Starting invocation for target stub on build 0 on device 004ad9880810a548
+Hello, TF World! I have device 004ad9880810a548
+</code></pre>
+
+<p>You should see the new print message displaying the serial number of the device.</p>
+
+<h2>Sending Test Results (D)</h2>
+<p><code>IRemoteTest</code>s report results by calling methods on the
+<a href="/reference/com/android/tradefed/result/ITestInvocationListener.html"
+>ITestInvocationListener</a> instance provided to their <code>#run</code> method.  Note that the
+TF framework itself is responsible for reporting the start and end of each Invocation, (via
+the <a href="/reference/com/android/tradefed/result/ITestInvocationListener.html#invocationStarted(com.android.tradefed.build.IBuildInfo)"
+>ITestInvocationListener#invocationStarted</a> and
+<a href="/reference/com/android/tradefed/result/ITestInvocationListener.html#invocationEnded(long)"
+>ITestInvocationListener#invocationEnded</a> methods, respectively).</p>
+
+<p>A <b>test run</b> is a logical collection of tests. To report test results,
+<code>IRemoteTest</code>s are responsible
+for reporting the start of a test run, the start and end of each test, and the end of the test run.</p>
+
+<p>Here's what the HelloWorldTest implementation might look like with a single failed test result.</p>
+<pre><code>&#64;Override
+public void run(ITestInvocationListener listener) throws DeviceNotAvailableException {
+    System.out.println("Hello, TF World! I have device " + getDevice().getSerialNumber());
+
+    TestIdentifier testId = new TestIdentifier("com.example.TestClassName", "sampleTest");
+    listener.testRunStarted("helloworldrun", 1);
+    listener.testStarted(testId);
+    listener.testFailed(TestFailure.FAILURE, testId, "oh noes, test failed");
+    listener.testEnded(testId, Collections.emptyMap());
+    listener.testRunEnded(0, Collections.emptyMap());
+}</code></pre>
+
+<p>Note that Trade Federation also includes several <code>IRemoteTest</code> implementations that
+you can reuse instead of writing your own from scratch.  These include, for instance,
+<a href="/reference/com/android/tradefed/testtype/InstrumentationTest.html"
+>InstrumentationTest</a>, which can run an Android application's tests remotely on an Android
+device, parse the results, and forward them to the <code>ITestInvocationListener</code>). See the
+<a href="/reference/com/android/tradefed/testtype/package-summary.html">Test Types
+documentation</a> for more details.</p>
+
+<h2>Storing Test Results (I)</h2>
+<p>By default, a TF config will use the
+<a href="/reference/com/android/tradefed/result/TextResultReporter.html">TextResultReporter</a> as
+the test listener implementation.  <code>TextResultReporter</code> will dump the results of an
+invocation to stdout. To illustrate, try running the hello-world config from the previous
+section:</p>
+<pre><code>$ ./tradefed.sh
+tf &gt;run example/helloworld
+05-16 20:03:15 I/TestInvocation: Starting invocation for target stub on build 0 on device 004ad9880810a548
+Hello, TF World! I have device 004ad9880810a548
+05-16 20:03:15 I/InvocationToJUnitResultForwarder: run helloworldrun started: 1 tests
+Test FAILURE: com.example.TestClassName#sampleTest 
+ stack: oh noes, test failed 
+05-16 20:03:15 I/InvocationToJUnitResultForwarder: run ended 0 ms
+</code></pre>
+
+<p>If you want to store the results of an invocation elsewhere, such as in a file, you need to
+specify a custom <code>ITestInvocationListener</code> implementation by using the
+<code>result_reporter</code> tag in your configuration.</p>
+
+<p>Trade Federation includes the
+<a href="/reference/com/android/tradefed/result/XmlResultReporter.html">XmlResultReporter</a>
+listener, which will write test results to an XML file, in a format similar to that used by the
+<em>ant</em> JUnit XML writer.</p>
+
+<p>Let's specify the result_reporter in the configuration now. Edit the
+<code>…/res/config/example/helloworld.xml</code> config like this:</p>
+<pre><code>&lt;configuration description="Runs the hello world test"&gt;
+    &lt;test class="com.android.tradefed.example.HelloWorldTest" /&gt;
+    &lt;result_reporter class="com.android.tradefed.result.XmlResultReporter" /&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+<p>Now rebuild tradefed and re-run the hello world sample:</p>
+<pre><code>tf &gt;run example/helloworld
+05-16 21:07:07 I/TestInvocation: Starting invocation for target stub on build 0 on device 004ad9880810a548
+Hello, TF World! I have device 004ad9880810a548
+05-16 21:07:07 I/XmlResultReporter: Saved device_logcat log to /tmp/0/inv_2991649128735283633/device_logcat_6999997036887173857.txt
+05-16 21:07:07 I/XmlResultReporter: Saved host_log log to /tmp/0/inv_2991649128735283633/host_log_6307746032218561704.txt
+05-16 21:07:07 I/XmlResultReporter: XML test result file generated at /tmp/0/inv_2991649128735283633/test_result_536358148261684076.xml. Total tests 1, Failed 1, Error 0
+</code></pre>
+
+<p>Notice the log message stating that an XML file has been generated. The generated file should look like this:</p>
+<pre><code>&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
+&lt;testsuite name="stub" tests="1" failures="1" errors="0" time="9" timestamp="2011-05-17T04:07:07" hostname="localhost"&gt;
+  &lt;properties /&gt;
+  &lt;testcase name="sampleTest" classname="com.example.TestClassName" time="0"&gt;
+    &lt;failure&gt;oh noes, test failed
+    &lt;/failure&gt;
+  &lt;/testcase&gt;
+&lt;/testsuite&gt;
+</code></pre>
+
+<p>You can also write your own custom invocation listeners. It just needs to implement the
+<a href="/reference/com/android/tradefed/result/ITestInvocationListener.html"
+>ITestInvocationListener</a> interface.</p>
+
+<p>Also note that tradefed supports multiple invocation listeners, meaning that you can send test
+results to multiple independent destinations. Just specify multiple
+<code>&lt;result_reporter&gt;</code> tags in your config to do this.</p>
+
+<h2>Logging (D, I, R)</h2>
+<p>TradeFederation includes two logging facilities:</p>
+<ol>
+<li>ability to capture logs from the device (aka device logcat)</li>
+<li>ability to record logs from the TradeFederation framework running on the host machine (aka the
+    host log)</li>
+</ol>
+<p>Lets focus on #2 for now. Trade Federation's host logs are reported using the
+<a href="/reference/com/android/tradefed/log/LogUtil.CLog.html">CLog wrapper</a> for the
+ddmlib Log class.</p>
+
+<p>Let's convert the previous <code>System.out.println</code> call in HelloWorldTest to a
+<code>CLog</code> call:</p>
+<pre><code>&#64;Override
+public void run(ITestInvocationListener listener) throws DeviceNotAvailableException {
+    CLog.i("Hello, TF World! I have device %s", getDevice().getSerialNumber());
+</code></pre>
+
+<p>Note that <code>CLog</code> handles string interpolation directly, akin to
+<code>String.format</code>.  At this point, when you rebuild and rerun TF, you should see the
+log message on stdout.</p>
+<pre><code>tf&gt; run example/helloworld
+…
+05-16 21:30:46 I/HelloWorldTest: Hello, TF World! I have device 004ad9880810a548
+…
+</code></pre>
+
+<p>By default, tradefed will
+<a href"/reference/com/android/tradefed/log/StdoutLogger.html">output host log messages to
+stdout</a>. TF also includes a log implementation that will write messages to a file:
+<a href="/reference/com/android/tradefed/log/FileLogger.html">FileLogger</a>. To add file logging,
+add a <code>logger</code> tag to the config, specifying the full class name of
+<code>FileLogger</code>.</p>
+<pre><code>&lt;configuration description="Runs the hello world test"&gt;
+    &lt;test class="com.android.tradefed.example.HelloWorldTest" /&gt;
+    &lt;result_reporter class="com.android.tradefed.result.XmlResultReporter" /&gt;
+    &lt;logger class="com.android.tradefed.log.FileLogger" /&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+<p>Now rebuild and run the helloworld example again.</p>
+<pre><code>tf &gt;run example/helloworld 
+…
+05-16 21:38:21 I/XmlResultReporter: Saved device_logcat log to /tmp/0/inv_6390011618174565918/device_logcat_1302097394309452308.txt
+05-16 21:38:21 I/XmlResultReporter: Saved host_log log to /tmp/0/inv_6390011618174565918/host_log_4255420317120216614.txt
+…
+</code></pre>
+<p>Note the log message indicating the path of the host log. View the contents of that file, and you
+should see your HelloWorldTest log message</p>
+<pre><code>$ more /tmp/0/inv_6390011618174565918/host_log_4255420317120216614.txt
+…
+05-16 21:38:21 I/HelloWorldTest: Hello, TF World! I have device 004ad9880810a548
+</code></pre>
+
+<p>The TradeFederation framework will also automatically capture the logcat from the allocated device,
+and send it the invocation listener for processing. <code>XmlResultReporter</code> will save the
+captured device logcat as a file.</p>
+
+<h2>Option Handling (D, I, R)</h2>
+<p>Objects loaded from a Trade Federation Configuration (aka <b>Configuration objects</b>) also have the
+ability to receive data from command line arguments.</p>
+<p>This is accomplished via the <code>@Option</code> annotation. To participate, a Configuration object class
+would apply the <code>@Option</code> annotation to a member field, and provide it a unique name. This would
+allow that member field's value to be populated via a command line option, and would also
+automatically add that option to the configuration help system (Note: not all field types are
+supported: see the
+<a href="/reference/com/android/tradefed/config/OptionSetter.html">OptionSetter javadoc</a> for a
+description of supported types).</p>
+
+<p>Let's add an <code>@Option</code> to the HelloWorldTest:</p>
+<pre><code>@Option(name="my_option",
+        shortName='m',
+        description="this is the option's help text",
+        // always display this option in the default help text
+        importance=Importance.ALWAYS)
+private String mMyOption = "thisisthedefault";
+</code></pre>
+
+<p>And let's add a log message to display the value of the option in HelloWorldTest, so we can
+demonstrate that it was received correctly.</p>
+<pre><code>&#64;Override
+public void run(ITestInvocationListener listener) throws DeviceNotAvailableException {
+    …
+    CLog.logAndDisplay(LogLevel.INFO, "I received option '%s'", mMyOption);
+</code></pre>
+
+<p>Rebuild TF and run helloworld; you should see a log message with <code>my_option</code>'s
+default value.</p>
+<pre><code>tf&gt; run example/helloworld
+…
+05-24 18:30:05 I/HelloWorldTest: I received option 'thisisthedefault'
+</code></pre>
+
+<h3>Passing Values from the Command Line</h3>
+<p>Now pass in a value for my_option: you should see my_option getting populated with that value</p>
+<pre><code>tf&gt; run example/helloworld --my_option foo
+…
+05-24 18:33:44 I/HelloWorldTest: I received option 'foo'
+</code></pre>
+
+<p>TF configurations also include a help system, which automatically displays help text for
+<code>@Option</code> fields. Try it now, and you should see the help text for
+<code>my_option</code>:</p>
+<pre><code>tf&gt; run --help example/helloworld
+Printing help for only the important options. To see help for all options, use the --help-all flag
+
+  cmd_options options:
+    --[no-]help          display the help text for the most important/critical options. Default: false.
+    --[no-]help-all      display the full help text for all options. Default: false.
+    --[no-]loop          keep running continuously. Default: false.
+
+  test options:
+    -m, --my_option      this is the option's help text Default: thisisthedefault.
+
+  'file' logger options:
+    --log-level-display  the minimum log level to display on stdout. Must be one of verbose, debug, info, warn, error, assert. Default: error.
+</code></pre>
+
+<p>Note the message at the top about "printing only the important options." To reduce option help
+clutter, TF uses the <code>Option#importance</code> attribute to determine whether to show a
+particular <code>@Option</code> field's help text
+when <code>--help</code> is specified. <code>--help-all</code> will always show help for all
+<code>@Option</code> fields, regardless of importance. See the
+<a href="/reference/com/android/tradefed/config/Option.Importance.html"
+>Option.Importance javadoc</a> for details.</p>
+
+<h3>Passing Values from a Configuration</h3>
+<p>You can also specify an Option's value within the config by adding a
+<code>&lt;option name="" value=""&gt;</code> element. Let's see how this looks in
+<code>helloworld.xml</code>:</p>
+<pre><code>&lt;test class="com.android.tradefed.example.HelloWorldTest" &gt;
+    &lt;option name="my_option" value="fromxml" /&gt;
+&lt;/test&gt;
+</code></pre>
+
+<p>Re-building and running helloworld should now produce this output:</p>
+<pre><code>05-24 20:38:25 I/HelloWorldTest: I received option 'fromxml'
+</code></pre>
+
+<p>The configuration help should also be updated to indicate my_option's new default value:</p>
+<pre><code>tf&gt; run --help example/helloworld
+  test options:
+    -m, --my_option      this is the option's help text Default: fromxml.
+</code></pre>
+<p>Also note that other configuration objects included in the helloworld config, such as
+<code>FileLogger</code>, also accept options. The option <code>--log-level-display</code> is
+interesting because it filters the logs that show up on stdout. You may have noticed from earlier
+in the tutorial that the "Hello, TF World! I have device …' log message stopped being displayed
+on stdout once we switched to using <code>FileLogger</code>. You can increase the verbosity of
+logging to stdout by passing in the <code>--log-level-display</code> arg.</p>
+
+<p>Try this now, and you should see the 'I have device' log message reappear on stdout, in
+addition to being logged to a file.</p>
+<pre><code>tf &gt;run --log-level-display info example/helloworld
+…
+05-24 18:53:50 I/HelloWorldTest: Hello, TF World! I have device 004ad9880810a548
+</code></pre>
+
+<h2>That's All, Folks!</h2>
+<p>As a reminder, if you're stuck on something, the
+<a href="https://android.googlesource.com/platform/tools/tradefederation/+/master"
+>Trade Federation source code</a> has a lot of useful information that isn't
+exposed in the documentation.  And if all else fails, try asking on the
+<a href="/source/community/index.html">android-platform</a> Google Group, with "Trade Federation"
+in the message subject.</p>
+

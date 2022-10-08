@@ -1,0 +1,41 @@
+# kickstart processes and scripts (system process)
+type kickstart, domain;
+type kickstart_exec, file_type, exec_type;
+
+init_daemon_domain(kickstart)
+
+# Spawn /system/bin/efsks and /system/bin/ks
+allow kickstart kickstart_exec:file { open execute_no_trans getattr };
+
+# Let qcks access /dev/mdm node (modem driver)
+allow kickstart radio_device:chr_file r_file_perms;
+
+# Access USB host ks bridge drivers
+allow kickstart kickstart_device:chr_file rw_file_perms;
+
+# Read and write to /dev/block/mmcblk0p[89]
+allow kickstart efs_block_device:blk_file rw_file_perms;
+allow kickstart block_device:dir { getattr write search };
+
+# Write contents of block device to kickstart data dir
+allow kickstart kickstart_data_file:file create_file_perms;
+allow kickstart kickstart_data_file:dir rw_dir_perms;
+
+# Read radio firmware file(s)
+allow kickstart radio_efs_file:dir search;
+allow kickstart radio_efs_file:file r_file_perms;
+
+# Run dd from toolbox on firmware files
+allow kickstart shell_exec:file rx_file_perms;
+allow kickstart system_file:file execute_no_trans;
+
+# Wake lock access
+wakelock_use(kickstart)
+
+# Read tombstones
+allow kickstart tombstone_data_file:dir r_dir_perms;
+allow kickstart tombstone_data_file:file r_file_perms;
+
+# Investigate denial on system_data_file:dir.
+allow kickstart system_data_file:dir { write add_name remove_name };
+auditallow kickstart system_data_file:dir { write add_name remove_name };

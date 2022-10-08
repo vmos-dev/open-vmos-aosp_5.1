@@ -1,0 +1,6 @@
+# TODO b/17015082
+allow system_app shell_data_file:dir search;
+
+allow system_app time:unix_stream_socket connectto;
+
+allow system_app atfwd_service:service_manager add;

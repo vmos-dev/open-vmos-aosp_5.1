@@ -1,0 +1,4 @@
+Code completion in completion1.xml for btn_default">^</FrameLayout> selecting <FrameLayout ></FrameLayout>:
+@@ -18 +18
+-     <FrameLayout android:foreground="@android:drawable/btn_default">^</FrameLayout> 
++     <FrameLayout android:foreground="@android:drawable/btn_default"><FrameLayout ^></FrameLayout></FrameLayout> 

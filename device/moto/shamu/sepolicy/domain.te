@@ -1,0 +1,3 @@
+userdebug_or_eng(`
+  allow domain diag_device:chr_file rw_file_perms;
+')

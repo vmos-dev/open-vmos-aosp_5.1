@@ -1,0 +1,94 @@
+###### GPU device (world r/w)
+/dev/nvhost-as-gpu		u:object_r:gpu_device:s0
+/dev/nvhost-ctrl		u:object_r:gpu_device:s0
+/dev/nvhost-ctrl-gpu		u:object_r:gpu_device:s0
+/dev/nvhost-dbg-gpu		u:object_r:gpu_device:s0
+/dev/nvhost-gpu			u:object_r:gpu_device:s0
+/dev/nvhost-prof-gpu		u:object_r:gpu_device:s0
+/dev/nvhost-vic			u:object_r:gpu_device:s0
+/dev/nvmap			u:object_r:gpu_device:s0
+/dev/nvhdcp0			u:object_r:gpu_device:s0
+# gpu freq
+/dev/constraint_gpu_freq	u:object_r:gpu_freq_device:s0
+# enable UART port permission
+/dev/ttyTHS2			u:object_r:hci_attach_dev:s0
+# nfc
+/dev/bcm2079x			u:object_r:nfc_device:s0
+# camera devices
+/dev/camera.pcl			u:object_r:camera_device:s0
+/dev/nvhost-ctrl-vi.*		u:object_r:camera_device:s0
+/dev/nvhost-vi.*		u:object_r:camera_device:s0
+/dev/nvhost-ctrl-isp.*		u:object_r:camera_device:s0
+/dev/nvhost-isp.*		u:object_r:camera_device:s0
+/dev/nvhost-msenc		u:object_r:camera_device:s0
+/dev/imx219			u:object_r:camera_device:s0
+/dev/focuser			u:object_r:camera_device:s0
+/dev/ov9760			u:object_r:camera_device:s0
+/dev/torch.*			u:object_r:camera_device:s0
+/dev/mipi-cal			u:object_r:camera_device:s0
+
+# rt5506 Audio device
+/dev/rt5506                     u:object_r:audio_device:s0
+
+# Speakers
+/dev/tfa9895                    u:object_r:audio_device:s0
+/dev/tfa9895l                   u:object_r:audio_device:s0
+
+/data/nfc(/.*)?			u:object_r:nfc_data_file:s0
+/data/nvcam(/.*)?		u:object_r:media_data_file:s0
+
+# gps
+/system/bin/glgps		u:object_r:gpsd_exec:s0
+/dev/ttyTHS1			u:object_r:gps_device:s0
+
+# touch_fusion
+/vendor/bin/touch_fusion	u:object_r:touch_fusion_exec:s0
+
+# TEE
+/dev/tlk_device			u:object_r:tee_device:s0
+
+# Qualcomm MDM9K modem device
+# modem driver
+/dev/mdm                               u:object_r:radio_device:s0
+# high speed inter-chip controls
+/dev/hsicctl[0-3]                      u:object_r:radio_device:s0
+/dev/ks_hsic_bridge                    u:object_r:kickstart_device:s0
+/dev/efs_hsic_bridge                   u:object_r:kickstart_device:s0
+/dev/diag_mdm                          u:object_r:kickstart_device:s0
+# RCA, EF1, EF2, CDR labeling
+/dev/block/mmcblk0p8                   u:object_r:efs_block_device:s0
+/dev/block/mmcblk0p21                  u:object_r:efs_block_device:s0
+/dev/block/mmcblk0p22                  u:object_r:efs_block_device:s0
+/dev/block/mmcblk0p23                  u:object_r:efs_block_device:s0
+# Qualcomm MSM Interface (QMI) devices
+/dev/socket/qmux_radio(/.*)?           u:object_r:qmuxd_socket:s0
+# service
+/vendor/bin/qcks                u:object_r:kickstart_exec:s0
+/vendor/bin/efsks               u:object_r:kickstart_exec:s0
+/vendor/bin/ks                  u:object_r:kickstart_exec:s0
+/vendor/bin/qmuxd               u:object_r:qmuxd_exec:s0
+/vendor/bin/netmgrd             u:object_r:netmgrd_exec:s0
+# database used by vendor RIL
+/data/misc/radio(/.*)?     u:object_r:ril_db_file:s0
+# Kickstart prepend used
+/data/qcks(/.*)?                       u:object_r:kickstart_data_file:s0
+# temporary EFS file stored
+/data/efs(/.*)?                        u:object_r:efs_data_file:s0
+
+# Factory reset protection block device
+/dev/block/mmcblk0p27 u:object_r:frp_block_device:s0
+
+# Didim file
+/sys/devices/platform/host1x/tegradc.0/smartdimmer/aggressiveness u:object_r:sysfs_didim:s0
+/sys/devices/platform/host1x/tegradc.0/smartdimmer/enable u:object_r:sysfs_didim:s0
+/sys/devices/platform/host1x/tegradc.0/smartdimmer/sd_window u:object_r:sysfs_didim:s0
+/sys/devices/platform/host1x/tegradc.0/smartdimmer/sd_window_enable u:object_r:sysfs_didim:s0
+
+# mmc rpmb
+/dev/block/mmcblk0rpmb                 u:object_r:mmc_rpmb_block_device:s0
+
+# secure os storage
+/data/ss(/.*)?                         u:object_r:tee_data_file:s0
+
+# tlk_daemon
+/vendor/bin/tlk_daemon                 u:object_r:tee_exec:s0

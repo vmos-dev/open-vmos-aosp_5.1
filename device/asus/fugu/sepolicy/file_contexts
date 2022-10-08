@@ -1,0 +1,19 @@
+/dev/dri/card0				u:object_r:gpu_device:s0
+/dev/dx_sep_q0              u:object_r:tee_device:s0
+/dev/pvr_sync				u:object_r:gpu_device:s0
+/dev/ttyMFD0				u:object_r:bluetooth_control:s0
+/dev/it8566_hdmi_cec        u:object_r:video_device:s0
+/factory(/.*)?				u:object_r:efs_file:s0
+/factory/bt(/.*)?	        u:object_r:bluetooth_efs_file:s0
+/dev/snd_atvr_(.*)          u:object_r:atvr_device:s0
+
+/system/vendor/bin/pvrsrvctl u:object_r:pvrsrvctl_exec:s0
+/system/bin/BtFwLoader       u:object_r:btfwloader_exec:s0
+
+/sys/devices/platform/bcm_bt_lpm.0/rfkill/rfkill[0-9]/state     u:object_r:sysfs_bluetooth_writable:s0
+/sys/devices/platform/bcm_bt_lpm.0/rfkill/rfkill[0-9]/type      u:object_r:sysfs_bluetooth_writable:s0
+
+/sys/devices/virtual/thermal/cooling_device[0-2]/cur_state      u:object_r:sysfs_thermal_writable:s0
+/sys/devices/virtual/thermal/thermal_zone[6-7]/emul_temp      u:object_r:sysfs_thermal_writable:s0
+/sys/module/intel_mid_osip/parameters/force_shutdown_occured    u:object_r:sysfs_thermal_writable:s0
+/sys/devices/platform/coretemp.0/temp[2-5]_threshold[1-2]    u:object_r:sysfs_coretemp:s0

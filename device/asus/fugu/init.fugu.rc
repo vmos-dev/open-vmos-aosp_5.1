@@ -1,0 +1,301 @@
+#
+# Copyright 2014 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import init.fugu.usb.rc
+import init.intel.tools.rc
+import init.fugu.diag.rc
+
+on early-init
+    mount debugfs debugfs /sys/kernel/debug mode=0755
+
+    # IMG Graphics
+    symlink /dev/dri/card0 /dev/card0
+
+on init
+    # See storage config details at http://source.android.com/tech/storage/
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
+
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+
+    # Android creates by-name disk links with the disk controller
+    # in the generated path, so that the names pulled out of the GPT
+    # can be associated with the correct disk. Create a shortcut to
+    # /dev/block/by-name so that we can use the same fstabs everywhere.
+    symlink /dev/block/pci/pci0000:00/0000:00:01.0/by-name /dev/block/by-name
+
+    # Support legacy paths
+    symlink /storage/emulated/legacy /sdcard
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+
+    # KSM options
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+    write /sys/kernel/mm/ksm/run 1
+
+    #  Mount the sep filesystem
+    mount sepfs sepfs /sys/fs/sepfs
+
+on fs
+    mkdir /logs 0770 system log
+    mkdir /factory 0775 system system
+
+    mount_all ./fstab.fugu
+    swapon_all ./fstab.fugu
+    setprop ro.crypto.fuse_sdcard true
+
+    restorecon_recursive /factory
+
+on early-boot
+    # set RLIMIT_MEMLOCK to 64MB
+    setrlimit 8 67108864 67108864
+    setprop ro.audio.flinger_standbytime_ms 600000
+
+on boot
+    # Assign TCP buffer thresholds to be ceiling value of technology maximums
+    # Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  1500000
+    write /proc/sys/net/core/wmem_max  1500000
+    write /proc/sys/net/ipv4/tcp_limit_output_bytes 1500000
+    setprop net.tcp.buffersize.wifi 500000,1000000,1500000,500000,1000000,1500000
+
+    chown system system /sys/class/backlight/psb-bl/brightness
+    chown system system /sys/class/backlight/psb-bl/max_brightness
+    chown system system /sys/class/backlight/psb-bl/actual_brightness
+    chmod 0664 /sys/class/backlight/psb-bl/brightness
+    chmod 0664 /sys/class/backlight/psb-bl/max_brightness
+    chmod 0664 /sys/class/backlight/psb-bl/actual_brightness
+
+    # Wifi
+    setprop wifi.interface wlan0
+
+on post-fs
+    # Performance tweaks for interactive governor
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chmod 0660 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+    chmod 0660 /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
+    chmod 0660 /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq
+    chmod 0660 /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/touchboostpulse
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/touchboostpulse_duration
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/touchboost_freq
+    chmod 0220 /sys/devices/system/cpu/cpufreq/interactive/touchboostpulse
+    chmod 0220 /sys/devices/system/cpu/cpufreq/interactive/boostpulse
+
+    # Tune interactive governor parameters for Android TV UI animations
+    write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 4000
+    write /sys/devices/system/cpu/cpufreq/interactive/timer_slack 16000
+    write /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load 90
+    write /sys/devices/system/cpu/cpufreq/interactive/target_loads 70
+    write /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration 800000
+
+    # SEP
+    copy /system/etc/security/sep_policy.conf /sys/fs/sepfs/load
+    chown system system /dev/dx_sep_q0
+    chmod 0666 /dev/dx_sep_q0
+    chown system system /dev/dx_sep_q1
+    chmod 0666 /dev/dx_sep_q1
+
+    # hdmi cec
+    chown system system /sys/module/tngdisp/parameters/hdmi_state
+    chmod 0440 /sys/module/tngdisp/parameters/hdmi_state
+    chown system system /sys/module/tngdisp/parameters/hdmi_edid_src_phy_addr
+    chmod 0440 /sys/module/tngdisp/parameters/hdmi_edid_src_phy_addr
+
+on post-fs-data
+    mkdir /data/media 0770 media_rw media_rw
+
+    # Create the directories used by the Wireless subsystem
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp wifi
+
+    mkdir /data/tombstones 0771 system system
+
+    # Bluetooth
+    setprop ro.bt.bdaddr_path "/factory/bt/bd_addr.conf"
+    chmod 0660 /sys/class/rfkill/rfkill2/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill2/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill2/type
+
+    # Create directory used by audio subsystem
+    mkdir /data/misc/audio 0770 audio audio
+
+    mkdir /data/system 0775 system system
+
+    setprop vold.post_fs_data_done 1
+
+    setprop init.post_fs_data.bootreason ${ro.boot.bootreason}
+
+    # itux
+    # Set this property to enable Thermal service
+    setprop persist.service.thermal 1
+    # Properties for Thermal Service
+    setprop persist.thermal.turbo.dynamic 1
+    setprop ro.thermal.ituxversion 3.0
+    setprop persist.thermal.shutdown.msg 0
+    setprop persist.thermal.shutdown.vibra 0
+    setprop persist.thermal.shutdown.tone 0
+    chown system system /sys/module/intel_mid_osip/parameters/force_shutdown_occured
+    chown system system /sys/module/intel_mid_osip/parameters/thermal_shutdown_occured
+    chown system system /sys/devices/platform/coretemp.0/temp2_threshold1
+    chown system system /sys/devices/platform/coretemp.0/temp2_threshold2
+    chown system system /sys/devices/virtual/thermal/thermal_zone6/emul_temp
+    chown system system /sys/devices/virtual/thermal/thermal_zone7/emul_temp
+
+    # Stop led blinking and reduce brightness
+    write /sys/class/leds/white/device/led_lighting_effect 1
+    write /sys/class/leds/white/brightness 0
+
+    # Playready
+    mkdir /data/mediadrm/playready/ 0770 mediadrm mediadrm
+    copy  /system/vendor/firmware/PR-ModelCert /data/mediadrm/playready/bgroupcert.dat
+    chown mediadrm mediadrm /data/mediadrm/playready/bgroupcert.dat
+    chmod 0440 /data/mediadrm/playready/bgroupcert.dat
+
+on property:init.post_fs_data.bootreason=*
+    # Create dump dir and collect dumps. (use the same location as in init.rc)
+    mkdir /data/dontpanic 0750 root log
+
+    copy /proc/emmc_ipanic_console /data/dontpanic/ipanic_console
+    chown root log /data/dontpanic/ipanic_console
+    chmod 0640 /data/dontpanic/ipanic_console
+
+    copy /proc/emmc_ipanic_threads /data/dontpanic/ipanic_threads
+    chown root log /data/dontpanic/ipanic_threads
+    chmod 0640 /data/dontpanic/ipanic_threads
+
+    copy /proc/emmc_ipanic_gbuffer /data/dontpanic/ipanic_gbuffer
+    chown root log /data/dontpanic/ipanic_gbuffer
+    chmod 0640 /data/dontpanic/ipanic_gbuffer
+
+    # Clear panic partition
+    write /proc/emmc_ipanic_header 1
+
+on property:init.svc.wpa_supplicant=stopped
+    stop dhcpcd
+
+service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf -g@android:wpa_wlan0
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    group system wifi inet bluetooth
+    disabled
+    oneshot
+
+service p2p_supplicant /system/bin/wpa_supplicant \
+   -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+   -m/data/misc/wifi/p2p_supplicant.conf \
+   -puse_p2p_group_interface=1p2p_device=1use_multi_chan_concurrent=1 \
+   -O/data/misc/wifi/sockets \
+   -e/data/misc/wifi/entropy.bin \
+   -g@android:wpa_wlan0
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dhcpcd_eth0 /system/bin/dhcpcd -aABDKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -aABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_eth0 /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+    class late_start
+    disabled
+    oneshot
+
+# Bluetooth related services
+service BtFwLoader /system/bin/BtFwLoader
+    class main
+    group bluetooth net_bt_stack
+    user bluetooth
+    oneshot
+
+service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
+    class main
+    group bluetooth wifi system dhcp
+    disabled
+    oneshot
+
+service iprenew_bt-pan /system/bin/dhcpcd -n
+    group bluetooth system dhcp
+    disabled
+    oneshot
+
+# virtual sdcard daemon running as media_rw (1023)
+service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
+    class late_start
+
+# bugreport is triggered by holding down volume down, volume up and power
+service bugreport /system/bin/dumpstate -d -p -B \
+        -o /data/data/com.android.shell/files/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116
+
+# interval:60s margin:20s
+service watchdogd /sbin/watchdogd 60 20
+    class core
+    oneshot
+    seclabel u:r:watchdogd:s0
+
+# Reset the watchdog counter once boot is completed
+on property:sys.boot_completed=1
+    write /sys/devices/virtual/misc/watchdog/counter "0"
+
+service pvrsrvctl /system/vendor/bin/pvrsrvctl --no-module --start
+    class core
+    oneshot
+    user root
+
+# Enable native bridge for target executables
+on early-init
+    mount binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc
+
+on property:ro.enable.native.bridge.exec=1
+    copy /system/etc/binfmt_misc/arm_exe /proc/sys/fs/binfmt_misc/register
+    copy /system/etc/binfmt_misc/arm_dyn /proc/sys/fs/binfmt_misc/register

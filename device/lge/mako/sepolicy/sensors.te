@@ -1,0 +1,45 @@
+# Integrated qualcomm sensor process
+type sensors, domain;
+type sensors_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(sensors)
+
+# Change own perms to (nobody,nobody)
+allow sensors self:capability { setuid setgid };
+# Chown /data/misc/sensors/debug/ to nobody
+allow sensors self:capability chown;
+dontaudit sensors self:capability fsetid;
+
+# Access /data/misc/sensors/debug and /data/system/sensors/settings
+allow sensors self:capability dac_read_search;
+dontaudit sensors self:capability dac_override;
+
+# Create /data/app/sensor_ctl_socket (Might want to change location).
+type_transition sensors apk_data_file:sock_file sensors_socket "sensor_ctl_socket";
+allow sensors sensors_socket:sock_file create_file_perms;
+# Trying to be restrictive with perms on apk_data_file
+allow sensors apk_data_file:dir { add_name write };
+# Socket can be deleted. So might have to keep in order to work.
+allow sensors apk_data_file:dir remove_name;
+
+# Create directories and files under /data/misc/sensors
+# and /data/system/sensors. Allow generic r/w file access.
+allow sensors sensors_data_file:dir create_dir_perms;
+allow sensors sensors_data_file:file create_file_perms;
+
+# Access sensor nodes (/dev/msm_dsps)
+allow sensors sensors_device:chr_file rw_file_perms;
+
+# Access power management controls
+allow sensors power_control_device:chr_file w_file_perms;
+
+# Access to /persist/sensors
+allow sensors persist_file:dir r_dir_perms;
+allow sensors persist_sensors_file:dir r_dir_perms;
+allow sensors persist_sensors_file:file rw_file_perms;
+
+# Wake lock access
+wakelock_use(sensors)
+
+allow sensors cgroup:dir { create add_name };

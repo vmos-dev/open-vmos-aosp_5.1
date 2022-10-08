@@ -1,0 +1,119 @@
+page.title=Compatibility Program Overview
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project     
+
+    Licensed under the Apache License, Version 2.0 (the "License");    
+    you may not use this file except in compliance with the License.   
+    You may obtain a copy of the License at    
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software    
+    distributed under the License is distributed on an "AS IS" BASIS,    
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   
+    See the License for the specific language governing permissions and    
+    limitations under the License.   
+-->
+
+<p>The Android compatibility program makes it easy for mobile device
+manufacturers to develop compatible Android devices.</p>
+<h1 id="program-goals">Program goals</h1>
+<p>The Android compatibility program works for the benefit of the entire
+Android community, including users, developers, and device manufacturers.</p>
+<p>Each group depends on the others. Users want a wide selection of devices
+and great apps; great apps come from developers motivated by a large market
+for their apps with many devices in users' hands; device manufacturers rely
+on a wide variety of great apps to increase their products' value for
+consumers.</p>
+<p>Our goals were designed to benefit each of these groups:</p>
+<ul>
+<li>
+<p><em>Provide a consistent application and hardware environment to application
+developers.</em> 
+    Without a strong compatibility standard, devices can vary so
+greatly that developers must design different versions of their applications
+for different devices. The compatibility program provides a precise definition
+of what developers can expect from a compatible device in terms of APIs and
+capabilities. Developers can use this information to make good design
+decisions, and be confident that their apps will run well on any compatible
+device.</p>
+</li>
+<li>
+<p><em>Enable a consistent application experience for consumers.</em>
+    If an application runs well on one compatible Android device, it should run well on
+any other device that is compatible with the same Android platform version.
+Android devices will differ in hardware and software capabilities, so the
+compatibility program also provides the tools needed for distribution systems
+such as Google Play to implement appropriate filtering. This means
+users see only the applications they can actually run.</p>
+</li>
+<li>
+<p><em>Enable device manufacturers to differentiate while being
+compatible.</em>
+    The Android compatibility program focuses on the aspects of
+Android relevant to running third-party applications, which allows device
+manufacturers the flexibility to create unique devices that are nonetheless
+compatible.</p>
+</li>
+<li>
+<p><em>Minimize costs and overhead associated with compatibility.</em>
+    Ensuring compatibility should be easy and inexpensive to
+device manufacturers. The testing tool is free, open source, and
+available for <a href="downloads.html">download</a>. 
+It is designed to be used for continuous self-testing
+during the device development process to eliminate the cost of changing your
+workflow or sending your device to a third party for testing. Meanwhile, there
+are no required certifications, and thus no corresponding costs and
+fees.</p>
+</li>
+</ul>
+<p>The Android compatibility program consists of three key components:</p>
+<ul>
+<li>The source code to the Android software stack</li>
+<li>The Compatilbility Definition Document (CDD), representing the "policy" aspect of compatibility</li>
+<li>The Compatilbility Test Suite (CTS), representing the "mechanism" of compatibility</li>
+</ul>
+<p>Just as each version of the Android platform exists in a separate branch in
+the source code tree, there is a separate CTS and CDD for each version as
+well. The CDD, CTS, and source code are -- along with your hardware and your
+software customizations -- everything you need to create a compatible device.</p>
+<h1 id="compatibility-definition-document-cdd">Compatibility Definition Document</h1>
+<p>For each release of the Android platform, a detailed CDD will be provided. The CDD represents the "policy"
+aspect of Android compatibility.</p>
+<p>No test suite, including CTS, can truly be comprehensive. For instance, the
+CTS includes a test that checks for the presence and correct behavior of
+OpenGL graphics APIs, but no software test can verify that the graphics
+actually appear correctly on the screen. More generally, it's impossible to
+test the presence of hardware features such as keyboards, display density,
+Wi-Fi, and Bluetooth.</p>
+<p>The CDD's role is to codify and clarify specific requirements, and
+eliminate ambiguity.  The CDD does not attempt to be comprehensive. Since
+Android is a single corpus of open-source code, the code itself is the
+comprehensive "specification" of the platform and its APIs. The CDD acts as a
+"hub" referencing other content (such as SDK API documentation) that provides
+a framework in which the Android source code may be used so that the end
+result is a compatible system.</p>
+<p>If you want to build a device compatible with a given Android version,
+start by checking out the source code for that version, and then read the
+corresponding CDD and stay within its guidelines. For additional details,
+simply examine <a href="/compatibility/android-cdd.pdf">the latest CDD</a>.</p>
+<h1 id="compatibility-test-suite-cts">Compatibility Test Suite</h1>
+<p>The CTS is a free, commercial-grade test suite, available for
+<a href="downloads.html">download</a>.
+The CTS represents the "mechanism" of compatibility.</p>
+<p>The CTS runs on a desktop machine and executes test cases directly on
+attached devices or an emulator. The CTS is a set of unit tests designed to be
+integrated into the daily workflow (such as via a continuous build system) of
+the engineers building a device. Its intent is to reveal incompatibilities
+early on, and ensure that the software remains compatible throughout the
+development process.</p>
+<h1 id="compatibility-test-suite-verifier-cts-verifier">Compatibility Test Suite Verifier (CTS Verifier)</h1>
+<p>The Compatibility Test Suite Verifier (CTS Verifier) is a supplement to the
+CTS available for <a href="downloads.html">download</a>.
+CTS Verifier provides tests for APIs and functions that cannot be tested on a
+stationary device without manual input (e.g. audio quality, accelerometer, etc).</p>
+<p>For details on the CTS, consult the <a href="cts-intro.html">CTS introduction</a>.</p>
+
+

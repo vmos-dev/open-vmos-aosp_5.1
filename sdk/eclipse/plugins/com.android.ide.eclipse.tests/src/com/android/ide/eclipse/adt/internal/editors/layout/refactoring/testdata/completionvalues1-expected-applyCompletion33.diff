@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="android:allowSingleTap">^</item> selecting true:
+@@ -12 +12
+-         <item name="android:allowSingleTap">^</item>
++         <item name="android:allowSingleTap">true^</item>

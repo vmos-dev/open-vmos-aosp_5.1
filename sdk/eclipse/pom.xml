@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ This script builds Eclipse plugins, and the monitor & adt-bundle products.
+
+ To run this script:
+   - Have Maven3 in your path
+   - $ mvn package -DANDROID_OUT=/path/to/android/out
+
+ See http://wiki.eclipse.org/Tycho/Reference_Card#Examplary_parent_POM
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>adt.group</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>ADT</name>
+
+    <!-- Common properties used in all modules -->
+    <properties>
+        <tycho-version>0.20.0</tycho-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!--
+    The following profiles allow us to change the build environment easily. The first profile uses
+    the target platform as present inside the Android tree's out folder, while the other profile
+    uses the target platform directly from eclipse.org.
+
+    The first profile is automatically activated if the ANDROID_OUT system property is set:
+        $ mvn clean install -DANDROID_OUT=/path/to/android/out
+    The other profile can be tested out by:
+        $ mvn clean install -Pexternal-p2-repositories
+    -->
+    <profiles>
+        <profile>
+            <id>mirrored-p2-repositories</id>
+            <activation>
+                <property>
+                    <name>ANDROID_OUT</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- The target platform should have been created under the Android ANDROID_OUT folder -->
+                <target-platform.base.url>file://${ANDROID_OUT}/host/maven/target</target-platform.base.url>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>kepler</id>
+                    <url>${target-platform.base.url}/platform</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>jdt</id>
+                    <url>${target-platform.base.url}/jdt</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>cdt</id>
+                    <url>${target-platform.base.url}/cdt</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>emf</id>
+                    <url>${target-platform.base.url}/emf</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>wtp</id>
+                    <url>${target-platform.base.url}/wtp</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>gef</id>
+                    <url>${target-platform.base.url}/gef</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>pde</id>
+                    <url>${target-platform.base.url}/pde</url>
+                    <layout>p2</layout>
+                </repository>
+                <repository>
+                    <id>egit</id>
+                    <url>${target-platform.base.url}/egit</url>
+                    <layout>p2</layout>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
+            <id>external-p2-repositories</id>
+            <repositories>
+               <repository>
+                   <id>kepler</id>
+                   <url>http://download.eclipse.org/releases/kepler</url>
+                   <layout>p2</layout>
+               </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <modules>
+        <module>plugins/com.android.ide.eclipse.base</module>
+        <module>plugins/com.android.ide.eclipse.ddms</module>
+        <module>plugins/com.android.ide.eclipse.gldebugger</module>
+        <module>plugins/com.android.ide.eclipse.hierarchyviewer</module>
+        <module>plugins/com.android.ide.eclipse.monitor</module>
+        <module>plugins/com.android.ide.eclipse.traceview</module>
+
+        <module>plugins/com.android.ide.eclipse.adt</module>
+        <module>plugins/com.android.ide.eclipse.adt.overlay</module>
+        <module>plugins/com.android.ide.eclipse.adt.package</module>
+        <module>plugins/com.android.ide.eclipse.ndk</module>
+
+        <module>features/com.android.ide.eclipse.ddms</module>
+        <module>features/com.android.ide.eclipse.gldebugger</module>
+        <module>features/com.android.ide.eclipse.hierarchyviewer</module>
+        <module>features/com.android.ide.eclipse.traceview</module>
+        <module>features/com.android.ide.eclipse.monitor</module>
+
+        <module>features/com.android.ide.eclipse.adt</module>
+        <module>features/com.android.ide.eclipse.adt.package</module>
+        <module>features/com.android.ide.eclipse.ndk</module>
+
+        <module>artifacts/p2repo</module>
+        <module>artifacts/bundles</module>
+    </modules>
+
+    <build>
+        <!-- Path is relative to each of the build modules defined above. -->
+        <directory>../../../../out/host/maven/${project.artifactId}-${project.version}</directory>
+
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <!--
+                    <target>
+                        <artifact>
+                            <groupId>adt.group</groupId>
+                            <artifactId>helios</artifactId>
+                            <version>1.0.0-SNAPSHOT</version>
+                        </artifact>
+                    </target> -->
+                    <environments>
+                        <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86</arch>
+                        </environment>
+                        <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86</arch>
+                        </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                    </environments>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-repository-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <includeAllDependencies>true</includeAllDependencies>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

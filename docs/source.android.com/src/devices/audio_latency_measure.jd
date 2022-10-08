@@ -1,0 +1,195 @@
+page.title=Audio Latency
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+  This page describes common methods for measuring input and output latency.
+</p>
+
+
+
+<h2 id="measuringOutput">Measuring Output Latency</h2>
+
+<p>
+  There are several techniques available to measure output latency,
+  with varying degrees of accuracy and ease of running, described below. Also
+see the <a href="testing_circuit.html">Testing circuit</a> for an example test environment.
+</p>
+
+<h3>LED and oscilloscope test</h3>
+<p>
+This test measures latency in relation to the device's LED indicator.
+If your production device does not have an LED, you can install the
+  LED on a prototype form factor device. For even better accuracy
+  on prototype devices with exposed circuity, connect one
+  oscilloscope probe to the LED directly to bypass the light
+  sensor latency.
+  </p>
+
+<p>
+  If you cannot install an LED on either your production or prototype device,
+  try the following workarounds:
+</p>
+
+<ul>
+  <li>Use a General Purpose Input/Output (GPIO) pin for the same purpose.</li>
+  <li>Use JTAG or another debugging port.</li>
+  <li>Use the screen backlight. This might be risky as the
+  backlight may have a non-neglible latency, and can contribute to
+  an inaccurate latency reading.
+  </li>
+</ul>
+
+<p>To conduct this test:</p>
+
+<ol>
+  <li>Run an app that periodically pulses the LED at
+  the same time it outputs audio. 
+
+  <p class="note"><b>Note:</b> To get useful results, it is crucial to use the correct
+  APIs in the test app so that you're exercising the fast audio output path.
+  See <a href="latency_design.html">Design For Reduced Latency</a> for
+  background.
+  </p>
+  </li>
+  <li>Place a light sensor next to the LED.</li>
+  <li>Connect the probes of a dual-channel oscilloscope to both the wired headphone
+  jack (line output) and light sensor.</li>
+  <li>Use the oscilloscope to measure
+  the time difference between observing the line output signal versus the light
+  sensor signal.</li>
+</ol>
+
+  <p>The difference in time is the approximate audio output latency,
+  assuming that the LED latency and light sensor latency are both zero.
+  Typically, the LED and light sensor each have a relatively low latency
+  on the order of one millisecond or less, which is sufficiently low enough
+  to ignore.</p>
+
+<h3>Larsen test</h3>
+<p>
+  One of the easiest latency tests is an audio feedback
+  (Larsen effect) test. This provides a crude measure of combined output
+  and input latency by timing an impulse response loop. This test is not very useful
+  by itself because of the nature of the test, but it can be useful for calibrating 
+  other tests</p>
+
+<p>To conduct this test:</p>
+<ol>
+  <li>Run an app that captures audio from the microphone and immediately plays the
+  captured data back over the speaker.</li>
+  <li>Create a sound externally,
+  such as tapping a pencil by the microphone. This noise generates a feedback loop.</li>
+  <li>Measure the time between feedback pulses to get the sum of the output latency, input latency, and application overhead.</li>
+</ol>
+
+  <p>This method does not break down the
+  component times, which is important when the output latency
+  and input latency are independent. So this method is not recommended for measuring output latency, but might be useful
+  to help measure output latency.</p>
+
+<h2 id="measuringInput">Measuring Input Latency</h2>
+
+<p>
+  Input latency is more difficult to measure than output latency. The following
+  tests might help.
+</p>
+
+<p>
+One approach is to first determine the output latency
+  using the LED and oscilloscope method and then use
+  the audio feedback (Larsen) test to determine the sum of output
+  latency and input latency. The difference between these two
+  measurements is the input latency.
+</p>
+
+<p>
+  Another technique is to use a GPIO pin on a prototype device.
+  Externally, pulse a GPIO input at the same time that you present
+  an audio signal to the device.  Run an app that compares the
+  difference in arrival times of the GPIO signal and audio data.
+</p>
+
+<h2 id="reducing">Reducing Latency</h2>
+
+<p>To achieve low audio latency, pay special attention throughout the
+system to scheduling, interrupt handling, power management, and device
+driver design. Your goal is to prevent any part of the platform from
+blocking a <code>SCHED_FIFO</code> audio thread for more than a couple
+of milliseconds. By adopting such a systematic approach, you can reduce
+audio latency and get the side benefit of more predictable performance
+overall.
+</p>
+
+
+ <p>
+  Audio underruns, when they do occur, are often detectable only under certain
+  conditions or only at the transitions. Try stressing the system by launching
+  new apps and scrolling quickly through various displays. But be aware
+  that some test conditions are so stressful as to be beyond the design
+  goals. For example, taking a bugreport puts such enormous load on the
+  system that it may be acceptable to have an underrun in that case.
+</p>
+
+<p>
+  When testing for underruns:
+</p>
+  <ul>
+  <li>Configure any DSP after the app processor so that it adds
+  minimal latency.</li>
+  <li>Run tests under different conditions
+  such as having the screen on or off, USB plugged in or unplugged,
+  WiFi on or off, Bluetooth on or off, and telephony and data radios
+  on or off.</li>
+  <li>Select relatively quiet music that you're very familiar with, and which is easy
+  to hear underruns in.</li>
+  <li>Use wired headphones for extra sensitivity.</li>
+  <li>Give yourself breaks so that you don't experience "ear fatigue."</li>
+  </ul>
+
+<p>
+  Once you find the underlying causes of underruns, reduce
+  the buffer counts and sizes to take advantage of this.
+  The eager approach of reducing buffer counts and sizes <i>before</i>
+  analyzing underruns and fixing the causes of underruns only
+  results in frustration.
+</p>
+
+<h3 id="tools">Tools</h3>
+<p>
+  <code>systrace</code> is an excellent general-purpose tool
+  for diagnosing system-level performance glitches.
+</p>
+
+<p>
+  The output of <code>dumpsys media.audio_flinger</code> also contains a
+  useful section called "simple moving statistics." This has a summary
+  of the variability of elapsed times for each audio mix and I/O cycle.
+  Ideally, all the time measurements should be about equal to the mean or
+  nominal cycle time. If you see a very low minimum or high maximum, this is an
+  indication of a problem, likely a high scheduling latency or interrupt
+  disable time. The <i>tail</i> part of the output is especially helpful,
+  as it highlights the variability beyond +/- 3 standard deviations.
+</p>

@@ -1,0 +1,27 @@
+<!-- Simple bounce animation -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+    <set>
+	    <objectAnimator
+	        android:duration="2000"
+	        android:valueTo="310"
+	        android:propertyName="x"/>
+	    <objectAnimator
+	        android:duration="2000"
+	        android:valueTo="130"
+	        android:propertyName="y"
+	        android:interpolator="@android:anim/bounce_interpolator"/>
+	    <objectAnimator
+	        android:duration="2000"
+	        android:valueTo=".4"
+	        android:propertyName="scaleX"/>
+	    <objectAnimator
+	        android:duration="2000"
+	        android:valueTo=".4"
+	        android:propertyName="scaleY"/>
+    </set>
+    <objectAnimator
+        android:duration="500"
+        android:valueTo="0"
+        android:propertyName="alpha"/>
+</set>

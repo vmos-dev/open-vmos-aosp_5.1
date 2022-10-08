@@ -1,0 +1,4 @@
+Code completion in completionvalues2.xml for @string/^app_name selecting @string/hello:
+<      <item name="main_layout5" type="string">@string/^app_name</item>
+---
+>      <item name="main_layout5" type="string">@string/hello^</item>

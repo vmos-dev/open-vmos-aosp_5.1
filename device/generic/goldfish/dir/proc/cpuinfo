@@ -1,0 +1,45 @@
+processor	: 0
+model name	: ARMv7 Processor rev 1 (v7l)
+BogoMIPS	: 94.58
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x0
+CPU part	: 0xc0d
+CPU revision	: 1
+
+processor	: 1
+model name	: ARMv7 Processor rev 1 (v7l)
+BogoMIPS	: 94.58
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x0
+CPU part	: 0xc0d
+CPU revision	: 1
+
+processor	: 2
+model name	: ARMv7 Processor rev 1 (v7l)
+BogoMIPS	: 94.58
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x0
+CPU part	: 0xc0d
+CPU revision	: 1
+
+processor	: 3
+model name	: ARMv7 Processor rev 1 (v7l)
+BogoMIPS	: 94.58
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x0
+CPU part	: 0xc0d
+CPU revision	: 1
+
+Chip name	: EXYNOS4412
+Chip revision	: 0020
+Hardware	: SMDK4x12
+Revision	: 0000
+Serial		: 0000000000000000

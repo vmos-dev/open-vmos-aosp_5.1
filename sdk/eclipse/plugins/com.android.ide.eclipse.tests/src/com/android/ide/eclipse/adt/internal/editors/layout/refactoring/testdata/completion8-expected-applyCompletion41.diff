@@ -1,0 +1,4 @@
+Code completion in completion8.xml for android:mar^="50dp" selecting android:layout_marginRight:
+@@ -6 +6
+-         android:mar^="50dp"
++         android:layout_marginRight^="50dp"

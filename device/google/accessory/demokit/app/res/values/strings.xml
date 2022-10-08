@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">DemoKit</string>
+	<string name="input">In</string>
+	<string name="output">Out</string>
+	<string name="no_device">Please connect a DemoKit board.</string>
+	<string name="servo1Label">Servo<sub>1</sub></string>
+	<string name="ledLabel">LED<sub>1</sub></string>
+	<string name="relay1Label">Relay<sub>1</sub></string>
+	<string name="relay2Label">Relay<sub>2</sub></string>
+	<string name="off">Off</string>
+	<string name="on">On</string>
+</resources>

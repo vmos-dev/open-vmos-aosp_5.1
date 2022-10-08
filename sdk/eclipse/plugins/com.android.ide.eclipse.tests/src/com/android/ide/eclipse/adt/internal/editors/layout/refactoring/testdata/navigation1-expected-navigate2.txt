@@ -1,0 +1,7 @@
+Go To Declaration in navigation1.xml for marginLeft="@android:dimen/app_ico^n_size":
+Open Declaration in values/dimens.xml :  [@android:dimen/app_icon_size]
+    data/res/values/dimens.xml
+
+
+After open, the selected text is:
+    <dimen name="app_icon_size">^48dip</dimen>

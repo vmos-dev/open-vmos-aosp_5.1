@@ -1,0 +1,63 @@
+page.title=Downloading and Building
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>The Android build is routinely tested in-house on recent versions of
+Ubuntu LTS (12.04), but most distributions should have the required
+build tools available. We welcome reports of successes or failures on other
+distributions.</p>
+
+<p>Before you download and build the Android source, ensure your system meets the following requirements:</p>
+
+<ul>
+
+  <li>A Linux or Mac system. It is also possible
+  to build Android in a virtual machine on unsupported systems such as Windows.
+  If you are running Linux in a virtual machine, you need at
+  least 16GB of RAM/swap and 30GB or more of disk space in order to
+  build the Android tree.
+  </li>
+
+  <li>A 64-bit environment is required for Gingerbread (2.3.x) and newer versions, including the master
+  branch. You can compile older versions on 32-bit systems.
+  </li>
+
+  <li>30GB of free disk space to complete a single build and
+  up to 100GB or more for a full set of builds.  The source download is approximately 8.5GB in size.</p>
+  </li>
+
+  <li>
+  Python 2.6 -- 2.7, which you can download from <a href="http://www.python.org/download/">python.org</a>.</p>
+  </li>
+
+  <li>
+  GNU Make 3.81 -- 3.82, which you can download from <a href="http://ftp.gnu.org/gnu/make/">gnu.org</a>,</p>
+  </li>
+
+  <li>
+  JDK 7 to build the master branch of Android in the <a
+  href="https://android.googlesource.com/">Android Open Source Project
+  (AOSP)</a>; JDK 6 to build Gingerbread through KitKat; JDK 5 for Cupcake through
+  Froyo. See <a href="initializing.html">Initializing a Build Environment</a>
+  for installation instructions by operating system.</p>
+  </li>
+
+  <li>
+  Git 1.7 or newer. You can find it at <a href="http://git-scm.com/download">git-scm.com</a>.</p>
+  </li>
+
+</ul>

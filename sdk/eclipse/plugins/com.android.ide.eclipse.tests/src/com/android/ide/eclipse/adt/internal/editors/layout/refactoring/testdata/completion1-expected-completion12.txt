@@ -1,0 +1,67 @@
+Code completion in completion1.xml for btn_default">^</FrameLayout>:
+<AbsoluteLayout ></AbsoluteLayout>
+<AdapterViewFlipper ></AdapterViewFlipper>
+<AnalogClock />
+<AutoCompleteTextView />
+<Button />
+<CalendarView />
+<CheckBox />
+<CheckedTextView />
+<Chronometer />
+<DatePicker />
+<DialerFilter ></DialerFilter>
+<DigitalClock />
+<EditText />
+<ExpandableListView ></ExpandableListView>
+<FrameLayout ></FrameLayout>
+<Gallery />
+<GridLayout ></GridLayout>
+<GridView ></GridView>
+<HorizontalScrollView ></HorizontalScrollView>
+<ImageButton />
+<ImageSwitcher ></ImageSwitcher>
+<ImageView />
+<LinearLayout ></LinearLayout>
+<ListView ></ListView>
+<MediaController ></MediaController>
+<MultiAutoCompleteTextView />
+<NumberPicker />
+<ProgressBar />
+<QuickContactBadge />
+<RadioButton />
+<RadioGroup ></RadioGroup>
+<RatingBar />
+<RelativeLayout ></RelativeLayout>
+<ScrollView ></ScrollView>
+<SearchView ></SearchView>
+<SeekBar />
+<SlidingDrawer ></SlidingDrawer> : SlidingDrawer specific attributes.
+<Space />
+<Spinner />
+<StackView ></StackView>
+<SurfaceView />
+<Switch />
+<TabHost ></TabHost>
+<TabWidget ></TabWidget>
+<TableLayout ></TableLayout>
+<TableRow ></TableRow>
+<TextSwitcher ></TextSwitcher>
+<TextView />
+<TextureView />
+<TimePicker />
+<ToggleButton />
+<TwoLineListItem />
+<VideoView />
+<View /> : Attributes that can be used with android.view.View or any of its subclasses.
+<ViewAnimator ></ViewAnimator>
+<ViewFlipper ></ViewFlipper>
+<ViewStub /> : A android.view.ViewStub lets you lazily include other XML layouts inside your application  at runtime.
+<ViewSwitcher ></ViewSwitcher>
+<WebView />
+<ZoomButton />
+<ZoomControls />
+<android.gesture.GestureOverlayView ></android.gesture.GestureOverlayView> : GestureOverlayView specific attributes.
+<fragment /> : A Fragment is a piece of an application's user interface or behavior  that can be placed in an Activity
+<include /> : Lets you statically include XML layouts inside other XML layouts.
+<requestFocus /> : Requests focus for the parent element or one of its descendants
+<view /> : A view tag whose class attribute names the class to be instantiated

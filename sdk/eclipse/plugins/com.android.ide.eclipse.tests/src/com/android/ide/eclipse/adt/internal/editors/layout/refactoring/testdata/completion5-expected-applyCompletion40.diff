@@ -1,0 +1,4 @@
+Code completion in completion5.xml for android:id='@+id/button2'^ selecting  android:maxWidth:
+@@ -15 +15
+-         android:id='@+id/button2'^
++         android:id='@+id/button2' android:maxWidth="^"

@@ -1,0 +1,6 @@
+Go To Declaration in manifest.xml for <uses-permission android:name="android.permission.AC^CESS_NETWORK_STATE" />:
+Open XML Declaration :  [android.permission.ACCESS_NETWORK_STATE]
+
+
+After open, a browser is shown with this URL:
+  reference/android/Manifest.permission.html#ACCESS_NETWORK_STATE

@@ -1,0 +1,4 @@
+Code completion in completion1.xml for ^<TextView selecting <CheckBox />:
+@@ -7 +7
+-     ^<TextView
++     <CheckBox ^/><TextView

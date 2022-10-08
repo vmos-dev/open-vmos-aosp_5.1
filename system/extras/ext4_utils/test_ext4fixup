@@ -1,0 +1,71 @@
+#!/bin/bash
+
+typeset -i I ITERATIONS PHASE LOC COUNT MAXCOUNT
+
+ME=`basename $0`
+
+if [ "$#" -ne 3 ]
+then
+  echo "$ME: Usage: $ME <iterations> <maxcount> <filesystem_image>" >&2
+  exit 1;
+fi
+
+ITERATIONS="$1"
+MAXCOUNT="$2"
+ORIG_FS_IMAGE="$3"
+FIXED_FS_IMAGE="/tmp/fixedfsimage.$$"
+NEW_FS_IMAGE="/tmp/newfsimage.$$"
+
+if [ ! -f "$ORIG_FS_IMAGE" ]
+then
+  echo "$ME: Filesystem image $NEW_FS_IMAGE does not exist" >&2
+  exit 1
+fi
+
+trap "rm -f $NEW_FS_IMAGE $FIXED_FS_IMAGE" 0 1 2 3 15
+
+rm -f "$NEW_FS_IMAGE" "$FIXED_FS_IMAGE"
+
+# Create the fixed image to compare against
+cp "$ORIG_FS_IMAGE" "$FIXED_FS_IMAGE"
+ext4fixup "$FIXED_FS_IMAGE"
+
+if [ "$?" -ne 0 ]
+then
+  echo "$ME: ext4fixup failed!\n"
+  exit 1
+fi
+
+I=0
+while [ "$I" -lt "$ITERATIONS" ]
+do
+  # There is also a phase 4, which is writing out the updated superblocks and
+  # block group descriptors.  Test the with a separate script.
+  let PHASE="$RANDOM"%3         # 0 to 2
+  let PHASE++                   # 1 to 3
+  let LOC="$RANDOM"%2           # 0 to 1
+  let LOC++                     # 1 to 2
+  let COUNT="$RANDOM"%"$MAXCOUNT"
+
+  # Make a copy of the original image to fixup
+  cp "$ORIG_FS_IMAGE" "$NEW_FS_IMAGE"
+
+  # Run the fixup tool, but die partway through to see if we can recover
+  ext4fixup -d "$PHASE,$LOC,$COUNT" "$NEW_FS_IMAGE" 2>/dev/null
+ 
+  # run it again without -d to have it finish the job
+  ext4fixup "$NEW_FS_IMAGE"
+
+  if cmp "$FIXED_FS_IMAGE" "$NEW_FS_IMAGE"
+  then
+    :
+  else
+    echo "$ME: test failed with parameters $PHASE, $LOC, $COUNT"
+    exit 1
+  fi
+
+  rm -f "$NEW_FS_IMAGE"
+
+  let I++
+done
+

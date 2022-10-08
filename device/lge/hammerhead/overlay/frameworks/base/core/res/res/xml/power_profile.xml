@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+**
+** Copyright 2013, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License")
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+<device name="Android">
+    <!-- All values are in mAh except as noted -->
+    <item name="none">0</item>
+    <item name="screen.on">82.75</item>
+    <item name="screen.full">201.16</item>
+    <item name="bluetooth.active">51.55</item>
+    <item name="bluetooth.on">0.79</item>
+    <item name="wifi.on">3.5</item>
+    <item name="wifi.active">73.24</item>
+    <item name="wifi.scan">75.48</item>
+    <item name="dsp.audio">0.1</item>
+    <item name="dsp.video">0.1</item>
+    <item name="gps.on">76.23</item>
+    <item name="radio.active">185.19</item>
+    <!-- The current consumed by the radio when it is scanning for a signal -->
+    <item name="radio.scanning">99.2</item>
+    <!-- Current consumed by the radio at different signal strengths, when paging -->
+    <array name="radio.on"> <!-- Strength 0 to BINS-1 -->
+        <value>4.8</value>
+        <value>1.11</value>
+    </array>
+    <!-- Different CPU speeds as reported in
+         /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state -->
+    <array name="cpu.speeds">
+        <value>300000</value> <!-- 300 MHz CPU speed -->
+        <value>422400</value> <!-- 422.4 MHz CPU speed -->
+        <value>652800</value> <!-- 652.8 MHz CPU speed -->
+        <value>729600</value> <!-- 729.6 MHz CPU speed -->
+        <value>883200</value> <!-- 883.2 MHz CPU speed -->
+        <value>960000</value> <!-- 960.0 MHz CPU speed -->
+        <value>1036800</value> <!-- 1036.8 MHz CPU speed -->
+        <value>1190400</value> <!-- 1190.4 MHz CPU speed -->
+        <value>1267200</value> <!-- 1267.2 MHz CPU speed -->
+        <value>1497600</value> <!-- 1497.6 MHz CPU speed -->
+        <value>1574000</value> <!-- 1574.0 MHz CPU speed -->
+        <value>1728000</value> <!-- 1728.0 MHz CPU speed -->
+        <value>1958400</value> <!-- 1958.4 MHz CPU speed -->
+        <value>2265600</value> <!-- 2265.6 MHz CPU speed -->
+    </array>
+    <!-- Power consumption when CPU is idle -->
+    <item name="cpu.idle">3.2</item>
+    <item name="cpu.awake">17.4</item>
+    <!-- Power consumption at different speeds -->
+    <array name="cpu.active">
+        <value>57.9</value> <!-- 300 MHz CPU speed -->
+        <value>88.2</value> <!-- 422.4 MHz CPU speed -->
+        <value>99.6</value> <!-- 652.8 MHz CPU speed -->
+        <value>138.8</value> <!-- 729.6 MHz CPU speed -->
+        <value>149.6</value> <!-- 883.2 MHz CPU speed -->
+        <value>170.2</value> <!-- 960.0 MHz CPU speed -->
+        <value>178.3</value> <!-- 1036.8 MHz CPU speed -->
+        <value>189.1</value> <!-- 1190.4 MHz CPU speed -->
+        <value>232.1</value> <!-- 1267.2 MHz CPU speed -->
+        <value>256.5</value> <!-- 1497.6 MHz CPU speed -->
+        <value>266.4</value> <!-- 1574.0 MHz CPU speed -->
+        <value>287.7</value> <!-- 1728.0 MHz CPU speed -->
+        <value>325.7</value> <!-- 1958.4 MHz CPU speed -->
+        <value>386.2</value> <!-- 2265.6 MHz CPU speed -->
+    </array>
+    <!-- This is the battery capacity in mAh -->
+    <item name="battery.capacity">2300</item>
+
+    <array name="wifi.batchedscan"> <!-- mA.  Current figures based on .0801 s/c and 75.48mA while scanning -->
+        <value>.0076</value> <!-- 1-8/hr -->
+        <value>.0613</value>  <!-- 9-64/hr -->
+        <value>.4845</value>   <!-- 65-512/hr -->
+        <value>3.870</value>    <!-- 513-4096/hr -->
+        <value>30.96</value>   <!-- 4097-?/hr -->
+    </array>
+</device>

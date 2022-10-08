@@ -1,0 +1,33 @@
+page.title=Data Usage Technical Information
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Android 4.0 (Ice Cream Sandwich) introduces new features that help
+users understand and control how their device uses network data.  It
+monitors overall data usage, and supports warning or limit thresholds
+which will trigger notifications or disable mobile data when usage
+exceeds a specific quota.</p>
+<p>Data usage is also tracked on a per-application basis, enabling users
+to visually explore historical usage in the Settings app. Users can
+also restrict how specific applications are allowed to use data when
+running in the background.</p>
+<p>The documentation in this section is intended for systems integrators
+and mobile operators, to help explain technical details they should be
+aware of when porting Android to specific devices.  These details are
+summarized below, and the
+<a href="mailto:android-porting+subscribe@googlegroups.com">android-porting</a>
+mailing list is a good place for further discussion.</p>

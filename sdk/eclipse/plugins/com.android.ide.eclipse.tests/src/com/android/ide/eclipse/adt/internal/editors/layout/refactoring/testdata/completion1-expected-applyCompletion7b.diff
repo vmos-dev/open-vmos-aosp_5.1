@@ -1,0 +1,4 @@
+Code completion in completion1.xml for android:gravity="left|b^ottom" selecting bottom:
+@@ -15 +15
+-         android:gravity="left|b^ottom"
++         android:gravity="left|bottom^"

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+** Copyright 2013, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+
+<!-- These resources are around just to allow their values to be customized
+     for different hardware and product builds. -->
+<resources>
+    <!-- AT&T -->
+    <string-array translatable="false" name="config_tether_usb_regexs">
+    </string-array>
+
+    <string-array translatable="false" name="config_tether_wifi_regexs">
+    </string-array>
+
+    <string-array translatable="false" name="config_tether_bluetooth_regexs">
+    </string-array>
+
+    <integer-array translatable="false" name="config_tether_upstream_types">
+    </integer-array>
+
+    <!-- Set to true if we need to not prefer an APN.
+         This is being added to enable a simple scenario of pre-paid
+         provisioning on some carriers, working around a bug (7305641)
+         where if the preferred is used we don't try the others. -->
+    <bool name="config_dontPreferApn">true</bool>
+
+    <string name="mobile_provisioning_apn">lwaactivate</string>
+
+    <string name="mobile_provisioning_url">
+        https://buyasession.att.com/sbd/unauth/InitiateSBD.action?ICCID=%1$s&amp;IMEI=%2$s&amp;version=3.0
+    </string>
+
+    <bool name="config_restartRadioAfterProvisioning">true</bool>
+</resources>

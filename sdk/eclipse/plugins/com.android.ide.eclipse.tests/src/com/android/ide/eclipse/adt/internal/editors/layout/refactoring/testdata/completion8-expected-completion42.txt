@@ -1,0 +1,4 @@
+Code completion in completion8.xml for android:w^i="100":
+android:layout_width : Specifies the basic width of the view.  [dimension, enum]
+android:layout_weight : [float]
+android:width : Makes the TextView be exactly this many pixels wide.  [dimension]

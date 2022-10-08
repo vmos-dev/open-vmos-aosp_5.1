@@ -1,0 +1,13 @@
+This directory contains scripts that are intended to be used with
+Bourne Again SHell (bash)'s programmable completion.
+
+See http://www.gnu.org/s/bash/manual/bash.html#Programmable-Completion for
+more information on programmable completion in bash.
+
+To use the scripts, simply source them into your environment. Example:
+
+   source sdk/bash_completion/adb
+
+or:
+
+   . sdk/bash_completion/adb

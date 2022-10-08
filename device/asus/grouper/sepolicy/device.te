@@ -1,0 +1,5 @@
+type knv_device, dev_type;
+type nvhost_device, dev_type;
+type elan_ip_device, dev_type;
+type diag_device, dev_type;
+type baseband_log_device, dev_type;

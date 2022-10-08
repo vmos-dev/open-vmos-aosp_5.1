@@ -1,0 +1,1 @@
+genfscon sepfs / u:object_r:sepfs:s0

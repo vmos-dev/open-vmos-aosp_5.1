@@ -1,0 +1,2 @@
+genfscon proc /bluetooth/sleep/lpm     u:object_r:proc_bluetooth_writable:s0
+genfscon proc /bluetooth/sleep/btwrite u:object_r:proc_bluetooth_writable:s0

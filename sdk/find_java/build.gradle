@@ -1,0 +1,41 @@
+apply plugin: 'cpp'
+apply plugin: 'sdk-files'
+apply plugin: 'windows-setup'
+
+executables {
+    findJava {}
+}
+
+sources {
+    findJava {
+        cpp {
+            source {
+                srcDir "src/source"
+                include "**/*.cpp"
+            }
+        }
+    }
+}
+
+sdk {
+    windows {
+        item( { getExeName("windows") } ) {
+            into 'lib'
+            name 'find_java.exe'
+            builtBy 'findJavaExecutable'
+            notice 'NOTICE'
+        }
+        item('find_java.bat') {
+            into 'lib'
+            notice 'NOTICE'
+        }
+    }
+}
+
+def getExeName(String platform) {
+    // binaries will return a set of binaries
+    def binaries = executables.findJava.binaries.matching { it.name == "findJavaExecutable" }
+    // calling .exeFile on the set returns an array with the result from each item in the set...
+    return binaries.executableFile.get(0)
+}
+

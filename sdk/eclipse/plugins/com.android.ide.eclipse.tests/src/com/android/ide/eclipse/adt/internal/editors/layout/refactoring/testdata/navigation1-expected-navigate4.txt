@@ -1,0 +1,89 @@
+Go To Declaration in navigation1.xml for android:text="@android:st^ring/ok":
+Open Declaration in values-en-rGB/strings.xml :  [@android:string/ok]
+    data/res/values-en-rGB/strings.xml
+Open Declaration in values/strings.xml :  [@android:string/ok]
+    data/res/values/strings.xml
+Open Declaration in values-ar/strings.xml :  [@android:string/ok]
+    data/res/values-ar/strings.xml
+Open Declaration in values-bg/strings.xml :  [@android:string/ok]
+    data/res/values-bg/strings.xml
+Open Declaration in values-ca/strings.xml :  [@android:string/ok]
+    data/res/values-ca/strings.xml
+Open Declaration in values-cs/strings.xml :  [@android:string/ok]
+    data/res/values-cs/strings.xml
+Open Declaration in values-da/strings.xml :  [@android:string/ok]
+    data/res/values-da/strings.xml
+Open Declaration in values-de/strings.xml :  [@android:string/ok]
+    data/res/values-de/strings.xml
+Open Declaration in values-el/strings.xml :  [@android:string/ok]
+    data/res/values-el/strings.xml
+Open Declaration in values-es/strings.xml :  [@android:string/ok]
+    data/res/values-es/strings.xml
+Open Declaration in values-es-rUS/strings.xml :  [@android:string/ok]
+    data/res/values-es-rUS/strings.xml
+Open Declaration in values-fa/strings.xml :  [@android:string/ok]
+    data/res/values-fa/strings.xml
+Open Declaration in values-fi/strings.xml :  [@android:string/ok]
+    data/res/values-fi/strings.xml
+Open Declaration in values-fr/strings.xml :  [@android:string/ok]
+    data/res/values-fr/strings.xml
+Open Declaration in values-hr/strings.xml :  [@android:string/ok]
+    data/res/values-hr/strings.xml
+Open Declaration in values-hu/strings.xml :  [@android:string/ok]
+    data/res/values-hu/strings.xml
+Open Declaration in values-in/strings.xml :  [@android:string/ok]
+    data/res/values-in/strings.xml
+Open Declaration in values-it/strings.xml :  [@android:string/ok]
+    data/res/values-it/strings.xml
+Open Declaration in values-iw/strings.xml :  [@android:string/ok]
+    data/res/values-iw/strings.xml
+Open Declaration in values-ja/strings.xml :  [@android:string/ok]
+    data/res/values-ja/strings.xml
+Open Declaration in values-ko/strings.xml :  [@android:string/ok]
+    data/res/values-ko/strings.xml
+Open Declaration in values-lt/strings.xml :  [@android:string/ok]
+    data/res/values-lt/strings.xml
+Open Declaration in values-lv/strings.xml :  [@android:string/ok]
+    data/res/values-lv/strings.xml
+Open Declaration in values-nb/strings.xml :  [@android:string/ok]
+    data/res/values-nb/strings.xml
+Open Declaration in values-nl/strings.xml :  [@android:string/ok]
+    data/res/values-nl/strings.xml
+Open Declaration in values-pl/strings.xml :  [@android:string/ok]
+    data/res/values-pl/strings.xml
+Open Declaration in values-pt/strings.xml :  [@android:string/ok]
+    data/res/values-pt/strings.xml
+Open Declaration in values-pt-rPT/strings.xml :  [@android:string/ok]
+    data/res/values-pt-rPT/strings.xml
+Open Declaration in values-rm/strings.xml :  [@android:string/ok]
+    data/res/values-rm/strings.xml
+Open Declaration in values-ro/strings.xml :  [@android:string/ok]
+    data/res/values-ro/strings.xml
+Open Declaration in values-ru/strings.xml :  [@android:string/ok]
+    data/res/values-ru/strings.xml
+Open Declaration in values-sk/strings.xml :  [@android:string/ok]
+    data/res/values-sk/strings.xml
+Open Declaration in values-sl/strings.xml :  [@android:string/ok]
+    data/res/values-sl/strings.xml
+Open Declaration in values-sr/strings.xml :  [@android:string/ok]
+    data/res/values-sr/strings.xml
+Open Declaration in values-sv/strings.xml :  [@android:string/ok]
+    data/res/values-sv/strings.xml
+Open Declaration in values-th/strings.xml :  [@android:string/ok]
+    data/res/values-th/strings.xml
+Open Declaration in values-tl/strings.xml :  [@android:string/ok]
+    data/res/values-tl/strings.xml
+Open Declaration in values-tr/strings.xml :  [@android:string/ok]
+    data/res/values-tr/strings.xml
+Open Declaration in values-uk/strings.xml :  [@android:string/ok]
+    data/res/values-uk/strings.xml
+Open Declaration in values-vi/strings.xml :  [@android:string/ok]
+    data/res/values-vi/strings.xml
+Open Declaration in values-zh-rCN/strings.xml :  [@android:string/ok]
+    data/res/values-zh-rCN/strings.xml
+Open Declaration in values-zh-rTW/strings.xml :  [@android:string/ok]
+    data/res/values-zh-rTW/strings.xml
+
+
+After open, the selected text is:
+    <string name="ok" msgid="5970060430562524910">^"OK"</string>

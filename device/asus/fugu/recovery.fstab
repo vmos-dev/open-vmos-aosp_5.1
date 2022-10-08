@@ -1,0 +1,9 @@
+/dev/block/by-name/boot         /boot         emmc     defaults                                                                defaults
+/dev/block/by-name/recovery     /recovery     emmc     defaults                                                                defaults
+/dev/block/by-name/splashscreen /splashscreen emmc     defaults                                                                defaults
+/dev/block/by-name/fastboot     /fastboot     emmc     defaults                                                                defaults
+/dev/block/by-name/misc         /misc         emmc     defaults                                                                defaults
+/dev/block/by-name/system       /system       ext4     ro,noatime                                                              wait
+/dev/block/by-name/cache        /cache        ext4     nosuid,nodev,noatime,barrier=1,data=ordered                             wait,check
+/dev/block/by-name/userdata     /data         ext4     nosuid,nodev,noatime,discard,barrier=1,data=ordered,noauto_da_alloc     wait,check
+/dev/block/by-name/factory      /factory      ext4     nosuid,nodev,noatime,barrier=1,data=ordered                             wait

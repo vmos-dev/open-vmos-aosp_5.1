@@ -1,0 +1,274 @@
+page.title=Customizing SELinux
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Once you've integrated this base level of functionality and thoroughly analyzed
+the results, you may add your own policy settings to cover your customizations
+to the Android operating system. Of course, these policies must still meet the <a href="{@docRoot}compatibility/index.html">Android Compatibility program</a> requirements and not remove the default SELinux settings.</p>
+
+<p>Manufacturers should not remove existing security settings. Otherwise, they
+risk breaking the Android SELinux implementation and the applications it
+governs. This includes third-party applications that will likely need to be
+improved to be compliant and operational. Applications must require no
+modification to continue functioning on SELinux-enabled devices.</p>
+
+<p>When embarking upon customizing SELinux, manufacturers should remember to:</p>
+
+<ul>
+  <li>Write SELinux policy for all new daemons
+  <li>Use predefined domains whenever appropriate
+  <li>Assign a domain to any process spawned as an <code>init</code> service
+  <li>Become familiar with the macros before writing policy
+  <li>Submit changes to core policy to AOSP
+</ul>
+
+<p>And not to:</p>
+
+<ul>
+  <li>Create incompatible policy
+  <li>Allow end user policy customization
+  <li>Allow MDM policy customizations
+  <li>Scare users with policy violations
+  <li>Add backdoors
+</ul>
+
+<p>See the <em>Kernel Security Features</em> section of the <a href="{@docRoot}compatibility/android-cdd.pdf">Android Compatibility Definition document</a> for specific requirements.</p>
+
+<p>SELinux uses a whitelist approach, meaning all access must be explicitly
+allowed in policy in order to be granted. Since Android's default SELinux
+policy already supports the Android Open Source Project, OEMs are not required
+to modify SELinux settings in any way. If they do customize SELinux settings,
+they should take great care not to break existing applications. Here is how we
+recommend proceeding:</p>
+
+<ol>
+  <li>Use the <a href="https://android.googlesource.com/kernel/common/">latest Android kernel</a>.
+  <li>Adopt the <a href="http://en.wikipedia.org/wiki/Principle_of_least_privilege">principle of least privilege</a>.
+  <li>Address only your own additions to Android. The default policy works with the <a href="https://android.googlesource.com/">Android Open Source Project</a> codebase automatically.
+  <li>Compartmentalize software components into modules that conduct singular tasks.
+  <li>Create SELinux policies that isolate those tasks from unrelated functions.
+  <li>Put those policies in *.te files (the extension for SELinux policy source
+files) within the <code>/device/manufacturer/device-name/sepolicy</code> directory and use
+<code>BOARD_SEPOLICY</code> variables to include them in your build.
+  <li>Make new domains permissive initially. In Android 4.4 and earlier, this is done
+using a permissive declaration. In later versions of Android, per-domain
+permissive mode is specified using the <code>permissive_or_unconfined()</code> macro.
+  <li>Analyze results and refine your domain definitions.
+  <li>Remove the permissive declaration when no further denials appear in userdebug
+builds.
+</ol>
+
+<p>Once integrated, OEM Android development should include a step to ensure
+SELinux compatibility going forward. In an ideal software development process,
+SELinux policy changes only when the software model changes and not the actual
+implementation.</p>
+
+<p>As device manufacturers begin to customize SELinux, they should first audit
+their additions to Android. If they've added a component that conducts a new
+function, the manufacturers will need to ensure the component meets the
+security policy applied by Android, as well as any associated policy crafted by
+the OEM, before turning on enforcing mode.</p>
+
+<p>To prevent unnecessary issues, it is better to be overbroad and over-compatible
+than too restrictive and incompatible, which results in broken device
+functions. Conversely, if a manufacturer's changes will benefit others, it
+should supply the modifications to the default SELinux policy as a <a href="{@docRoot}source/submit-patches.html">patch</a>. If the patch is applied to the default security policy, the manufacturer will no longer need to make this change with each new Android release.</p>
+
+<h2 id=example_policy_statements>Example policy statements</h2>
+
+<p>First, note SELinux is based upon the <a href="https://www.gnu.org/software/m4/manual/index.html">M4</a> computer language and therefore supports a variety of macros to save time.</p>
+
+<p>In the following example, all domains are granted access to read or write to <code>/dev/null</code> and read from <code>/dev/0</code>.</p>
+
+<pre>
+# Allow read / write access to /dev/null
+allow domain null_device:chr_file { getattr open read ioctl lock append write};
+
+# Allow read-only access to /dev/zero
+allow domain zero_device:chr_file { getattr open read ioctl lock };
+</pre>
+
+
+<p>This same statement can be written with SELinux <code>*_file_perms</code> macros (shorthand):</p>
+
+<pre>
+# Allow read / write access to /dev/null
+allow domain null_device:chr_file rw_file_perms;
+
+# Allow read-only access to /dev/zero
+allow domain zero_device:chr_file r_file_perms;
+</pre>
+
+<h2 id=example_policy>Example policy</h2>
+
+<p>Here is a complete example policy for DHCP, which we examine below:</p>
+
+<pre>
+type dhcp, domain;
+permissive_or_unconfined(dhcp)
+type dhcp_exec, exec_type, file_type;
+type dhcp_data_file, file_type, data_file_type;
+
+init_daemon_domain(dhcp)
+net_domain(dhcp)
+
+allow dhcp self:capability { setgid setuid net_admin net_raw net_bind_service
+};
+allow dhcp self:packet_socket create_socket_perms;
+allow dhcp self:netlink_route_socket { create_socket_perms nlmsg_write };
+allow dhcp shell_exec:file rx_file_perms;
+allow dhcp system_file:file rx_file_perms;
+# For /proc/sys/net/ipv4/conf/*/promote_secondaries
+allow dhcp proc_net:file write;
+allow dhcp system_prop:property_service set ;
+unix_socket_connect(dhcp, property, init)
+
+type_transition dhcp system_data_file:{ dir file } dhcp_data_file;
+allow dhcp dhcp_data_file:dir create_dir_perms;
+allow dhcp dhcp_data_file:file create_file_perms;
+
+allow dhcp netd:fd use;
+allow dhcp netd:fifo_file rw_file_perms;
+allow dhcp netd:{ dgram_socket_class_set unix_stream_socket } { read write };
+allow dhcp netd:{ netlink_kobject_uevent_socket netlink_route_socket
+netlink_nflog_socket } { read write };
+</pre>
+
+<p>Let’s dissect the example:</p>
+
+<p>In the first line, the type declaration, the DHCP daemon inherits from the base
+security policy (<code>domain</code>). From the previous statement examples, we know DHCP can read from and write
+to <code>/dev/null.</code></p>
+
+<p>In the second line, DHCP is identified as an experimental domain (<code>permissive_or_unconfined</code>) with only minimal rules enforced.</p>
+
+<p>In the <code>init_daemon_domain(dhcp)</code> line, the policy states DHCP is spawned from <code>init</code> and is allowed to communicate with it.</p>
+
+<p>In the <code>net_domain(dhcp)</code> line, the policy allows DHCP to use common network functionality from the <code>net</code> domain such as reading and writing TCP packets, communicating over sockets, and conducting DNS requests.</p>
+
+<p>In the line <code>allow dhcp proc_net:file write;</code>, the policy states DHCP can write to specific files in <code>/proc</code>. This line demonstrates SELinux’s fine-grained file labeling. It uses the <code>proc_net</code> label to limit write access to only the files under <code>/proc/sys/net</code>.</p>
+
+<p>The final block of the example starting with <code>allow dhcp netd:fd use;</code> depicts how applications may be allowed to interact with one another. The
+policy says DHCP and netd may communicate with one another via file
+descriptors, FIFO files, datagram sockets, and UNIX stream sockets. DHCP may
+only read to and write from the datagram sockets and UNIX stream sockets and
+not create or open them.</p>
+
+<h2 id=available_controls>Available controls</h2>
+
+<table>
+ <tr>
+    <td>
+<p><strong>Domain</strong></p>
+</td>
+    <td>
+<p><strong>Capability</strong></p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>file</p>
+</td>
+    <td>
+<pre>
+ioctl read write create getattr setattr lock relabelfrom relabelto append
+unlink link rename execute swapon quotaon mounton</pre>
+</td>
+ </tr>
+ <tr>
+ <td>
+<p>directory</p>
+</td>
+ <td>
+<pre>
+add_name remove_name reparent search rmdir open audit_access execmod</pre>
+</td>
+ </tr>
+ <tr>
+ <td>
+<p>socket</p>
+</td>
+ <td>
+<pre>
+ioctl read write create getattr setattr lock relabelfrom relabelto append bind
+connect listen accept getopt setopt shutdown recvfrom sendto recv_msg send_msg
+name_bind</pre>
+</td>
+ </tr>
+ <tr>
+ <td>
+<p>filesystem</p>
+</td>
+ <td>
+<pre>
+mount remount unmount getattr relabelfrom relabelto transition associate
+quotamod quotaget</pre>
+ </td>
+ </tr>
+ <tr>
+ <td>
+<p>process</p>
+ </td>
+ <td>
+<pre>
+fork transition sigchld sigkill sigstop signull signal ptrace getsched setsched
+getsession getpgid setpgid getcap setcap share getattr setexec setfscreate
+noatsecure siginh setrlimit rlimitinh dyntransition setcurrent execmem
+execstack execheap setkeycreate setsockcreate</pre>
+</td>
+ </tr>
+ <tr>
+ <td>
+<p>security</p>
+</td>
+ <td>
+<pre>
+compute_av compute_create compute_member check_context load_policy
+compute_relabel compute_user setenforce setbool setsecparam setcheckreqprot
+read_policy</pre>
+</td>
+ </tr>
+ <tr>
+ <td>
+<p>capability</p>
+</td>
+ <td>
+<pre>
+chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap
+linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock
+ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_admin
+sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease audit_write
+audit_control setfcap</pre>
+</td>
+ </tr>
+ <tr>
+ <td>
+<p><strong>MORE</strong></p>
+</td>
+ <td>
+<p><strong>AND MORE</strong></p>
+</td>
+ </tr>
+</table>

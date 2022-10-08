@@ -1,0 +1,392 @@
+page.title=Security best practices
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>The Android Security Team regularly receive requests for more information about
+how to prevent potential security issues on Android devices. We also
+occasionally perform spot-checks of devices and let OEMs and affected partners
+know of potential issues.</p>
+
+<p>This document provides OEMs and other partners with a number of security best
+practices based upon our own experiences. This is an extension of the
+<a href="http://developer.android.com/guide/practices/security.html">Designing for
+Security</a> documentation we've provided for developers, including best
+practices that are unique to those who are building or installing system-level
+software on devices.</p>
+
+<p>Where possible, the Android Security Team will incorporate tests into the
+<a href="http://source.android.com/compatibility/cts-intro.html">Android Compatibility Test
+Suite</a> (CTS) and
+<a href="http://tools.android.com/tips/lint">Android Lint</a> to facilitate adoption of
+these best practices. We encourage partners to contribute tests that can help
+other Android users. A partial list of security-related tests can be found at:
+<code>root/cts/tests/tests/security/src/android/security/cts</code></p>
+
+<h2 id="dev-process">Development process</h2>
+
+<h3 id="sec-review">Source code security review</h3>
+<p> Source code review can detect a broad range of security issues, including those
+identified in this document. Android strongly encourages both manual and
+automated source code review.</p>
+
+<ol>
+<li><a href="http://tools.android.com/tips/lint">Android Lint</a>
+<strong>should</strong> be run on all application code using the Android SDK.
+Issues that are identified should be corrected.</li>
+<li>Native code <strong>should</strong> be analyzed using an automated tool that
+can detect memory management issues such as buffer overflows and off-by-one
+errors.</li>
+</ol>
+
+<h3 id="auto-test">Automated testing</h3>
+<p>Automated testing can detect a broad range of security issues, including many of
+those identified in this document.</p>
+
+<ol>
+<li>CTS is regularly updated with security tests; the most recent version of CTS
+<strong>must</strong> be run to verify compatibility.</li>
+<li>CTS <strong>should</strong> be run regularly throughout the development process to detect
+problems early and reduce time to correction. Android uses CTS as part of
+continuous integration with our automated build process, which builds
+multiple times per day.</li>
+<li>OEMs <strong>should</strong> automate security testing of any interfaces including testing
+with malformed inputs (fuzz testing).</li>
+</ol>
+
+<h3 id="sign-sysimg">Signing system images</h3>
+<p>The signature of the system image is critical for determining the integrity of
+the device. Specifically:</p>
+
+<ol>
+<li>Devices <strong>must not</strong> be signed with a key that is publicly known.</li>
+<li>Keys used to sign devices <strong>should</strong> be managed in a manner consistent with
+industry standard practices for handling sensitive keys, including a hardware
+security module (HSM) that provides limited, auditable access.</li>
+</ol>
+
+<h3 id="sign-apk">Signing applications (APKs)</h3>
+<p>Application signatures play an important role in device security. They are used
+for permissions checks as well as software updates. When selecting a key to use
+for signing applications, it is important to consider whether an application
+will be available only on a single device or common across multiple devices.
+Consider:</p>
+
+<ol>
+<li>Applications <strong>must not</strong> be signed with a key that is publicly known.</li>
+<li>Keys used to sign applications <strong>should</strong> be managed in a manner consistent
+with industry standard practices for handling sensitive keys, including an
+HSM that provides limited, auditable access.</li>
+<li>Applications <strong>should not</strong> be signed with the platform key.</li>
+<li>Applications with the same package name <strong>should not</strong> be signed with
+different keys. This often occurs when creating an application for different
+devices, especially when using the platform key. If the application is
+device-independent, then use the same key across devices. If the application
+is device-specific, create unique package names per device and key.</li>
+</ol>
+
+<h3 id="apps-pub">Apps publishing</h3>
+<p>Google Play provides OEMs with the ability to update applications without
+performing a complete system update. This can expedite response to security
+issues and delivery of new features. This also provides a way to make sure that
+your application has a unique package name.</p>
+
+<ol>
+<li>Apps <strong>should</strong> be uploaded to Google Play to allow automated updates without
+requiring a full OTA. Applications that are uploaded but "unpublished" are
+not directly downloadable by users, but the apps are still updated. Users who
+have ever installed such an app can install it again and again on their other
+devices as well.</li>
+<li>To avoid potential confusion, apps <strong>should</strong> be created with a package name
+clearly associated with your company, such as by using a company trademark.</li>
+<li>Apps published by OEMs <strong>should</strong> be uploaded on the Google Play store in
+order to avoid package name impersonation by third-party users.<br/>
+<br/>
+If an OEM installs an app on a phone without publishing it on the Play store,
+another developer could upload that same app, using the same package name,,
+and change the metadata for the app. When presented to the user, this
+unrelated metadata could create confusion.</li>
+</ol>
+
+<h3 id="incident-response">Incident response</h3>
+<p>External parties must have the ability to contact OEMs about device-specific
+security issues. We strongly recommend the creation of a publicly accessible
+email address for managing security incidents.</p>
+
+<ol>
+<li>Create a <em>security@your-company.com</em> or similar address and publicize
+it.</li>
+<li>If you become aware of a security issue affecting Android OS or Android
+devices from multiple OEMs, you <strong>should</strong> contact the Android
+Security Team at <em>security@android.com</em>.</li>
+</ol>
+
+<h2 id="prod-implement">Product implementation</h2>
+
+<h3 id="root-processes">Root processes</h3>
+<p>Root processes are the most frequent target of privilege escalation attacks, so
+reducing the number of root processes reduces risk of privilege escalation. CTS
+has been expanded with an informational test that lists root processes.</p>
+
+<ol>
+<li>The devices <strong>should</strong> run the minimum necessary code as root. Where
+possible, use a regular android process rather than a root process. The ICS
+Galaxy Nexus has only six root processes - vold, inetd, zygote, tf_daemon,
+ueventd, and init. Please let the Android team know if capabilities are
+required that are not accessible without root privileges.</li>
+<li>Where possible, root code <strong>should</strong> be isolated from untrusted data and
+accessed via IPC. For example, reduce root functionality to a small Service
+accessible via Binder and expose the Service with signature permission to an
+an application with low or no privileges to handle network traffic.</li>
+<li>Root processes <strong>must not</strong> listen on a network socket.</li>
+<li>Root processes <strong>must not</strong> provide a general-purpose runtime for
+applications. (e.g. a Java VM)</li>
+</ol>
+
+<h3 id="sys-apps">System apps</h3>
+<p>In general, apps pre-installed by OEMs should not be running with the shared UID
+of system. Realistically, however, sometimes this is necessary. If an app is
+using the shared UID of system or another privileged service (i.e., phone), it
+should not export any services, broadcast receivers, or content providers that
+can be accessed by third-party apps installed by users.</p>
+
+<ol>
+<li>The devices <strong>should</strong> run the minimum necessary code as system. Where
+possible, use an android process with its own UID rather than reusing the
+system UID.</li>
+<li>Where possible, system code <strong>should</strong> be isolated from untrusted data and
+expose IPC only to other trusted processes.</li>
+<li>System processes <strong>must not</strong> listen on a network socket.</li>
+</ol>
+
+<h3 id="process-isolate">Process isolation</h3>
+<p>The Android Application Sandbox provides applications with an expectation of
+isolation from other processes on the system, including root processes and
+debuggers. Unless debugging is specifically enabled by the application and the
+user, no application should violate that expectation.</p>
+
+<ol>
+<li>Root processes <strong>must not</strong> access data within individual application data
+folders, unless using a documented Android debugging method.</li>
+<li>Root processes <strong>must not</strong> access memory of applications, unless using a
+documented Android debugging method.</li>
+<li>The device <strong>must not</strong> include any application that accesses data or memory
+of other applications or processes.</li>
+</ol>
+
+<h3 id="suid-files">SUID files</h3>
+<p>New setuid programs should not be accessible by untrusted programs. Setuid
+programs have frequently been the location of vulnerabilities that can be used
+to gain root access, and minimizing the availability of the program to untrusted
+applications is a security best practice.</p>
+
+<ol>
+<li>SUID processes <strong>must not</strong> provide a shell or backdoor that can be used to
+circumvent the Android security model.</li>
+<li>SUID programs <strong>must not</strong> be writable by any user.</li>
+<li>SUID programs <strong>should</strong> not be world readable or executable. Create a
+group, limit access to the SUID binary to members of that group, and place any
+applications that should be able to execute the SUID program into that
+group.</li>
+<li>SUID programs are a common source of user "rooting" of devices. To reduce
+this risk, SUID programs <strong>should not</strong> be executable by the shell
+user.</li>
+</ol>
+
+<p>The CTS verifier has been expanded with an informational test that lists SUID
+files. Certain setuid files are not permitted, per CTS tests.</p>
+
+<h3 id="listening-sockets">Listening sockets</h3>
+<p>CTS tests have been expanded to fail when a device is listening on any port, on
+any interface. In the event of a failure, Google will verify that the following
+best practices are being used:</p>
+
+<ol>
+<li>There <strong>should</strong> be no listening ports on the device.</li>
+<li>Listening ports <strong>must</strong> be able to be disabled without an OTA.
+This can be either a server or user-device configuration change.</li>
+<li>Root processes <strong>must not</strong> listen on any port.</li>
+<li>Processes owned by the system UID <strong>must not</strong> listen on any
+port.</li>
+<li>For local IPC using sockets, applications <strong>must</strong> use a UNIX
+Domain Socket with access limited to a group. Create a file descriptor for the
+IPC and make it +RW for a specific UNIX group. Any client applications must be
+within that UNIX group.</li>
+<li>Some devices with multiple processors (e.g. a radio/modem separate from the
+application processor) use network sockets to communicate between processors.
+In those instances, the network socket used for inter-processor communication
+<strong>must</strong> use an isolated network interface to prevent access by
+unauthorized
+applications on the device. One approach is to use iptables to prevent access by
+other applications on the device.</li>
+<li>Daemons that handle listening ports <strong>must</strong> be robust against malformed
+data. Google may conduct fuzz-testing against the port using an unauthorized
+client, and, where possible, authorized client. Any crashes will be filed as
+bugs with an appropriate severity.</li>
+</ol>
+
+<h3 id="logging">Logging</h3>
+<p>Logging of data increases the risk of exposure of that data and reduces system
+performance. Multiple public security incidents have occurred as the result of
+logging of sensitive user data by applications installed by default on Android
+devices.</p>
+
+<ol>
+<li>Applications or system services <strong>should not</strong> log data provided from
+third-party applications that might include sensitive information.</li>
+<li>Applications <strong>must not</strong> log any Personally Identifiable Information (PII)
+as part of normal operation.</li>
+</ol>
+
+<p>CTS has been expanded with a number of tests that check for the presence of
+potentially sensitive information in the system logs.</p>
+
+<h3 id="directories">Directories</h3>
+<p>World-writable directories can introduce security weaknesses. Writable
+directories may enable an application to rename other trusted files,
+substituting their own files or conducting symlink-based attacks. By creating a
+symlink to a file, the attacker may trick a trusted program into performing
+actions it shouldn't.</p>
+
+<p> Writable directories prevent the uninstall of an application from properly
+cleaning up all files associated with an application. Directories created by the
+system or root users <strong>should not</strong> be world writable.</p>
+
+<p>CTS tests help enforce this best practice by testing known directories.</p>
+
+<h3 id="config-files">Configuration files</h3>
+<p>Many drivers and services rely on configuration and data files stored in
+directories like /system/etc and various other directories in /data. If these
+files are processed by a privileged process and are world writable, then it
+could be possible for an app to exploit a vulnerability in the process by
+crafting malicious contents in the world-writable file.</p>
+
+<ol>
+<li>Configuration files used by privileged processes <strong>should not</strong>
+be world readable.</li>
+<li>Configuration files used by privileged processes <strong>must not</strong> be
+world writable.</li>
+</ol>
+
+<h3 id="native-code">Native code libraries</h3>
+<p>Any code used by privileged OEM processes must be in /vendor or /system; these
+filesystems are mounted read-only on boot. Any libraries used by system or other
+highly-privileged apps installed on the phone should also be in these
+filesystems. This can prevent a security vulnerability that could allow an
+attacker to control the code that a privileged process executes.</p>
+
+<ol>
+<li>All native code used by privileged OEM processes <strong>must be</strong> in /vendor or
+/system.</li>
+</ol>
+
+<h3 id="device-drivers">Device drivers</h3>
+<p>Only trusted code should have direct access to drivers. Where possible, the
+preferred architecture is to provide a single-purpose daemon that proxies calls
+to the driver and restrict access to the driver to that daemon.</p>
+
+<p>Driver device nodes <strong>should not</strong> be world readable or
+writable. CTS tests help enforce this best practice by checking for known
+instances of exposed drivers.</p>
+
+<h3 id="adb">ADB</h3>
+<p>ADB <strong>must be</strong> disabled by default and must require the user to turn it on
+before accepting connections.</p>
+
+<h3 id="unlockable-bootloaders">Unlockable bootloaders</h3>
+<p>Unlockable Android devices must securely erase all user data prior to being
+unlocked. The failure to properly delete all data on unlocking may allow a
+physically proximate attacker to gain unauthorized access to confidential
+Android user data. We've seen numerous instances where device manufacturers
+improperly implemented unlocking.</p>
+
+<p>Many Android devices support unlocking. This allows the device owner to modify
+the system partition and/or install a custom operating system. Common use cases
+for this include installing a third-party ROM, and/or doing systems-level
+development on the device.</p>
+
+<p>For example, on Google Nexus devices, an end user can run <code>fastboot oem
+unlock</code> to start the unlocking process. When an end user runs this command,
+the following message is displayed:</p>
+
+<blockquote>
+<strong>Unlock bootloader?</strong>
+
+<p>If you unlock the bootloader, you will be able to install custom operating
+system software on this phone.</p>
+
+<p>A custom OS is not subject to the same testing as the original OS, and can
+cause your phone and installed applications to stop working properly.</p>
+
+<p>To prevent unauthorized access to your personal data, unlocking the
+bootloader will also delete all personal data from your phone (a "factory data
+reset").
+
+<p>Press the Volume Up/Down buttons to select Yes or No. Then press the Power
+button to continue.</p>
+
+<p><strong>Yes</strong>: Unlock bootloader (may void warranty)</p>
+
+<p><strong>No</strong>: Do not unlock bootloader and restart phone.</p>
+</blockquote>
+
+<p>A device that is unlocked may be subsequently relocked, by issuing the
+<code>fastboot oem lock</code> command. Locking the bootloader provides the same
+protection of user data with the new custom OS as was available with the
+original OEM OS. e.g. user data will be wiped if the device is unlocked again in
+the future.</p>
+
+<p>To prevent the disclosure of user data, a device that supports unlocking needs
+to implement it properly.</p>
+
+<p>A properly implemented unlocking process will have the following properties:</p>
+
+<ol>
+<li>When the unlocking command is confirmed by the user, the device MUST start an
+immediate data wipe. The "unlocked" flag MUST NOT be set until after the
+secure deletion is complete.</li>
+<li>If a secure deletion cannot be completed, the device MUST stay in a locked
+state.</li>
+<li>If supported by the underlying block device,
+<code>ioctl(BLKSECDISCARD)</code> or equivalent SHOULD be used. For eMMC
+devices, this means using a Secure Erase or Secure Trim command. For eMMC 4.5
+and later, this means doing a normal Erase or Trim followed by a Sanitize
+operation.</li>
+<li>If <code>BLKSECDISCARD</code> is NOT supported by the underlying block
+device, <code>ioctl(BLKDISCARD)</code> MUST be used instead. On eMMC devices,
+this is a normal Trim operation.</li>
+<li>If <code>BLKDISCARD</code> is NOT supported, overwriting the block devices
+with all zeros is acceptable.</li>
+<li>An end user MUST have the option to require that user data be wiped prior to
+flashing a partition. For example, on Nexus devices, this is done via the
+<code>fastboot oem lock</code> command.</li>
+<li>A device MAY record, via efuses or similar mechanism, whether a device was
+unlocked and/or relocked.</li>
+</ol>
+
+<p>These requirements ensure that all data is destroyed upon the completion of an
+unlock operation. Failure to implement these protections is considered a
+"moderate" level security vulnerability.</p>

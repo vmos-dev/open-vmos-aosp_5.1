@@ -1,0 +1,231 @@
+page.title=Using Eclipse
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+<p>This document will help you set up the Eclipse IDE for Android platform development.</p>
+<p><em>Note: if you are looking for information on how to use
+Eclipse to develop applications that run on Android, this is not the right
+page for you. You probably would find <a href="https://developer.android.com/sdk/eclipse-adt.html">the Eclipse page on 
+developer.android.com</a> more useful.</em></p>
+<h2 id="basic-setup">Basic setup</h2>
+<p>First, it's important to make sure the regular Android development system is set up.</p>
+<pre><code>cd /path/to/android/root 
+make
+</code></pre>
+<p><strong>Important</strong>: You will still be using <code>make</code> to build the files you will actually run (in the emulator or on a device). You will be using Eclipse to edit files and verify that they compile, but when you want to run something you will need to make sure files are saved in Eclipse and run <code>make</code> in a shell. The Eclipse build is just for error checking.</p>
+<p>Eclipse needs a list of directories to search for Java files. This is called the "Java Build Path" and can be set with the <code>.classpath</code> file. We have a sample version to start you off.</p>
+<pre><code>cd /path/to/android/root 
+cp development/ide/eclipse/.classpath .
+chmod u+w .classpath
+</code></pre>
+<p>Now edit that copy of <code>.classpath</code>, if necessary.</p>
+<h3 id="increase-eclipses-memory-settings">Increase Eclipse's Memory Settings</h3>
+<p>The Android project is large enough that Eclipse's Java VM sometimes runs out of memory while compiling it. Avoid this problem by editing the <code>eclipse.ini</code> file. On Apple OSX the eclipse.ini file is located at</p>
+<pre><code>/Applications/eclipse/Eclipse.app/Contents/MacOS/eclipse.ini
+</code></pre>
+<p>Memory-related defaults (as of Eclipse 3.4):</p>
+<pre><code>-Xms40m 
+-Xmx256m 
+-XX:MaxPermSize=256m
+</code></pre>
+<p>Recommended settings for Android development:</p>
+<pre><code>-Xms128m 
+-Xmx512m 
+-XX:MaxPermSize=256m
+</code></pre>
+<p>These settings set Eclipse's minimum Java heap size to 128MB, set the maximum Java heap size to 512MB, and keep the maximum permanent generation size at the default of 256MB.</p>
+<p>Now start Eclipse:</p>
+<pre><code>eclipse
+</code></pre>
+<p>Now create a project for Android development:</p>
+<ol>
+<li>
+<p>If Eclipse asks you for a workspace location, choose the default.</p>
+</li>
+<li>
+<p>If you have a "Welcome" screen, close it to reveal the Java perspective.</p>
+</li>
+<li>
+<p>File &gt; New &gt; Java Project</p>
+</li>
+<li>
+<p>Pick a project name, "android" or anything you like.</p>
+</li>
+<li>
+<p>Select "Create project from existing source", enter the path to your Android root directory, and click Finish.</p>
+</li>
+<li>
+<p>Wait while it sets up the project. (You'll see a subtle progress meter in the lower right corner.)</p>
+</li>
+</ol>
+<p>Once the project workspace is created, Eclipse should start building. In theory, it should build with no errors and you should be set to go. If necessary, uncheck and re-check Project Build Automatically to force a rebuild.</p>
+<p><em>Note:</em> Eclipse sometimes likes to add an <code>import android.R</code> statement at the top of your files that use resources, especially when you ask eclipse to sort or otherwise manage imports. This will cause your make to break. Look out for these erroneous import statements and delete them.</p>
+<h3 id="when-you-sync">When You Sync</h3>
+<p>Every time you repo sync, or otherwise change files outside of Eclipse (especially the .classpath), you need to refresh Eclipse's view of things:</p>
+<ol>
+<li>
+<p>Window &gt; Show View &gt; Navigator</p>
+</li>
+<li>
+<p>In the Navigator, right-click on the project name</p>
+</li>
+<li>
+<p>Click Refresh in the context menu</p>
+</li>
+</ol>
+<h3 id="adding-apps-to-the-build-path">Adding Apps to the Build Path</h3>
+<p>The default <code>.classpath</code> includes the source to the core system and a sample set of apps, but might not include the particular app you may want to work on. To add an app, you must add the app's source directory. To do this inside Eclipse:</p>
+<ol>
+<li>
+<p>Project &gt; Properties</p>
+</li>
+<li>
+<p>Select "Java Build Path" from the left-hand menu.</p>
+</li>
+<li>
+<p>Choose the "Source" tab.</p>
+</li>
+<li>
+<p>Click "Add Folder..."</p>
+</li>
+<li>
+<p>Add your app's <code>src</code> directory.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<p>When you're done, the "source folder" path in the list should look like </p>
+<pre><code>android/packages/apps/YOURAPP/src
+</code></pre>
+<p>Depending on which app(s) you include, you may also need to include <code>othersrc/main/java</code> directories under <code>android/dalvik/libcore</code>. Do this if you find you cannot build with the default set.</p>
+<h2 id="eclipse-formatting">Eclipse formatting</h2>
+<p>You can import files in <code>development/ide/eclipse</code> to make Eclipse
+follow the Android style rules.  </p>
+<ol>
+<li>
+<p>Select Window &gt; Preferences &gt; Java &gt; Code Style.</p>
+</li>
+<li>
+<p>Use Formatter &gt; Import to import <code>android-formatting.xml</code>.</p>
+</li>
+<li>
+<p>Organize Imports &gt; Import to import <code>android.importorder</code>.</p>
+</li>
+</ol>
+<h2 id="debugging-the-emulator-with-eclipse">Debugging the emulator with Eclipse</h2>
+<p>You can also use eclipse to debug the emulator and step through code. First, start the emulator running:</p>
+<pre><code>cd /path/to/android/root 
+. build/envsetup.sh 
+lunch 1    
+make       
+emulator
+</code></pre>
+<p>If the emulator is running, you should see a picture of a phone.</p>
+<p>In another shell, start DDMS (the Dalvik debug manager):</p>
+<pre><code>cd /path/to/android/root 
+ddms
+</code></pre>
+<p>You should see a splufty debugging console.</p>
+<p>Now, in eclipse, you can attach to the emulator:</p>
+<ol>
+<li>
+<p>Run &gt; Open Debug Dialog...</p>
+</li>
+<li>
+<p>Right-click "Remote Java Application", select "New".</p>
+</li>
+<li>
+<p>Pick a name, i.e. "android-debug" or anything you like.</p>
+</li>
+<li>
+<p>Set the "Project" to your project name.</p>
+</li>
+<li>
+<p>Keep the Host set to "localhost", but change Port to 8700.</p>
+</li>
+<li>
+<p>Click the "Debug" button and you should be all set.</p>
+</li>
+</ol>
+<p>Note that port 8700 is attached to whatever process is currently selected in the DDMS console, so you need to sure that DDMS has selected the process you want to debug.</p>
+<p>You may need to open the Debug perspective (next to the "Java" perspective icon in the upper-right, click the small "Open Perspective" icon and select "Debug"). Once you do, you should see a list of threads; if you select one and break it (by clicking the "pause" icon), it should show the stack trace, source file, and line where execution is at. Breakpoints and whatnot should all work.</p>
+<h2 id="bonus-material">Bonus material</h2>
+<p>Replace Ctrl with the Apple key on Mac.</p>
+<table>
+<thead>
+<tr>
+<th>shortcut</th>
+<th>function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ctrl-Shift-o</td>
+<td>Organize imports</td>
+</tr>
+<tr>
+<td>Ctrl-Shift-t</td>
+<td>load class by name</td>
+</tr>
+<tr>
+<td>Ctrl-Shift-r</td>
+<td>load non-class resource by name</td>
+</tr>
+<tr>
+<td>Ctrl-1</td>
+<td>quick fix</td>
+</tr>
+<tr>
+<td>Ctrl-e</td>
+<td>Recently viewed files</td>
+</tr>
+<tr>
+<td>Ctrl-space</td>
+<td>auto complete</td>
+</tr>
+<tr>
+<td>Shift-Alt-r</td>
+<td>refactor:rename</td>
+</tr>
+<tr>
+<td>Shift-Alt-v</td>
+<td>refactor:move</td>
+</tr>
+</tbody>
+</table>
+<h2 id="eclipse-is-not-working-correctly-what-should-i-do">Eclipse is not working correctly, what should I do?</h2>
+<p>Make sure:</p>
+<ul>
+<li>
+<p>You followed the instructions on this page precisely.</p>
+</li>
+<li>
+<p>Your Problems view doesn't show any errors.</p>
+</li>
+<li>
+<p>Your application respects the package/directory structure.</p>
+</li>
+</ul>
+<p>If you're still having problems, please contact one of the Android mailing lists or IRC channels.</p>

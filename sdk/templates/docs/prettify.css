@@ -1,0 +1,25 @@
+.pln{color:#000}
+@media screen{
+  .str{color:#060}
+  .kwd{color:#036}
+  .com{color:#999}
+  .typ{color:#639}
+  .lit{color:#066}
+  .pun,.opn,.clo{color:#660}
+  .tag{color:#036}
+  .atn{color:#639}
+  .atv{color:#060}
+  .dec,.var{color:#606}
+  .fun{color:red}
+}
+@media print,projection{
+  .str{color:#060}
+  .kwd{color:#006}
+  .com{color:#999;font-style:italic}
+  .typ{color:#404}
+  .lit{color:#044}
+  .pun,.opn,.clo{color:#440}
+  .tag{color:#006}
+  .atn{color:#404}
+  .atv{color:#060}
+}

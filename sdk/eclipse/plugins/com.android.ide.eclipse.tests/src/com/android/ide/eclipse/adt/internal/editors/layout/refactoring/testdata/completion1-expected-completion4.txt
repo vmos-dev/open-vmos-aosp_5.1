@@ -1,0 +1,7 @@
+Code completion in completion1.xml for marginBottom="50^":
+50dp : <b>Density-independent Pixels</b> - an abstract unit that is based on the physical density of the screen.
+50sp : <b>Scale-independent Pixels</b> - this is like the dp unit, but it is also scaled by the user's font size preference.
+50pt : <b>Points</b> - 1/72 of an inch based on the physical size of the screen.
+50mm : <b>Millimeters</b> - based on the physical size of the screen.
+50in : <b>Inches</b> - based on the physical size of the screen.
+50px : <b>Pixels</b> - corresponds to actual pixels on the screen. Not recommended.

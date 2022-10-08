@@ -1,0 +1,65 @@
+page.title=Metadata and Controls
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="metadata">Metadata support</h2>
+<p> To support the saving of raw image files by the Android framework, substantial 
+  metadata is required about the sensor's characteristics. This includes 
+  information such as color spaces and lens shading functions.</p>
+<p>Most of this information is a static property of the camera subsystem and can 
+  therefore be queried before configuring any output pipelines or submitting any 
+  requests. The new camera APIs greatly expand the information provided by the 
+  getCameraInfo() method to provide this information to the application.</p>
+<p>In addition, manual control of the camera subsystem requires feedback from the 
+  assorted devices about their current state, and the actual parameters used in 
+  capturing a given frame. The actual values of the controls (exposure time, frame 
+  duration, and sensitivity) as actually used by the hardware must be included in 
+  the output metadata. This is essential so that applications know when either 
+  clamping or rounding took place, and so that the application can compensate for 
+  the real settings used for image capture.</p>
+<p>For example, if an application sets frame duration to 0 in a request, the HAL 
+  must clamp the frame duration to the real minimum frame duration for that 
+  request, and report that clamped minimum duration in the output result metadata.</p>
+<p>So if an application needs to implement a custom 3A routine (for example, to 
+  properly meter for an HDR burst), it needs to know the settings used to capture 
+  the latest set of results it has received in order to update the settings for 
+  the next request. Therefore, the new camera API adds a substantial amount of 
+  dynamic metadata to each captured frame. This includes the requested and actual 
+  parameters used for the capture, as well as additional per-frame metadata such 
+  as timestamps and statistics generator output.</p>
+<h2 id="per-setting">Per-setting control</h2>
+<p> For most settings, the expectation is that they can be changed every frame, 
+  without introducing significant stutter or delay to the output frame stream. 
+  Ideally, the output frame rate should solely be controlled by the capture 
+  request's frame duration field, and be independent of any changes to processing 
+  blocks' configuration.  In reality, some specific controls are known to be slow 
+  to change; these include the output resolution and output format of the camera 
+  pipeline, as well as controls that affect physical devices, such as lens focus 
+  distance. The exact requirements for each control set are detailed later.</p>
+<h2 id="raw-sensor">Raw sensor data support</h2>
+<p>In addition to the pixel formats supported by 
+  the old API, the new API adds a requirement for support for raw sensor data 
+  (Bayer RAW), both for advanced camera applications as well as to support raw
+  image files.</p>

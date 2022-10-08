@@ -1,0 +1,237 @@
+page.title=Overview
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>The Android input subsystem nominally consists of an event pipeline
+that traverses multiple layers of the system.</p>
+<h2 id="input-pipeline">Input Pipeline</h2>
+<p>At the lowest layer, the physical input device produces signals that
+describe state changes such as key presses and touch contact points.
+The device firmware encodes and transmits these signals in some way
+such as by sending USB HID reports to the system or by producing
+interrupts on an I2C bus.</p>
+<p>The signals are then decoded by a device driver in the Linux kernel.
+The Linux kernel provides drivers for many standard peripherals,
+particularly those that adhere to the HID protocol.  However, an OEM
+must often provide custom drivers for embedded devices that are
+tightly integrated into the system at a low-level, such as touch screens.</p>
+<p>The input device drivers are responsible for translating device-specific
+signals into a standard input event format, by way of the Linux
+input protocol.  The Linux input protocol defines a standard set of
+event types and codes in the <code>linux/input.h</code> kernel header file.
+In this way, components outside the kernel do not need to care about
+the details such as physical scan codes, HID usages, I2C messages,
+GPIO pins, and the like.</p>
+<p>Next, the Android <code>EventHub</code> component reads input events from the kernel
+by opening the <code>evdev</code> driver associated with each input device.
+The Android InputReader component then decodes the input events
+according to the device class and produces a stream of Android input
+events.  As part of this process, the Linux input protocol event codes
+are translated into Android event codes according to the
+input device configuration, keyboard layout files, and various
+mapping tables.</p>
+<p>Finally, the <code>InputReader</code> sends input events to the InputDispatcher
+which forwards them to the appropriate window.</p>
+<h2 id="control-points">Control Points</h2>
+<p>There are several stages in the input pipeline which effect control
+over the behavior of the input device.</p>
+<h3 id="driver-and-firmware-configuration">Driver and Firmware Configuration</h3>
+<p>Input device drivers frequently configure the behavior of the input
+device by setting parameters in registers or even uploading the
+firmware itself.  This is particularly the case for embedded
+devices such as touch screens where a large part of the calibration
+process involves tuning these parameters or fixing the firmware
+to provide the desired accuracy and responsiveness and to suppress
+noise.</p>
+<p>Driver configuration options are often specified as module parameters
+in the kernel board support package (BSP) so that the same driver
+can support multiple different hardware implementations.</p>
+<p>This documentation does attempt to describe driver or firmware
+configuration, but it does offer guidance as to device calibration
+in general.</p>
+<h3 id="board-configuration-properties">Board Configuration Properties</h3>
+<p>The kernel board support package (BSP) may export board configuration
+properties via SysFS that are used by the Android InputReader component,
+such as the placement of virtual keys on a touch screen.</p>
+<p>Refer to the device class sections for details about how different
+devices use board configuration properties.</p>
+<h3 id="resource-overlays">Resource Overlays</h3>
+<p>A few input behaviors are configured by way of resource overlays
+in <code>config.xml</code> such as the operation of lid switch.</p>
+<p>Here are a few examples:</p>
+<ul>
+<li>
+<p><code>config_lidKeyboardAccessibility</code>: Specifies the effect of the
+    lid switch on whether the hardware keyboard is accessible or hidden.</p>
+</li>
+<li>
+<p><code>config_lidNavigationAccessibility</code>: Specifies the effect of the
+    lid switch on whether the trackpad is accessible or hidden.</p>
+</li>
+<li>
+<p><code>config_longPressOnPowerBehavior</code>: Specifies what should happen when
+    the user holds down the power button.</p>
+</li>
+<li>
+<p><code>config_lidOpenRotation</code>: Specifies the effect of the lid switch
+    on screen orientation.</p>
+</li>
+</ul>
+<p>Refer to the documentation within <code>frameworks/base/core/res/res/values/config.xml</code>
+for details about each configuration option.</p>
+<h3 id="key-maps">Key Maps</h3>
+<p>Key maps are used by the Android <code>EventHub</code> and <code>InputReader</code> components
+to configure the mapping from Linux event codes to Android event codes
+for keys, joystick buttons and joystick axes.  The mapping may
+be device or language dependent.</p>
+<p>Refer to the device class sections for details about how different
+devices use key maps.</p>
+<h3 id="input-device-configuration-files">Input Device Configuration Files</h3>
+<p>Input device configuration files are used by the Android <code>EventHub</code> and
+<code>InputReader</code> components to configure special device characteristics
+such as how touch size information is reported.</p>
+<p>Refer to the device class sections for details about how different
+devices use input device configuration maps.</p>
+<h2 id="understanding-hid-usages-and-event-codes">Understanding HID Usages and Event Codes</h2>
+<p>There are often several different identifiers used to refer to any
+given key on a keyboard, button on a game controller, joystick axis
+or other control.  The relationships between these identifiers
+are not always the same: they are dependent on a set of mapping tables,
+some of which are fixed, and some which vary based on characteristics
+of the device, the device driver, the current locale, the system
+configuration, user preferences and other factors.</p>
+<dl>
+<dt>Physical Scan Code</dt>
+<dd>
+<p>A physical scan code is a device-specific identifier that is associated
+with each key, button or other control.  Because physical scan codes
+often vary from one device to another, the firmware or device driver
+is responsible for mapping them to standard identifiers such as
+HID Usages or Linux key codes.</p>
+<p>Scan codes are mainly of interest for keyboards.  Other devices
+typically communicate at a low-level using GPIO pins, I2C messages
+or other means.  Consequently, the upper layers of the software
+stack rely on the device drivers to make sense of what is going on.</p>
+</dd>
+<dt>HID Usage</dt>
+<dd>
+<p>A HID usage is a standard identifier that is used to report the
+state of a control such as a keyboard key, joystick axis,
+mouse button, or touch contact point.  Most USB and Bluetooth
+input devices conform to the HID specification, which enables
+the system to interface with them in a uniform manner.</p>
+<p>The Android Framework relies on the Linux kernel HID drivers to
+translate HID usage codes into Linux key codes and other identifiers.
+Therefore HID usages are mainly of interest to peripheral manufacturers.</p>
+</dd>
+<dt>Linux Key Code</dt>
+<dd>
+<p>A Linux key code is a standard identifier for a key or button.
+Linux key codes are defined in the <code>linux/input.h</code> header file using
+constants that begin with the prefix <code>KEY_</code> or <code>BTN_</code>.  The Linux
+kernel input drivers are responsible for translating physical
+scan codes, HID usages and other device-specific signals into Linux
+key codes and delivering information about them as part of
+<code>EV_KEY</code> events.</p>
+<p>The Android API sometimes refers to the Linux key code associated
+with a key as its "scan code".  This is technically incorrect in
+but it helps to distinguish Linux key codes from Android key codes
+in the API.</p>
+</dd>
+<dt>Linux Relative or Absolute Axis Code</dt>
+<dd>
+<p>A Linux relative or absolute axis code is a standard identifier
+for reporting relative movements or absolute positions along an
+axis, such as the relative movements of a mouse along its X axis
+or the absolute position of a joystick along its X axis.
+Linux axis code are defined in the <code>linux/input.h</code> header file using
+constants that begin with the prefix <code>REL_</code> or <code>ABS_</code>.  The Linux
+kernel input drivers are responsible for translating HID usages
+and other device-specific signals into Linux axis codes and
+delivering information about them as part of <code>EV_REL</code> and
+<code>EV_ABS</code> events.</p>
+</dd>
+<dt>Linux Switch Code</dt>
+<dd>
+<p>A Linux switch code is a standard identifier for reporting the
+state of a switch on a device, such as a lid switch.  Linux
+switch codes are defined in the <code>linux/input.h</code> header file
+using constants that begin with the prefix <code>SW_</code>.  The Linux
+kernel input drivers report switch state changes as <code>EV_SW</code> events.</p>
+<p>Android applications generally do not receive events from switches,
+but the system may use them interally to control various
+device-specific functions.</p>
+</dd>
+<dt>Android Key Code</dt>
+<dd>
+<p>An Android key code is a standard identifier defined in the Android
+API for indicating a particular key such as 'HOME'.  Android key codes
+are defined by the <code>android.view.KeyEvent</code> class as constants that
+begin with the prefix <code>KEYCODE_</code>.</p>
+<p>The key layout specifies how Linux key codes are mapped to Android
+key codes.  Different key layouts may be used depending on the keyboard
+model, language, country, layout, or special functions.</p>
+<p>Combinations of Android key codes are transformed into character codes
+using a device and locale specific key character map.  For example,
+when the keys identified as <code>KEYCODE_SHIFT</code> and <code>KEYCODE_A</code> are both
+pressed together, the system looks up the combination in the key
+character map and finds the capital letter 'A', which is then inserted
+into the currently focused text widget.</p>
+</dd>
+<dt>Android Axis Code</dt>
+<dd>
+<p>An Android axis code is a standard identifier defined in the Android
+API for indicating a particular device axis.  Android axis codes are
+defined by the <code>android.view.MotionEvent</code> class as constants that
+begin with the prefix <code>AXIS_</code>.</p>
+<p>The key layout specifies how Linux Axis Codes are mapped to Android
+axis codes.  Different key layouts may be used depending on the device
+model, language, country, layout, or special functions.</p>
+</dd>
+<dt>Android Meta State</dt>
+<dd>
+<p>An Android meta state is a standard identifier defined in the Android
+API for indicating which modifier keys are pressed.  Android meta states
+are defined by the <code>android.view.KeyEvent</code> class as constants that
+begin with the prefix <code>META_</code>.</p>
+<p>The current meta state is determined by the Android InputReader
+component which monitors when modifier keys such as <code>KEYCODE_SHIFT_LEFT</code>
+are pressed / released and sets / resets the appropriate meta state flag.</p>
+<p>The relationship between modifier keys and meta states is hardcoded
+but the key layout can alter how the modifier keys themselves are
+mapped which in turns affects the meta states.</p>
+</dd>
+<dt>Android Button State</dt>
+<dd>
+<p>An Android button state is a standard identifier defined in the Android
+API for indicating which buttons (on a mouse or stylus) are pressed.
+Android button states are defined by the <code>android.view.MotionEvent</code>
+class as constants that begin with the prefix <code>BUTTON_</code>.</p>
+<p>The current button state is determined by the Android InputReader
+component which monitors when buttons (on a mouse or stylus) are
+pressed / released and sets / resets appropriate button state flag.</p>
+<p>The relationship between buttons and button states is hardcoded.</p>
+</dd>
+</dl>
+<h2 id="further-reading">Further Reading</h2>
+<ol>
+<li><a href="http://www.kernel.org/doc/Documentation/input/event-codes.txt">Linux input event codes</a></li>
+<li><a href="http://www.kernel.org/doc/Documentation/input/multi-touch-protocol.txt">Linux multi-touch protocol</a></li>
+<li><a href="http://www.kernel.org/doc/Documentation/input/input.txt">Linux input drivers</a></li>
+<li><a href="http://www.kernel.org/doc/Documentation/input/ff.txt">Linux force feedback</a></li>
+<li><a href="http://www.usb.org/developers/hidpage">HID information, including HID usage tables</a></li>
+</ol>

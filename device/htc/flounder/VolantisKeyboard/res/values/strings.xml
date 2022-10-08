@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Name of the application. [CHAR LIMIT=35] -->
+    <string name="app_label">Volantis Keyboard</string>
+    <!-- Keyboard layouts label, used to describe the set of all built-in layouts in the UI. [CHAR LIMIT=35] -->
+    <string name="keyboard_layouts_label">Nexus Compact Keyboard</string>
+    <!-- UK English keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_english_uk_label">English (UK)</string>
+    <!-- US English keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_english_us_label">English (US)</string>
+    <!-- US Intl keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_english_us_intl_label">English (US International)</string>
+    <!-- German keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_german_label">German</string>
+    <!-- French keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_french_label">French</string>
+    <!-- French Canadian keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_french_ca_label">French (Canada)</string>
+    <!-- Italian keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_italian_label">Italian</string>
+    <!-- Japanese keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_japanese_label">Japanese</string>
+    <!-- Spanish keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_spanish_label">Spanish</string>
+    <!-- Belgian keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_belgian_label">Belgian</string>
+    <!-- Swedish keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_swedish_label">Swedish</string>
+    <!-- Korean keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_korean_label">Korean</string>
+    <!-- Zhuyin keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_zhuyin_label">Chinese (Zhuyin)</string>
+    <!-- Cangjie keyboard layout label. [CHAR LIMIT=35] -->
+    <string name="keyboard_layout_volantis_cangjie_label">Chinese (Cangjie)</string>
+</resources>

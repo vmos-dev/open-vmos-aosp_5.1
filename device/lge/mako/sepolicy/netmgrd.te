@@ -1,0 +1,33 @@
+# Network utilities (radio process)
+type netmgrd, domain;
+type netmgrd_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(netmgrd)
+
+# Starts as (root,radio) changes to (radio,radio)
+allow netmgrd self:capability { setuid setgid net_admin net_raw };
+
+# Support modprobe??
+dontaudit netmgrd self:capability sys_module;
+
+allow netmgrd self:udp_socket { create ioctl };
+allow netmgrd self:netlink_socket create_socket_perms;
+allow netmgrd self:netlink_route_socket { create_socket_perms nlmsg_read nlmsg_write };
+allow netmgrd self:packet_socket create_socket_perms;
+
+# set net.rmnet* properties.
+unix_socket_connect(netmgrd, property, init)
+allow netmgrd radio_prop:property_service set;
+auditallow netmgrd radio_prop:property_service set;
+allow netmgrd net_radio_prop:property_service set;
+
+# Talk to qmuxd (qmux_radio)
+qmux_socket(netmgrd)
+
+# Runs commands via sh.
+# TODO:  Convert to direct exec of /system/bin/ip and any other helpers.
+allow netmgrd shell_exec:file rx_file_perms;
+
+# Runs /system/bin/ip addr flush dev <device> commands.
+allow netmgrd system_file:file rx_file_perms;

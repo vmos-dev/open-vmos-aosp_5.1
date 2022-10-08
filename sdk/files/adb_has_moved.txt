@@ -1,0 +1,10 @@
+The adb tool has moved to platform-tools/
+
+If you don't see this directory in your SDK,
+launch the SDK and AVD Manager (execute the android tool)
+and install "Android SDK Platform-tools"
+
+Please also update your PATH environment variable to
+include the platform-tools/ directory, so you can
+execute adb from any location.
+

@@ -1,0 +1,2 @@
+# vold needs to load keystore which loads libtf_crypto_sst.so which has text relocations
+allow vold self:process execmem;

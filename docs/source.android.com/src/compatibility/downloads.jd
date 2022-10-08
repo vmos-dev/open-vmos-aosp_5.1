@@ -1,0 +1,131 @@
+page.title=Android Compatibility Downloads
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>Thank you for your interest in Android Compatibility! The links below give
+you access to key documents and information about the program.</p>
+
+<h2 id="android-44">Android 4.4</h2>
+<p>Android 4.4 is the release of the development milestone code-named
+KitKat. Source code for Android 4.4 is found in the
+'android-4.4.4_r1' branch in the open-source tree.</p>
+<ul>
+<li><a href="4.4/android-4.4-cdd.pdf">Android 4.4 Compatibility Definition
+Document (CDD)</a></li>
+<li><a
+href="https://dl.google.com/dl/android/cts/android-cts-4.4_r3-linux_x86-arm.zip">Android
+4.4 R3 Compatibility Test Suite (CTS) - ARM</a></li>
+<li><a
+href="https://dl.google.com/dl/android/cts/android-cts-4.4_r3-linux_x86-x86.zip">Android
+4.4 R3 Compatibility Test Suite (CTS) - x86</a></li>
+<li><a
+href="https://dl.google.com/dl/android/cts/android-cts-verifier-4.4_r3-linux_x86-arm.zip">Android
+4.4 R3 CTS Verifier - ARM</a></li>
+<li><a
+href="https://dl.google.com/dl/android/cts/android-cts-verifier-4.4_r3-linux_x86-x86.zip">Android
+4.4 R3 CTS Verifier - x86</a></li>
+</ul>
+
+<h2 id="android-43">Android 4.3</h2>
+<p>Android 4.3 is the release of the development milestone code-named
+Jelly Bean-MR2. Source code for Android 4.3 is found in the 'android-4.3_r2.2-cts' branch in the open-source tree.</p>
+<ul>
+<li><a href="4.3/android-4.3-cdd.pdf">Android 4.3 Compatibility Definition Document (CDD)</a></li>
+<li><a
+href="https://dl.google.com/dl/android/cts/android-cts-4.3_r2-linux_x86-arm.zip">Android
+4.3 R2 Compatibility Test Suite (CTS)</a></li>
+<li><a
+href="https://dl.google.com/dl/android/cts/android-cts-verifier-4.3_r1-linux_x86-arm.zip">Android
+4.3 R1 CTS Verifier</a></li>
+</ul>
+
+<h2 id="android-42">Android 4.2</h2>
+<p>Android 4.2 is the release of the development milestone code-named
+Jelly Bean-MR1. Source code for Android 4.2 is found in the 'android-4.2.2_r1' branch in the open-source tree.</p>
+<ul>
+<li><a href="4.2/android-4.2-cdd.pdf">Android 4.2 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-4.2_r4-linux_x86-arm.zip">Android 4.2 R4 Compatibility Test Suite (CTS)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-verifier-4.2_r5-linux_x86-arm.zip">Android 4.2 R5 CTS Verifier</a></li>
+</ul>
+<h2 id="android-41">Android 4.1</h2>
+<p>Android 4.1 is the release of the development milestone code-named Jelly
+Bean. The source code of the Compatibility Test Suite revisions below is
+available at the 'android-cts-4.1_r4' tag in the open-source tree.</p>
+<ul>
+<li><a href="4.1/android-4.1-cdd.pdf">Android 4.1 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-4.1_r4-linux_x86-arm.zip">Android 4.1 R4 Compatibility Test Suite (CTS)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-verifier-4.1_r7-linux_x86-arm.zip">Android 4.1 R7 CTS Verifier</a></li>
+</ul>
+<h2 id="android-403">Android 4.0.3</h2>
+<p>Android 4.0.3 is the release of the development milestone code-named
+Ice Cream Sandwich. Android 4.0.3 is the current version of Android. Source code for
+Android 4.0.3 is found in the 'android-4.0.3_r1' branch in the open-source tree.</p>
+<ul>
+<li><a href="4.0/android-4.0-cdd.pdf">Android 4.0 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-4.0.3_r3-linux_x86-arm.zip">Android 4.0.3 R3 Compatibility Test Suite (CTS)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-verifier-4.0.3_r2-linux_x86-arm.zip">Android 4.0.3 R2 CTS Verifier</a></li>
+</ul>
+<h2 id="android-23">Android 2.3</h2>
+<p>Android 2.3 is the release of the development milestone code-named
+Gingerbread. Source code for Android 2.3 is found in the 'gingerbread' branch in 
+the open-source tree.</p>
+<ul>
+<li><a href="2.3/android-2.3.3-cdd.pdf">Android 2.3 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-2.3_r13-linux_x86-arm.zip">Android 2.3 R13 Compatibility Test Suite (CTS)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-verifier-2.3_r3-linux_x86-armv5.zip">Android 2.3 R3 CTS Verifier</a></li>
+</ul>
+<h2 id="android-22">Android 2.2</h2>
+<p>Android 2.2 is the release of the development milestone code-named
+FroYo. Source code for Android 2.2 is found in the 'froyo' branch in the
+open-source tree.</p>
+<ul>
+<li><a href="2.2/android-2.2-cdd.pdf">Android 2.2 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-2.2_r8-linux_x86-arm.zip">Android 2.2 R8 Compatibility Test Suite (CTS)</a></li>
+</ul>
+<h2 id="android-21">Android 2.1</h2>
+<p>Android 2.1 is the release of the development milestone code-named
+Eclair. Source code for Android 2.1 is found in the 'eclair' branch in the
+open-source tree. Note that for technical reasons, there is no compatibility
+program for Android 2.0 or 2.0.1, and new devices must use Android 2.1.</p>
+<ul>
+<li><a href="2.1/android-2.1-cdd.pdf">Android 2.1 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-2.1_r5-x86.zip">Android 2.1 R5 Compatibility Test Suite (CTS)</a></li>
+</ul>
+<h2 id="android-16">Android 1.6</h2>
+<p>Android 1.6 was the release of the development milestone code-named Donut.
+Android 1.6 was obsoleted by Android 2.1. Source code for Android 1.6 is found
+in the 'donut' branch in the open-source tree.</p>
+<ul>
+<li><a href="1.6/android-1.6-cdd.pdf">Android 1.6 Compatibility Definition Document (CDD)</a></li>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-1.6_r1-x86.zip">Android 1.6 R1 Compatibility Test Suite (CTS)</a></li>
+</ul>
+<h2 id="compatibility-test-suite-manual">Compatibility Test Suite Manual</h2>
+<p>The CTS user manual is applicable to any CTS version, but CTS 2.1 R2 and
+beyond require <a href="cts-intro.html">additional steps</a> to run the accessibility tests.</p>
+<ul>
+<li><a href="android-cts-manual.pdf">Compatibility Test Suite (CTS) User Manual</a></li>
+</ul>
+<h2 id="cts-media-files">CTS Media Files</h2>
+<p>These media files are required for the CTS media stress tests.</p>
+<ul>
+<li><a href="https://dl.google.com/dl/android/cts/android-cts-media-1.0.zip">CTS Media 1.0</a></li>
+</ul>
+<h2 id="older-android-versions">Older Android Versions</h2>
+<p>There is no Compatibility Program for older versions of Android, such as Android
+1.5 (known in development as Cupcake). New devices intended to be Android
+compatible must ship with Android 1.6 or later.</p>

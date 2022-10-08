@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for textColor">^@color/title_color</item> selecting @android::
+@@ -5 +5
+-         <item name="android:textColor">^@color/title_color</item>
++         <item name="android:textColor">@android:^</item>

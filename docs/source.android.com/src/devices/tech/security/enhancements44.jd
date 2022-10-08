@@ -1,0 +1,48 @@
+page.title=Security Enhancements in Android 4.4
+@jd:body
+
+<p>
+Every Android release includes dozens of security enhancements to protect
+users. The following are some of the security enhancements available
+in Android 4.4:
+</p>
+
+<ul>
+  <li><strong>Android sandbox reinforced with SELinux.</strong>
+  Android now uses SELinux in enforcing mode. SELinux is a mandatory
+  access control (MAC) system in the Linux kernel used to augment the
+  existing discretionary access control (DAC) based security model.
+  This provides additional protection against potential security
+  vulnerabilities.</li>
+
+  <li><strong>Per User VPN.</strong>
+  On multi-user devices, VPNs are now applied per user.
+  This can allow a user to route all network traffic through a VPN
+  without affecting other users on the device.</li>
+
+  <li><strong>ECDSA Provider support in AndroidKeyStore.</strong>
+  Android now has a keystore provider that allows use of ECDSA and
+  DSA algorithms.</li>
+
+  <li><strong>Device Monitoring Warnings.</strong>
+  Android provides users with a warning if any certificate has been
+  added to the device certificate store that could allow monitoring of
+  encrypted network traffic.</li>
+
+  <li><strong>FORTIFY_SOURCE.</strong>
+  Android now supports FORTIFY_SOURCE level 2, and all code is compiled
+  with these protections. FORTIFY_SOURCE has been enhanced to work with
+  clang.</li>
+
+  <li><strong>Certificate Pinning.</strong>
+  Android 4.4 detects and prevents the use of fraudulent Google
+  certificates used in secure SSL/TLS communications.</li>
+
+  <li><strong>Security Fixes.</strong>
+  Android 4.4 also includes fixes for Android-specific vulnerabilities.
+  Information about these vulnerabilities has been provided to Open
+  Handset Alliance members and fixes are available in Android Open Source
+  Project. To improve security, some devices with earlier versions of
+  Android may also include these fixes.</li>
+
+</ul>

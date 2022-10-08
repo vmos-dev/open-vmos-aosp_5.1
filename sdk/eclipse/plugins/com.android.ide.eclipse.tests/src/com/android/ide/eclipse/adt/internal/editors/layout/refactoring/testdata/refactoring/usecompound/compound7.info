@@ -1,0 +1,4 @@
+android.widget.LinearLayout [0,121,800,480] <LinearLayout>
+    android.widget.LinearLayout [0,0,109,97] <LinearLayout>
+        android.widget.ImageView [18,0,90,72] <ImageView>
+        android.widget.TextView [0,72,109,97] <TextView>

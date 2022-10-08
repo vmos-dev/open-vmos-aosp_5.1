@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="wrap_content" android:layout_height="match_parent"
+	android:orientation="vertical" android:layout_weight="1" android:layout_marginRight="30dip" android:paddingRight="20dip">
+	<TextView android:text="@string/ledLabel" style="@style/DemoKitLEDText"
+		android:layout_gravity="center" android:layout_height="20dip"
+		android:clickable="true" />
+	<com.google.android.DemoKit.VerticalSlider
+		android:layout_height="wrap_content" android:layout_width="wrap_content"
+		android:layout_weight="1" android:layout_gravity="center">
+	</com.google.android.DemoKit.VerticalSlider>
+		<TextView android:text="155" style="@style/DemoKitLEDText"
+			android:layout_height="20dip" android:layout_gravity="center"
+			android:gravity="center" android:clickable="true" />
+</LinearLayout>
+

@@ -1,0 +1,3 @@
+Code completion in completionvalues1.xml for [^false]:
+true
+false

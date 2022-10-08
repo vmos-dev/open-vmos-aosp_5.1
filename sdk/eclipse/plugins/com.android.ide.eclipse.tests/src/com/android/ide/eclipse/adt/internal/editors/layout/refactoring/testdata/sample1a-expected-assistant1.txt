@@ -1,0 +1,3 @@
+Quick assistant in sample1a.xml for <Button android:text="Fir^stButton":
+Extract Android String : Initiates the "Extract Android String" refactoring
+Extract Style : Initiates the "Extract Style" refactoring

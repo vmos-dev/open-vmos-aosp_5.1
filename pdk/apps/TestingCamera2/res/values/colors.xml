@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="horiz_rule_color">#777777</color>
+    <color name="main_section_divider_color">#777777</color>
+</resources>

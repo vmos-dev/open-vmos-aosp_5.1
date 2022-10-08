@@ -1,0 +1,219 @@
+page.title=Batching
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="what_is_batching">What is batching?</h2>
+<p>“Batching” refers to storing sensor events in a hardware FIFO before reporting
+  them through the <a href="hal-interface.html">HAL</a> instead of reporting them immediately.</p>
+<p>Batching can enable significant power savings by preventing the SoC from waking
+  up to receive each event. Instead, the events can be grouped and processed
+  together. </p>
+<p>The bigger the FIFOs, the more power can be saved. Implementing batching is an
+  exercise of trading off hardware memory for reduced power consumption.</p>
+<p>Batching happens when a sensor possesses a hardware FIFO
+  (<code>sensor_t.fifoMaxEventCount &gt; 0</code>) and we are in one of two situations:</p>
+<ul>
+  <li> <code>max_report_latency &gt; 0</code>, meaning the sensor events for this specific sensor can
+    be delayed up to <code>max_report_latency</code> before being reported through the HAL. </li>
+  <li> or the SoC is in suspend mode and the sensor is a non-wake-up sensor, meaning
+    events must be stored while waiting for the SoC to wake up. </li>
+</ul>
+<p>See the paragraph on the <a
+  href="hal-interface.html#batch_sensor_flags_sampling_period_maximum_report_latency">HAL
+  batch function</a> for more details.</p>
+<p>The opposite of batching is the continuous operation, where events are not
+  buffered, meaning they are reported immediately. Continuous operation
+  corresponds to:</p>
+<ul>
+  <li> when <code>max_report_latency = 0</code> and the events can be delivered to the application,
+    meaning
+    <ul>
+      <li> the SoC is awake </li>
+      <li> or the sensor is a wake-up sensor </li>
+    </ul>
+  </li>
+  <li> or when the sensor doesn’t have a hardware FIFO (<code>sensor_t.fifoMaxEventCount =
+    0</code>), in which case
+    <ul>
+      <li> the events are reported if the SoC is awake or the sensor is a wake-up sensor </li>
+      <li> the events are lost when the SoC is asleep and the sensor is not a wake-up
+        sensor </li>
+    </ul>
+  </li>
+</ul>
+<h2 id="wake-up_fifos_and_non-wake-up_fifos">Wake-up FIFOs and non-wake-up FIFOs</h2>
+<p>Sensor events from <a href="suspend-mode.html#wake-up_sensors">wake-up
+  sensors</a> must be stored into a wake-up FIFO. There can be one wake-up FIFO
+  per sensor, or, more commonly, one big shared wake-up FIFO where events from all wake-up
+  sensors are interleaved. Other options are also possible, with for example some
+  wake-up sensors having a dedicated FIFO, and the rest of the wake-up sensors
+  all sharing the same one.</p>
+<p>Similarly, sensor events from <a
+  href="suspend-mode.html#non-wake-up_sensors">non-wake-up sensors</a> must be
+  stored into a non-wake-up FIFOs, and there can be one or several
+  non-wake-up FIFOs.</p>
+<p>In all cases, wake-up sensor events and non-wake-up sensor events cannot be
+  interleaved into the same FIFO. Wake-up events go in wake-up FIFOs, and
+  non-wake-up events go in non-wake-up FIFOs.</p>
+<p>For the wake-up FIFO, the “one big shared FIFO” design provides the best power
+  benefits. For the non-wake-up FIFO, there is no preference between the “one big
+  shared FIFO” and “several small reserved FIFOs”. See <a
+  href="#fifo_allocation_priority">FIFO allocation priority</a> for suggestions
+  on how to dimension each FIFO.</p>
+<h2 id="behavior_outside_of_suspend_mode">Behavior outside of suspend mode</h2>
+<p>When the SoC is awake (not in suspend mode), the events can be stored
+  temporarily in their FIFO, as long as they are not delayed by more than
+  <code>max_report_latency</code>.</p>
+<p>As long as the SoC doesn’t enter the suspend mode, no event shall be dropped or
+  lost. If internal hardware FIFOs is getting full before <code>max_report_latency</code>
+  elapsed, then events are reported at that point to ensure that no event is
+  lost.</p>
+<p>If several sensors share the same FIFO and the <code>max_report_latency</code> of one of
+  them elapses, all events from the FIFO are reported, even if the
+  <code>max_report_latency</code> of the other sensors didn’t elapse yet. The general goal is
+  to reduce the number of times batches of events must be reported, so as soon as
+  one event must be reported, all events from all sensors can be reported.</p>
+<p>For example, if the following sensors are activated:</p>
+<ul>
+  <li> accelerometer batched with <code>max_report_latency</code> = 20s </li>
+  <li> gyroscope batched with <code>max_report_latency</code> = 5s </li>
+</ul>
+<p>Then the accelerometer batches can be reported at the same time the gyroscope
+  batches are reported (every 5 seconds), even if the accelerometer and the
+  gyroscope do not share the same FIFO.</p>
+<h2 id="behavior_in_suspend_mode">Behavior in suspend mode</h2>
+<p>Batching is particularly beneficial when wanting to collect sensor data in the
+  background without keeping the SoC awake. Because the sensor drivers and HAL
+  implementation are not allowed to hold a wake-lock*, the SoC can enter the
+  suspend mode even while sensor data is being collected.</p>
+<p>The behavior of sensors while the SoC is suspended depends on whether the
+  sensor is a wake-up sensor. See <a
+href="suspend-mode.html#wake-up_sensors">Wake-up sensors</a> for some
+details.</p>
+<p>When a non-wake-up FIFO fills up, it must wrap around and behave like a
+  circular buffer, overwriting older events: the new events replace the old ones.
+  <code>max_report_latency</code> has no impact on non-wake-up FIFOs while in suspend mode.</p>
+<p>When a wake-up FIFO fills up, or when the <code>max_report_latency</code> of one of the
+  wake-up sensor elapsed, the hardware must wake up the SoC and report the data.</p>
+<p>In both cases (wake-up and non-wake-up), as soon as the SoC comes out of
+  suspend mode, a batch is produced with the content of all FIFOs, even if
+  <code>max_report_latency</code> of some sensors didn’t elapse yet. This minimizes the risk
+  of having to wake-up the SoC again soon if it goes back to suspend. Hence, it
+  minimizes power consumption.</p>
+<p>*One notable exception of drivers not being allowed to hold a wake lock is when
+  a wake-up sensor with <a href="report-modes.html#continuous">continuous
+  reporting mode</a> is activated with <code>max_report_latency</code> &lt; 1
+  second. In that case, the driver can hold a wake lock because the SoC would
+  anyway not have the time to enter the suspend mode, as it would be awoken by
+  a wake-up event before reaching the suspend mode.</p>
+<h2 id="precautions_to_take_when_batching_wake-up_sensors">Precautions to take when batching wake-up sensors</h2>
+<p>Depending on the device, it might take a few milliseconds for the SoC to
+  entirely come out of suspend and start flushing the FIFO. Enough head room must
+  be allocated in the FIFO to allow the device to entirely come out of suspend
+  without the wake-up FIFO overflowing. No events shall be lost, and the
+  <code>max_report_latency</code> must be respected.</p>
+<h2 id="precautions_to_take_when_batching_non-wake-up_on-change_sensors">Precautions to take when batching non-wake-up on-change sensors</h2>
+<p>On-change sensors only generate events when the value they are measuring is
+  changing. If the measured value changes while the SoC is in suspend mode,
+  applications expect to receive an event as soon as the SoC wakes up. Because of
+  this, batching of <a href="suspend-mode.html#non-wake-up_sensors">non-wake-up</a> on-change sensor events must be performed carefully if the sensor shares its
+  FIFO with other sensors. The last event generated by each on-change sensor must
+  always be saved outside of the shared FIFO so it can never be overwritten by
+  other events. When the SoC wakes up, after all events from the FIFO have been
+  reported, the last on-change sensor event must be reported.</p>
+<p>Here is a situation we want to avoid:</p>
+<ol>
+  <li> An application registers to the non-wake-up step counter (on-change) and the
+    non-wake-up accelerometer (continuous), both sharing the same FIFO </li>
+  <li> The application receives a step counter event “step_count=1000 steps” </li>
+  <li> The SoC goes to suspend </li>
+  <li> The user walks 20 steps, causing step counter and accelerometer events to be
+    interleaved, the last step counter event being “step_count = 1020 steps” </li>
+  <li> The user doesn’t move for a long time, causing accelerometer events to continue
+    accumulating in the FIFO, eventually overwriting every step_count event in the
+    shared FIFO </li>
+  <li> SoC wakes up and all events from the FIFO are sent to the application </li>
+  <li> The application receives only accelerometer events and thinks that the user
+    didn’t walk (bad!) </li>
+</ol>
+<p>By saving the last step counter event outside of the FIFO, the HAL can report
+  this event when the SoC wakes up, even if all other step counter events were
+  overwritten by accelerometer events. This way, the application receives
+  “step_count = 1020 steps” when the SoC wakes up.</p>
+<h2 id="implementing_batching">Implementing batching</h2>
+<p>Batching cannot be emulated in software. It must be implemented entirely in
+  hardware, with hardware FIFOs. In particular, it cannot be implemented on the
+  SoC, for example in the HAL implementation, as this would be
+  counter-productive. The goal here is to save significant amounts of power.
+  Batching must be implemented without the aid of the SoC, which should be
+  allowed to be in suspend mode during batching.</p>
+<p><code>max_report_latency</code> can be modified at any time, in particular while the
+  specified sensor is already enabled; and this shall not result in the loss of
+  events.</p>
+<h2 id="fifo_allocation_priority">FIFO allocation priority</h2>
+<p>On platforms in which hardware FIFO size is limited, the system designers may
+  have to choose how much FIFO to reserve for each sensor. To help with this
+  choice, here is a list of applications made possible when batching is
+  implemented on the different sensors.</p>
+<h3 id="high_value_low_power_pedestrian_dead_reckoning">High value: Low power pedestrian dead reckoning</h3>
+<p>Target batching time: 1 to 10 minutes</p>
+<p>Sensors to batch:</p>
+<ul>
+  <li> Wake-up Step detector </li>
+  <li> Wake-up Game rotation vector at 5Hz </li>
+  <li> Wake-up Barometer at 5Hz </li>
+  <li> Wake-up Uncalibrated Magnetometer at 5Hz </li>
+</ul>
+<p>Batching this data allows performing pedestrian dead reckoning while letting
+  the SoC go to suspend.</p>
+<h3 id="high_value_medium_power_intermittent_activity_gesture_recognition">High value: Medium power intermittent activity/gesture recognition</h3>
+<p>Target batching time: 3 seconds</p>
+<p>Sensors to batch: Non-wake-up Accelerometer at 50Hz</p>
+<p>Batching this data allows periodically recognizing arbitrary activities and
+  gestures without having to keep the SoC awake while the data is collected.</p>
+<h3 id="medium_value_medium_power_continuous_activity_gesture_recognition">Medium value: Medium power continuous activity/gesture recognition</h3>
+<p>Target batching time: 1 to 3 minutes</p>
+<p>Sensors to batch: Wake-up Accelerometer at 50Hz</p>
+<p>Batching this data allows continuously recognizing arbitrary activities and
+  gestures without having to keep the SoC awake while the data is collected.</p>
+<h3 id="medium-high_value_interrupt_load_reduction">Medium-high value: Interrupt load reduction</h3>
+<p>Target batching time: &lt; 1 second</p>
+<p>Sensors to batch: any high frequency sensor, usually non-wake-up.</p>
+<p>If the gyroscope is set at 240Hz, even batching just 10 gyro events can reduce
+  the number of interrupts from 240/second to 24/second.</p>
+<h3 id="medium_value_continuous_low_frequency_data_collection">Medium value: Continuous low frequency data collection</h3>
+<p>Target batching time: 1 to 10 minutes</p>
+<p>Sensors to batch:</p>
+<ul>
+  <li> Wake-up barometer at 1Hz, </li>
+  <li> Wake-up humidity sensor at 1Hz </li>
+  <li> Other low frequency wake-up sensors at similar rates </li>
+</ul>
+<p>Allows creating monitoring applications at low power.</p>
+<h3 id="medium-low_value_continuous_full-sensors_collection">Medium-low value: Continuous full-sensors collection</h3>
+<p>Target batching time: 1 to 10 minutes</p>
+<p>Sensors to batch: all wake-up sensors, at high frequencies</p>
+<p>Allows full collection of sensor data while leaving the SoC in suspend mode.
+  Only to consider if FIFO space is not an issue.</p>

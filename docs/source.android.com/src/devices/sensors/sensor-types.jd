@@ -1,0 +1,754 @@
+page.title=Sensor types
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id="sensor_axis_definition">Sensor axis definition</h2>
+<p>Sensor event values from many sensors are expressed in a specific frame that is
+  static relative to the phone. This API is relative only to the NATURAL
+  orientation of the screen. In other words, the axes are not swapped when the
+  device's screen orientation changes.</p>
+
+<div class="figure" style="width:269px">
+  <img src="http://developer.android.com/images/axis_device.png"
+alt="Coordinate system of sensor API" height="225" />
+  <p class="img-caption">
+    <strong>Figure 1.</strong> Coordinate system (relative to a device) that's
+     used by the Sensor API.
+  </p>
+</div>
+
+<h2 id="base_sensors">Base sensors</h2>
+<p>Some sensor types are named directly after the physical sensors they represent.
+  Sensors with such types are called “base” sensors, referring to the fact they
+  relay data from a single physical sensor, contrary to “composite” sensors, for
+  which the data is generated out of other sensors.</p>
+<p>Examples of base sensor types:</p>
+<ul>
+  <li><code>SENSOR_TYPE_ACCELEROMETER</code></li>
+  <li><code>SENSOR_TYPE_GYROSCOPE</code></li>
+  <li><code>SENSOR_TYPE_MAGNETOMETER</code></li>
+</ul>
+  <p> See the list of Android sensor types below for more details on each
+<h3 id="base_sensors_=_not_equal_to_physical_sensors">Base sensors != (not equal to) physical sensors</h3>
+<p>Base sensors are not to be confused with their underlying physical sensor. The
+  data from a base sensor is not the raw output of the physical sensor:
+  corrections are be applied, such as bias compensation and temperature
+  compensation.</p>
+<p>The characteristics of a base sensor might be different from the
+  characteristics of its underlying physical sensor.</p>
+<ul>
+  <li> For example, a gyroscope chip might be rated to have a bias range of 1 deg/sec.
+    <ul>
+      <li> After factory calibration, temperature compensation and bias compensation are
+        applied, the actual bias of the Android sensor will be reduced, may be to a
+        point where the bias is guaranteed to be below 0.01deg/sec. </li>
+      <li> In this situation, we say that the Android sensor has a bias below 0.01
+        deg/sec, even though the data sheet of the underlying sensor said 1 deg/sec. </li>
+    </ul>
+  </li>
+  <li> As another example, a barometer might have a power consumption of 100uW.
+    <ul>
+      <li> Because the generated data needs to be transported from the chip to the SoC,
+        the actual power cost to gather data from the barometer Android sensor might be
+        much higher, for example 1000uW. </li>
+      <li> In this situation, we say that the Android sensor has a power consumption of
+        1000uW, even though the power consumption measured at the barometer chip leads
+        is 100uW. </li>
+    </ul>
+  </li>
+  <li> As a third example, a magnetometer might consume 100uW when calibrated, but
+    consume more when calibrating.
+    <ul>
+      <li> Its calibration routine might require activating the gyroscope, consuming
+        5000uW, and running some algorithm, costing another 900uW. </li>
+      <li> In this situation, we say that the maximum power consumption of the
+        (magnetometer) Android sensor is 6000uW. </li>
+      <li> In this case, the average power consumption is the more useful measure, and it
+        is what is reported in the sensor static characteristics through the HAL. </li>
+    </ul>
+  </li>
+</ul>
+<h3 id="accelerometer">Accelerometer</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_ACCELEROMETER)</code> <em>returns a non-wake-up sensor</em></p>
+<p>An accelerometer sensor reports the acceleration of the device along the 3
+  sensor axes. The measured acceleration includes both the physical acceleration
+  (change of velocity) and the gravity. The measurement is reported in the x, y
+  and z fields of sensors_event_t.acceleration.</p>
+<p>All values are in SI units (m/s^2) and measure the acceleration of the device
+  minus the force of gravity along the 3 sensor axes.</p>
+<p>Here are examples:</p>
+<ul>
+  <li> The norm of (x, y, z) should be close to 0 when in free fall. </li>
+  <li> When the device lies flat on a table and is pushed on its left side toward the
+    right, the x acceleration value is positive. </li>
+  <li> When the device lies flat on a table, the acceleration value along z is +9.81
+    alo, which corresponds to the acceleration of the device (0 m/s^2) minus the
+    force of gravity (-9.81 m/s^2). </li>
+  <li> When the device lies flat on a table and is pushed toward the sky, the
+    acceleration value is greater than +9.81, which corresponds to the acceleration
+    of the device (+A m/s^2) minus the force of gravity (-9.81 m/s^2). </li>
+</ul>
+<p>The readings are calibrated using:</p>
+<ul>
+  <li> temperature compensation </li>
+  <li> online bias calibration </li>
+  <li> online scale calibration </li>
+</ul>
+<p>The bias and scale calibration must only be updated while the sensor is
+  deactivated, so as to avoid causing jumps in values during streaming.</p>
+<p>The accelerometer also reports how accurate it expects its readings to be
+  through <code>sensors_event_t.acceleration.status</code>. See the <a
+  href="http://developer.android.com/reference/android/hardware/SensorManager.html">SensorManager</a>’s
+  <a href="http://developer.android.com/reference/android/hardware/SensorManager.html#SENSOR_STATUS_ACCURACY_HIGH"><code>SENSOR_STATUS_*  </code></a> constants for more information on possible values for this field.</p>
+<h3 id="ambient_temperature">Ambient temperature</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#on-change">On-change</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_AMBIENT_TEMPERATURE)</code> <em>returns a non-wake-up sensor</em></p>
+<p>This sensor provides the ambient (room) temperature in degrees Celsius.</p>
+<h3 id="magnetic_field_sensor">Magnetic field sensor</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_MAGNETIC_FIELD)</code> <em>returns a non-wake-up sensor</em></p>
+<p><code>SENSOR_TYPE_GEOMAGNETIC_FIELD == SENSOR_TYPE_MAGNETIC_FIELD</code></p>
+<p>A magnetic field sensor (also known as magnetometer) reports the ambient
+  magnetic field, as measured along the 3 sensor axes.</p>
+<p>The measurement is reported in the x, y and z fields of
+  <code>sensors_event_t.magnetic</code> and all values are in micro-Tesla (uT).</p>
+<p>The magnetometer also reports how accurate it expects its readings to be
+  through <code>sensors_event_t.magnetic.status</code>. See the <a
+href="http://developer.android.com/reference/android/hardware/SensorManager.html">SensorManager</a>’s
+<a href="http://developer.android.com/reference/android/hardware/SensorManager.html#SENSOR_STATUS_ACCURACY_HIGH"><code>SENSOR_STATUS_*</code></a> constants for more information on possible values for this field.</p>
+<p>The readings are calibrated using:</p>
+<ul>
+  <li> temperature compensation </li>
+  <li> factory (or online) soft-iron calibration </li>
+  <li> online hard-iron calibration </li>
+</ul>
+<h3 id="gyroscope">Gyroscope</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_GYROSCOPE)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A gyroscope sensor reports the rate of rotation of the device around the 3
+  sensor axes.</p>
+<p>Rotation is positive in the counterclockwise direction (right-hand rule). That
+  is, an observer looking from some positive location on the x, y or z axis at a
+  device positioned on the origin would report positive rotation if the device
+  appeared to be rotating counter clockwise. Note that this is the standard
+  mathematical definition of positive rotation and does not agree with the
+  aerospace definition of roll.</p>
+<p>The measurement is reported in the x, y and z fields of <code>sensors_event_t.gyro</code>
+  and all values are in radians per second (rad/s).</p>
+<p>The readings are calibrated using:</p>
+<ul>
+  <li> temperature compensation </li>
+  <li> factory (or online) scale compensation </li>
+  <li> online bias calibration (to remove drift) </li>
+</ul>
+<p>The gyroscope also reports how accurate it expects its readings to be through
+  <code>sensors_event_t.gyro.status</code>. See the <a
+  href="http://developer.android.com/reference/android/hardware/SensorManager.html">SensorManager</a>’s
+  <a
+href="http://developer.android.com/reference/android/hardware/SensorManager.html#SENSOR_STATUS_ACCURACY_HIGH"><code>SENSOR_STATUS_*</code></a> constants for more information on possible values for this field.</p>
+<p>The gyroscope cannot be emulated based on magnetometers and accelerometers, as
+  this would cause it to have reduced local consistency and responsiveness. It
+  must be based on a usual gyroscope chip.</p>
+<h3 id="heart_rate">Heart Rate</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#on-change">On-change</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_HEART_RATE)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A heart rate sensor reports the current heart rate of the person touching the
+  device.</p>
+<p>The current heart rate in beats per minute (BPM) is reported in
+  <code>sensors_event_t.heart_rate.bpm</code> and the status of the sensor is reported in
+  <code>sensors_event_t.heart_rate.status</code>. See the <a
+  href="http://developer.android.com/reference/android/hardware/SensorManager.html">SensorManager</a>’s
+  <a href="http://developer.android.com/reference/android/hardware/SensorManager.html#SENSOR_STATUS_ACCURACY_HIGH"><code>SENSOR_STATUS_*</code></a> constants for more information on possible values for this field. In
+  particular, upon the first activation, unless the device is known to not be on
+  the body, the status field of the first event must be set to
+  <code>SENSOR_STATUS_UNRELIABLE</code>. Because this sensor is on-change,
+  events are generated when and only when <code>heart_rate.bpm</code> or
+  <code>heart_rate.status</code> have changed since the last event. The events
+  are generated no faster than every <code>sampling_period</code>.</p>
+<p><code>sensor_t.requiredPermission</code> is always <code>SENSOR_PERMISSION_BODY_SENSORS</code>.</p>
+<h3 id="light">Light</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#on-change">On-change</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_LIGHT)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A light sensor reports the current illumination in SI lux units.</p>
+<p>The measurement is reported in <code>sensors_event_t.light</code>.</p>
+<h3 id="proximity">Proximity</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#on-change">On-change</a></em></p>
+<p>Usually defined as a wake-up sensor</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_PROXIMITY)</code> <em>returns a wake-up sensor</em></p>
+<p>A proximity sensor reports the distance from the sensor to the closest visible
+  surface.</p>
+<p>Up to Android KitKat, the proximity sensors were always wake-up sensors, waking
+  up the SoC when detecting a change in proximity. After Android KitKat, we
+  advise to implement the wake-up version of this sensor first, as it is the one
+  that is used to turn the screen on and off while making phone calls.</p>
+<p>The measurement is reported in centimeters in <code>sensors_event_t.distance</code>. Note
+  that some proximity sensors only support a binary &quot;near&quot; or &quot;far&quot; measurement.
+  In this case, the sensor report its <code>sensor_t.maxRange</code> value in the &quot;far&quot; state
+  and a value less than <code>sensor_t.maxRange</code> in the &quot;near&quot; state.</p>
+<h3 id="pressure">Pressure</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_PRESSURE)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A pressure sensor (also known as barometer) reports the atmospheric pressure in
+  hectopascal (hPa).</p>
+<p>The readings are calibrated using</p>
+<ul>
+  <li> temperature compensation </li>
+  <li> factory bias calibration </li>
+  <li> factory scale calibration </li>
+</ul>
+<p>The barometer is often used to estimate elevation changes. To estimate absolute
+  elevation, the sea-level pressure (changing depending on the weather) must be
+  used as a reference.</p>
+<h3 id="relative_humidity">Relative humidity</h3>
+<p>Reporting-mode: <em><a href="report-modes.html#on-change">On-change</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_RELATIVE_HUMIDITY)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A relative humidity sensor measures relative ambient air humidity and returns a
+  value in percent.</p>
+<h2 id="composite_sensor_types">Composite sensor types</h2>
+<p>Any sensor that is not a base sensor is called a composite sensor. Composite
+  sensors generate their data by processing and/or fusing data from one or
+  several physical sensors.</p>
+<p>Examples of composite sensor types:</p>
+<ul>
+  <li><a href="#step_detector">Step detector</a> and <a href="#significant_motion">Significant motion</a>, which are usually based on an accelerometer, but could be based on other
+    sensors as well, if the power consumption and accuracy was acceptable. </li>
+  <li><a href="#game_rotation_vector">Game rotation vector</a>, based on an
+    accelerometer and a gyroscope. </li>
+  <li><a href="#gyroscope_uncalibrated">Uncalibrated gyroscope</a>, which is
+    similar to the gyroscope base sensor, but with
+    the bias calibration being reported separately instead of being corrected in
+    the measurement. </li>
+</ul>
+<p>Just like base sensors, the characteristics of the composite sensors come from
+  the characteristics of their final data.</p>
+<ul>
+  <li> For example, the power consumption of a game rotation vector is probably equal
+    to the sum of the power consumptions of: the accelerometer chip, the gyroscope
+    chip, the chip processing the data, and the busses transporting the data. </li>
+  <li> As another example, the drift of a game rotation vector will depend as much on
+    the quality of the calibration algorithm as on the physical sensor
+    characteristics. </li>
+</ul>
+<h2 id="composite_sensor_type_summary">Composite sensor type summary</h2>
+<p>The following table lists the composite sensor types. Each composite sensor
+  relies on data from one or several physical sensors. Choosing other underlying
+  physical sensors to approximate results should be avoided as they will provide
+  a poor user experience.</p>
+<p>When there is no gyroscope on the device, and only when there is no gyroscope,
+  you may implement the rotation vector, linear acceleration and gravity sensors
+  without using the gyroscope.</p>
+<table>
+  <tr>
+    <th><p>Sensor type</p></th>
+    <th><p>Category</p></th>
+    <th><p>Underlying physical sensors</p></th>
+    <th><p>Reporting mode</p></th>
+  </tr>
+  <tr>
+    <td><p><a href="#game_rotation_vector">Game rotation vector</a></p></td>
+    <td><p>Attitude</p></td>
+    <td><p>Accelerometer, Gyroscope MUST NOT USE Magnetometer</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#geomagnetic_rotation_vector">Geomagnetic rotation
+     vector</a> <img src="images/battery_icon.png" width="20" height="20" alt="Low
+     power sensor" /></p></td>
+    <td><p>Attitude</p></td>
+    <td><p>Accelerometer, Magnetometer, MUST NOT USE Gyroscope</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><a href="#glance_gesture">Glance gesture</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td>
+    <td><p>Interaction</p></td>
+    <td><p>Undefined</p></td>
+    <td><p>One-shot</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#gravity">Gravity</a></p></td>
+    <td><p>Attitude</p></td>
+    <td><p>Accelerometer, Gyroscope</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#gyroscope_uncalibrated">Gyroscope uncalibrated</a></p></td>
+    <td><p>Uncalibrated</p></td>
+    <td><p>Gyroscope</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#linear_acceleration">Linear acceleration</a></p></td>
+    <td><p>Activity</p></td>
+    <td><p>Accelerometer, Gyroscope (if present) or Magnetometer (if gyro not present)</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#magnetic_field_uncalibrated">Magnetic field uncalibrated</a></p></td>
+    <td><p>Uncalibrated</p></td>
+    <td><p>Magnetometer</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#orientation_deprecated">Orientation</a> (deprecated)</p></td>
+    <td><p>Attitude</p></td>
+    <td><p>Accelerometer, Magnetometer PREFERRED Gyroscope</p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#pick_up_gesture">Pick up gesture</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td>
+    <td><p>Interaction</p></td>
+    <td><p>Undefined</p></td>
+    <td><p>One-shot</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#rotation_vector">Rotation vector</a></p></td>
+    <td><p>Attitude</p></td>
+    <td><p>Accelerometer, Magnetometer, AND (when present) <em>Gyroscope </em></p></td>
+    <td><p>Continuous</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#significant_motion">Significant motion</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td>
+    <td><p>Activity</p></td>
+    <td><p>Accelerometer (or another as long as very low power)</p></td>
+    <td><p>One-shot</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#step_counter">Step counter</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td>
+    <td><p>Activity</p></td>
+    <td><p>Accelerometer</p></td>
+    <td><p>On-change</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#step_detector">Step detector</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td> <td><p>Activity</p></td>
+    <td><p>Accelerometer</p></td>
+    <td><p>Special</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#tilt_detector">Tilt detector</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td>
+    <td><p>Activity</p></td>
+    <td><p>Accelerometer</p></td>
+    <td><p>Special</p></td>
+  </tr>
+  <tr>
+    <td><p><a href="#wake_up_gesture">Wake up gesture</a> <img
+     src="images/battery_icon.png" width="20" height="20" alt="Low power sensor"
+     /></p></td>
+    <td><p>Interaction</p></td>
+    <td><p>Undefined</p></td>
+    <td><p>One-shot</p></td>
+  </tr>
+</table>
+<p><img src="images/battery_icon.png" width="20" height="20" alt="Low power sensor" /> = Low power sensor</p>
+<h2 id="activity_composite_sensors">Activity composite sensors</h2>
+<h3 id="linear_acceleration">Linear acceleration</h3>
+<p>Underlying physical sensors:  Accelerometer and (if present) Gyroscope (or
+  magnetometer if gyroscope not present)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_LINEAR_ACCELERATION)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A linear acceleration sensor reports the linear acceleration of the device in
+  the sensor frame, not including gravity.</p>
+<p>The output is conceptually: output of the <a
+  href="#accelerometer">accelerometer</a> minus the output of the <a
+  href="#gravity">gravity sensor</a>. It is reported in m/s^2 in the x, y and z
+  fields of <code>sensors_event_t.acceleration</code>.</p>
+<p>Readings on all axes should be close to 0 when the device is immobile.</p>
+<p>If the device possesses a gyroscope, the linear acceleration sensor must use
+  the accelerometer gyroscope and accelerometer as input.</p>
+<p>If the device doesn’t possess a gyroscope, the linear acceleration sensor must
+  use the accelerometer and the magnetometer as input.</p>
+<h3 id="significant_motion">Significant motion</h3>
+<p>Underlying physical sensor: Accelerometer (or another as long as low power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#one-shot">One-shot</a></em></p>
+<p>Low-power</p>
+<p>Implement only the wake-up version of this sensor.</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_SIGNIFICANT_MOTION)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A significant motion detector triggers when the detecting a “significant
+  motion”: a motion that might lead to a change in the user location.</p>
+<p>Examples of such significant motions are:</p>
+<ul>
+  <li> walking or biking </li>
+  <li> sitting in a moving car, coach or train </li>
+</ul>
+<p>Examples of situations that do not trigger significant motion:</p>
+<ul>
+  <li> phone in pocket and person is not moving </li>
+  <li> phone is on a table and the table shakes a bit due to nearby traffic or washing
+    machine </li>
+</ul>
+<p>At the high level, the significant motion detector is used to reduce the power
+  consumption of location determination. When the localization algorithms detect
+  that the device is static, they can switch to a low power mode, where they rely
+  on significant motion to wake the device up when the user is changing location.</p>
+<p>This sensor must be low power. It makes a tradeoff for power consumption that
+  may result in a small amount of false negatives. This is done for a few
+  reasons:</p>
+<ul>
+  <li> The goal of this sensor is to save power. </li>
+  <li> Triggering an event when the user is not moving (false positive) is costly in
+    terms of power, so it should be avoided. </li>
+  <li> Not triggering an event when the user is moving (false negative) is acceptable
+    as long as it is not done repeatedly. If the user has been walking for 10
+    seconds, not triggering an event within those 10 seconds is not acceptable. </li>
+</ul>
+<p>Each sensor event reports 1 in <code>sensors_event_t.data[0]</code></p>
+<h3 id="step_detector">Step detector</h3>
+<p>Underlying physical sensor: Accelerometer (+ possibly others as long as low
+  power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#special">Special</a> (one event per step taken)</em></p>
+<p>Low-power</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_STEP_DETECTOR)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A step detector generates an event each time a step is taken by the user.</p>
+<p>The timestamp of the event <code>sensors_event_t.timestamp</code> corresponds to when the
+  foot hit the ground, generating a high variation in acceleration.</p>
+<p>Compared to the step counter, the step detector should have a lower latency
+  (less than 2 seconds). Both the step detector and the step counter detect when
+  the user is walking, running and walking up the stairs. They should not trigger
+  when the user is biking, driving or in other vehicles.</p>
+<p>This sensor must be low power. That is, if the step detection cannot be done in
+  hardware, this sensor should not be defined. In particular, when the step
+  detector is activated and the accelerometer is not, only steps should trigger
+  interrupts (not every accelerometer reading).</p>
+<p><code>sampling_period_ns</code> has no impact on step detectors.</p>
+<p>Each sensor event reports 1 in <code>sensors_event_t.data[0]</code></p>
+<h3 id="step_counter">Step counter</h3>
+<p>Underlying physical sensor: Accelerometer (+ possibly others as long as low
+  power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#on-change">On-change</a></em></p>
+<p>Low-power</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_STEP_COUNTER)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A step counter reports the number of steps taken by the user since the last
+  reboot while activated.</p>
+<p>The measurement is reported as a <code>uint64_t</code> in
+  <code>sensors_event_t.step_counter</code> and
+  is reset to zero only on a system reboot.</p>
+<p>The timestamp of the event is set to the time when the last step for that event
+  was taken.</p>
+<p>See the <a href="#step_detector">Step detector</a> sensor type for the signification of the time of a step.</p>
+<p>Compared to the step detector, the step counter can have a higher latency (up
+  to 10 seconds). Thanks to this latency, this sensor has a high accuracy; the
+  step count after a full day of measures should be within 10% of the actual step
+  count. Both the step detector and the step counter detect when the user is
+  walking, running and walking up the stairs. They should not trigger when the
+  user is biking, driving or in other vehicles.</p>
+<p>The hardware must ensure the internal step count never overflows. The minimum
+  size of the hardware's internal counter shall be 16 bits. In case of imminent
+  overflow (at most every ~2^16 steps), the SoC can be woken up so the driver can
+  do the counter maintenance.</p>
+<p>As stated in <a href="interaction.html">Interaction</a>, while this sensor
+  operates, it shall not disrupt any other sensors, in particular, the
+  accelerometer, which might very well be in use.</p>
+<p>If a particular device cannot support these modes of operation, then this
+  sensor type must not be reported by the HAL. ie: it is not acceptable to
+  &quot;emulate&quot; this sensor in the HAL.</p>
+<p>This sensor must be low power. That is, if the step detection cannot be done in
+  hardware, this sensor should not be defined. In particular, when the step
+  counter is activated and the accelerometer is not, only steps should trigger
+  interrupts (not accelerometer data).</p>
+<h3 id="tilt_detector">Tilt detector</h3>
+<p>Underlying physical sensor: Accelerometer (+ possibly others as long as low
+  power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#special">Special</a></em></p>
+<p>Low-power</p>
+<p>Implement only the wake-up version of this sensor.</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_TILT_DETECTOR)</code> <em>returns a wake-up sensor</em></p>
+<p>A tilt detector generates an event each time a tilt event is detected.</p>
+<p>A tilt event is defined by the direction of the 2-seconds window average
+  gravity changing by at least 35 degrees since the activation or the last event
+  generated by the sensor. Here is the algorithm:</p>
+<ul>
+  <li> <code>reference_estimated_gravity</code> = average of accelerometer measurements over the
+    first second after activation or the estimated gravity when the last tilt event
+    was generated. </li>
+  <li> <code>current_estimated_gravity</code> = average of accelerometer measurements over the last
+    2 seconds. </li>
+  <li> trigger when <code>angle(reference_estimated_gravity, current_estimated_gravity) &gt; 35
+    degrees</code> </li>
+</ul>
+<p>Large accelerations without a change in phone orientation should not trigger a
+  tilt event. For example, a sharp turn or strong acceleration while driving a
+  car should not trigger a tilt event, even though the angle of the average
+  acceleration might vary by more than 35 degrees.
+  Typically, this sensor is
+  implemented with the help of only an accelerometer. Other sensors can be used
+  as well if they do not increase the power consumption significantly. This is a
+  low power sensor that should allow the SoC to go into suspend mode. Do not
+  emulate this sensor in the HAL. Each sensor event reports 1 in
+  <code>sensors_event_t.data[0]</code>.</p>
+<h2 id="attitude_composite_sensors">Attitude composite sensors</h2>
+<h3 id="rotation_vector">Rotation vector</h3>
+<p>Underlying physical sensors: Accelerometer, Magnetometer, and (when present)
+  Gyroscope</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_ROTATION_VECTOR)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A rotation vector sensor reports the orientation of the device relative to the
+  East-North-Up coordinates frame. It is usually obtained by integration of
+  accelerometer, gyroscope and magnetometer readings.</p>
+<p>The East-North-Up coordinate system is defined as a direct orthonormal basis
+  where:</p>
+<ul>
+  <li> X points east and is tangential to the ground. </li>
+  <li> Y points north and is tangential to the ground. </li>
+  <li> Z points towards the sky and is perpendicular to the ground. </li>
+</ul>
+<p>The orientation of the phone is represented by the rotation necessary to align
+  the East-North-Up coordinates with the phone's coordinates. That is, applying
+  the rotation to the world frame (X,Y,Z) would align them with the phone
+  coordinates (x,y,z).</p>
+<p>The rotation can be seen as rotating the phone by an angle theta around an axis
+  rot_axis to go from the reference (East-North-Up aligned) device orientation to
+  the current device orientation.</p>
+<p>The rotation is encoded as the four unit-less x, y, z, w components of a unit
+  quaternion:</p>
+<ul>
+  <li> <code>sensors_event_t.data[0] = rot_axis.x*sin(theta/2)</code> </li>
+  <li> <code>sensors_event_t.data[1] = rot_axis.y*sin(theta/2)</code> </li>
+  <li> <code>sensors_event_t.data[2] = rot_axis.z*sin(theta/2)</code> </li>
+  <li> <code>sensors_event_t.data[3] = cos(theta/2)</code> </li>
+</ul>
+<p>Where:</p>
+<ul>
+  <li> the  x, y and z fields of <code>rot_axis</code> are the East-North-Up
+  coordinates of a unit length vector representing the rotation axis </li>
+  <li> <code>theta</code> is the rotation angle </li>
+</ul>
+<p>The quaternion is a unit quaternion: it must be of norm 1. Failure to ensure
+  this will cause erratic client behaviour.</p>
+<p>In addition, this sensor reports an estimated heading accuracy:</p>
+<p><code>sensors_event_t.data[4] = estimated_accuracy</code> (in radians)</p>
+<p>The heading error must be less than <code>estimated_accuracy</code> 95% of the time. This
+  sensor must use a gyroscope as main orientation change input unless there is no
+  gyroscope on the device.</p>
+<p>This sensor also includes the accelerometer and magnetometer input to make up
+  for gyroscope drift, but it cannot be implemented using only the magnetometer
+  and accelerometer, unless there is no gyroscope on the device.</p>
+<h3 id="game_rotation_vector">Game rotation vector</h3>
+<p>Underlying physical sensors: Accelerometer and Gyroscope (no Magnetometer)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_GAME_ROTATION_VECTOR)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A game rotation vector sensor is similar to a rotation vector sensor but not
+  using the geomagnetic field. Therefore the Y axis doesn't point north but
+  instead to some other reference. That reference is allowed to drift by the same
+  order of magnitude as the gyroscope drifts around the Z axis.</p>
+<p>See the <a href="#rotation_vector">Rotation vector</a> sensor for details on
+  how to set <code>sensors_event_t.data[0-3]</code>. This sensor does
+  not report an estimated heading accuracy:
+  <code>sensors_event_t.data[4]</code> is reserved and should be set to 0.</p>
+<p>In an ideal case, a phone rotated and returned to the same real-world
+  orientation should report the same game rotation vector.</p>
+<p>This sensor must be based on a gyroscope and an accelerometer. It cannot use
+  magnetometer as an input, besides, indirectly, through estimation of the
+  gyroscope bias.</p>
+<h3 id="gravity">Gravity</h3>
+<p>Underlying physical sensors: Accelerometer and (if present) Gyroscope (or
+  magnetometer if gyroscope not present)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_GRAVITY)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A gravity sensor reports the direction and magnitude of gravity in the device's
+  coordinates.</p>
+<p>The gravity vector components are reported in m/s^2 in the x, y and z fields of
+  <code>sensors_event_t.acceleration</code>.</p>
+<p>When the device is at rest, the output of the gravity sensor should be
+  identical to that of the accelerometer. On Earth, the magnitude is around 9.8
+  m/s^2.</p>
+<p>If the device possesses a gyroscope, the gravity sensor must use the
+  accelerometer gyroscope and accelerometer as input.</p>
+<p>If the device doesn’t possess a gyroscope, the gravity sensor must use the
+  accelerometer and the magnetometer as input.</p>
+<h3 id="geomagnetic_rotation_vector">Geomagnetic rotation vector</h3>
+<p>Underlying physical sensors: Accelerometer and Magnetometer (no Gyroscope)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p>Low-power</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR)</code> <em>returns a non-wake-up sensor</em></p>
+<p>A geomagnetic rotation vector is similar to a rotation vector sensor but using
+  a magnetometer and no gyroscope.</p>
+<p>This sensor must be based on a magnetometer. It cannot be implemented using a
+  gyroscope, and gyroscope input cannot be used by this sensor.</p>
+<p>See the <a href="#rotation_vector">Rotation vector</a> sensor for details on
+  how to set <code>sensors_event_t.data[0-4]</code>.</p>
+<p>Just like for the rotation vector sensor, the heading error must be less than
+  the estimated accuracy (<code>sensors_event_t.data[4]</code>) 95% of the time.</p>
+<p>This sensor must be low power, so it has to be implemented in hardware.</p>
+<h3 id="orientation_deprecated">Orientation (deprecated)</h3>
+<p>Underlying physical sensors: Accelerometer, Magnetometer and (if present)
+  Gyroscope</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_ORIENTATION)</code> <em>returns a non-wake-up sensor</em></p>
+<p>Note: This is an older sensor type that has been deprecated in the Android SDK.
+  It has been replaced by the rotation vector sensor, which is more clearly
+  defined. Use the rotation vector sensor over the orientation sensor whenever
+  possible.</p>
+<p>An orientation sensor reports the attitude of the device. The measurements are
+  reported in degrees in the x, y and z fields of <code>sensors_event_t.orientation</code>:</p>
+<ul>
+  <li> <code>sensors_event_t.orientation.x</code>: azimuth, the angle between the magnetic north
+    direction and the Y axis, around the Z axis (<code>0&lt;=azimuth&lt;360</code>). 0=North, 90=East,
+    180=South, 270=West </li>
+  <li> <code>sensors_event_t.orientation.y</code>: pitch, rotation around X axis
+    (<code>-180&lt;=pitch&lt;=180</code>), with positive values when the z-axis moves toward the
+    y-axis. </li>
+  <li> <code>sensors_event_t.orientation.z</code>: roll, rotation around Y axis (<code>-90&lt;=roll&lt;=90</code>),
+    with positive values when the x-axis moves towards the z-axis. </li>
+</ul>
+<p>Please note, for historical reasons the roll angle is positive in the clockwise
+  direction. (Mathematically speaking, it should be positive in the
+  counter-clockwise direction):</p>
+<div class="figure" style="width:264px">
+  <img src="images/axis_positive_roll.png" alt="Depiction of orientation
+   relative to a device" height="253" />
+  <p class="img-caption">
+    <strong>Figure 2.</strong> Orientation relative to a device.
+  </p>
+</div>
+<p>This definition is different from yaw, pitch and roll used in aviation where
+  the X axis is along the long side of the plane (tail to nose).</p>
+<p>The orientation sensor also reports how accurate it expects its readings to be
+  through sensors_event_t.orientation.status. See the <a href="http://developer.android.com/reference/android/hardware/SensorManager.html">SensorManager</a>’s <a href="http://developer.android.com/reference/android/hardware/SensorManager.html#SENSOR_STATUS_ACCURACY_HIGH">SENSOR_STATUS_</a>* constants for more information on possible values for this field.</p>
+<h2 id="uncalibrated_sensors">Uncalibrated sensors</h2>
+<p>Uncalibrated sensors provide more raw results and may include some bias but
+  also contain fewer &quot;jumps&quot; from corrections applied through calibration. Some
+  applications may prefer these uncalibrated results as smoother and more
+  reliable. For instance, if an application is attempting to conduct its own
+  sensor fusion, introducing calibrations can actually distort results.</p>
+<h3 id="gyroscope_uncalibrated">Gyroscope uncalibrated</h3>
+<p>Underlying physical sensor: Gyroscope</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_GYROSCOPE_UNCALIBRATED)</code> <em>returns a non-wake-up sensor</em></p>
+<p>An uncalibrated gyroscope reports the rate of rotation around the sensor axes
+  without applying bias compensation to them, along with a bias estimate. All
+  values are in radians/second and are reported in the fields of
+  <code>sensors_event_t.uncalibrated_gyro</code>:</p>
+<ul>
+  <li> <code>x_uncalib</code>: angular speed (w/o drift compensation) around the X axis </li>
+  <li> <code>y_uncalib</code>: angular speed (w/o drift compensation) around the Y axis </li>
+  <li> <code>z_uncalib</code>: angular speed (w/o drift compensation) around the Z axis </li>
+  <li> <code>x_bias</code>: estimated drift around X axis </li>
+  <li> <code>y_bias</code>: estimated drift around Y axis </li>
+  <li> <code>z_bias</code>: estimated drift around Z axis </li>
+</ul>
+<p>Conceptually, the uncalibrated measurement is the sum of the calibrated
+  measurement and the bias estimate: <code>_uncalibrated = _calibrated + _bias</code>.</p>
+<p>The <code>x/y/z_bias</code> values are expected to jump as soon as the estimate of the bias
+  changes, and they should be stable the rest of the time.</p>
+<p>See the definition of the <a href="#gyroscope">gyroscope</a> sensor for
+  details on the coordinate system used.</p>
+<p>Factory calibration and temperature compensation must be applied to the
+  measurements. Also, gyroscope drift estimation must be implemented so that
+  reasonable estimates can be reported in <code>x_bias</code>,
+  <code>y_bias</code> and <code>z_bias</code>. If the
+  implementation is not able to estimate the drift, then this sensor must not be
+  implemented.</p>
+<p>If this sensor is present, then the corresponding Gyroscope sensor must also be
+  present and both sensors must share the same <code>sensor_t.name</code> and
+  <code>sensor_t.vendor</code> values.</p>
+<h3 id="magnetic_field_uncalibrated">Magnetic field uncalibrated</h3>
+<p>Underlying physical sensor: Magnetometer</p>
+<p>Reporting-mode: <em><a href="report-modes.html#continuous">Continuous</a></em></p>
+<p><code>getDefaultSensor(SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED)</code> <em>returns a non-wake-up sensor</em></p>
+<p>An uncalibrated magnetic field sensor reports the ambient magnetic field
+  together with a hard iron calibration estimate. All values are in micro-Tesla
+  (uT) and are reported in the fields of <code>sensors_event_t.uncalibrated_magnetic</code>:</p>
+<ul>
+  <li> <code>x_uncalib</code>: magnetic field (w/o hard-iron compensation) along the X axis </li>
+  <li> <code>y_uncalib</code>: magnetic field (w/o hard-iron compensation) along the Y axis </li>
+  <li> <code>z_uncalib</code>: magnetic field (w/o hard-iron compensation) along the Z axis </li>
+  <li> <code>x_bias</code>: estimated hard-iron bias along the X axis </li>
+  <li> <code>y_bias</code>: estimated hard-iron bias along the Y axis </li>
+  <li> <code>z_bias</code>: estimated hard-iron bias along the Z axis </li>
+</ul>
+<p>Conceptually, the uncalibrated measurement is the sum of the calibrated
+  measurement and the bias estimate: <code>_uncalibrated = _calibrated + _bias</code>.</p>
+<p>The uncalibrated magnetometer allows higher level algorithms to handle bad hard
+  iron estimation. The <code>x/y/z_bias</code> values are expected to jump as soon as the
+  estimate of the hard-iron changes, and they should be stable the rest of the
+  time.</p>
+<p>Soft-iron calibration and temperature compensation must be applied to the
+  measurements. Also, hard-iron estimation must be implemented so that reasonable
+  estimates can be reported in <code>x_bias</code>, <code>y_bias</code> and
+  <code>z_bias</code>. If the implementation is not able to estimate the bias,
+  then this sensor must not be implemented.</p>
+<p>If this sensor is present, then the corresponding magnetic field sensor must be
+  present and both sensors must share the same <code>sensor_t.name</code> and
+  <code>sensor_t.vendor</code> values.</p>
+<h2 id="interaction_composite_sensors">Interaction composite sensors</h2>
+<p>Some sensors are mostly used to detect interactions with the user. We do not
+  define how those sensors must be implemented, but they must be low power and it
+  is the responsibility of the device manufacturer to verify their quality in
+  terms of user experience.</p>
+<h3 id="wake_up_gesture">Wake up gesture</h3>
+<p>Underlying physical sensors: Undefined (anything low power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#one-shot">One-shot</a></em></p>
+<p>Low-power</p>
+<p>Implement only the wake-up version of this sensor.</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_WAKE_GESTURE)</code> <em>returns a wake-up sensor</em></p>
+<p>A wake up gesture sensor enables waking up the device based on a device
+  specific motion. When this sensor triggers, the device behaves as if the power
+  button was pressed, turning the screen on. This behavior (turning on the screen
+  when this sensor triggers) might be deactivated by the user in the device
+  settings. Changes in settings do not impact the behavior of the sensor: only
+  whether the framework turns the screen on when it triggers.
+  The actual gesture to be detected is not specified, and can be chosen by the
+  manufacturer of the device.</p>
+<p>This sensor must be low power, as it is likely to be activated 24/7.</p>
+<p>Each sensor event reports 1 in <code>sensors_event_t.data[0]</code>.</p>
+<h3 id="pick_up_gesture">Pick up gesture</h3>
+<p>Underlying physical sensors: Undefined (anything low power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#one-shot">One-shot</a></em></p>
+<p>Low-power</p>
+<p>Implement only the wake-up version of this sensor.</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_PICK_UP_GESTURE)</code> <em>returns a wake-up sensor</em></p>
+<p>A pick-up gesture sensor sensor triggers when the device is picked up
+  regardless of wherever is was before (desk, pocket, bag).</p>
+<p>Each sensor event reports 1 in <code>sensors_event_t.data[0]</code>.</p>
+<h3 id="glance_gesture">Glance gesture</h3>
+<p>Underlying physical sensors: Undefined (anything low power)</p>
+<p>Reporting-mode: <em><a href="report-modes.html#one-shot">One-shot</a></em></p>
+<p>Low-power</p>
+<p>Implement only the wake-up version of this sensor.</p>
+<p><code>getDefaultSensor(SENSOR_TYPE_GLANCE_GESTURE)</code> <em>returns a wake-up sensor</em></p>
+<p>A glance gesture sensor enables briefly turning the screen on to enable the
+  user to glance content on screen based on a specific motion. When this sensor
+  triggers, the device will turn the screen on momentarily to allow the user to
+  glance notifications or other content while the device remains locked in a
+  non-interactive state (dozing), then the screen will turn off again. This
+  behavior (briefly turning on the screen when this sensor triggers) might be
+  deactivated by the user in the device settings. Changes in settings do not
+  impact the behavior of the sensor: only whether the framework briefly turns the
+  screen on when it triggers. The actual gesture to be detected is not specified,
+  and can be chosen by the manufacturer of the device.</p>
+<p>This sensor must be low power, as it is likely to be activated 24/7.
+  Each sensor event reports 1 in <code>sensors_event_t.data[0]</code>.</p>

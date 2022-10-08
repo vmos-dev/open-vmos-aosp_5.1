@@ -1,0 +1,22 @@
+__EOF__
+
+if test $? != 0
+then
+  echo ERROR: Couldn\'t display license file 1>&2
+  exit 1
+fi
+
+echo
+
+echo -n Type \"I ACCEPT\" if you agree to the terms of the license:\ 
+read typed
+
+if test "$typed" != I\ ACCEPT
+then
+  echo
+  echo You didn\'t accept the license. Extraction aborted.
+  exit 2
+fi
+
+echo
+

@@ -1,0 +1,17 @@
+<div id="footer"> 
+  <div id="copyright">
+  </div> 
+ 
+  <div id="footerLeft">     
+    <p> 
+      <a href="http://www.google.com/intl/en/policies/">Privacy &amp; Terms</a>
+    </p> 
+  </div>
+
+  <div id="footerRight">
+    <p>
+      <a href="#top">Go to Top</a>
+    </p>
+  </div>
+</div> 
+

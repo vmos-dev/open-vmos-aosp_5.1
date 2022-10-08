@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+<!--  
+  This file deliberately contains errors - it represents partial keyboard
+  typing for interactive code completion
+-->
+    <TextView
+        android:layout_weight^="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@android:dimen/app_icon_size"
+        android:layout_marginLeft="50dp"
+        android:layout_marginBottom="50"
+        android:textColor="#000000"
+        style="@android:style/Widget.Button"
+        android:gravity="left|bottom"
+        android:text="@string/hello"
+        android:hint="hint" />
+    <FrameLayout android:foreground="@android:drawable/btn_default"></FrameLayout> 
+</LinearLayout>

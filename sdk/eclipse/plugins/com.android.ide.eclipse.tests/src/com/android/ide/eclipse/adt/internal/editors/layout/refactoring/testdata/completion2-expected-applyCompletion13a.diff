@@ -1,0 +1,4 @@
+Code completion in completion2.xml for gravity="left|bottom|^cen selecting fill_vertical:
+@@ -4 +4
+-     <TextView android:gravity="left|bottom|^cen"></TextView>
++     <TextView android:gravity="left|bottom|fill_vertical^"></TextView>

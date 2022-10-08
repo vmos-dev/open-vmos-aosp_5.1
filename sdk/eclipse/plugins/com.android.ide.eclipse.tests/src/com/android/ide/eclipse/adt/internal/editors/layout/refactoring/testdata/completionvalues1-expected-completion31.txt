@@ -1,0 +1,2 @@
+Code completion in completionvalues1.xml for <item ^></item>:
+name : The mandatory name used in referring to this item.

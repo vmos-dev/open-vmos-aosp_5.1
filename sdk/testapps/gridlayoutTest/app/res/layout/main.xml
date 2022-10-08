@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:columnCount="6" >
+
+    <Button
+        android:id="@+id/button1"
+        app:layout_column="1"
+        app:layout_columnSpan="2"
+        app:layout_gravity="left"
+        app:layout_row="1"
+        android:text="Button" />
+
+    <CheckBox
+        android:id="@+id/checkBox1"
+        app:layout_column="4"
+        app:layout_gravity="left"
+        app:layout_row="2"
+        android:text="CheckBox" />
+
+    <Button
+        android:id="@+id/button2"
+        app:layout_column="5"
+        app:layout_gravity="left"
+        app:layout_row="3"
+        android:text="Button" />
+
+    <android.support.v7.widget.Space
+        android:layout_width="21dp"
+        android:layout_height="1dp"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="0" />
+
+    <android.support.v7.widget.Space
+        android:layout_width="1dp"
+        android:layout_height="21dp"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="0" />
+
+    <android.support.v7.widget.Space
+        android:layout_width="10dp"
+        android:layout_height="1dp"
+        app:layout_column="3"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="0" />
+
+    <android.support.v7.widget.Space
+        android:layout_width="122dp"
+        android:layout_height="1dp"
+        app:layout_column="4"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="0" />
+
+    <android.support.v7.widget.Space
+        android:layout_width="1dp"
+        android:layout_height="168dp"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="1" />
+
+    <android.support.v7.widget.Space
+        android:layout_width="1dp"
+        android:layout_height="168dp"
+        app:layout_column="0"
+        app:layout_gravity="fill_horizontal"
+        app:layout_row="2" />
+
+</android.support.v7.widget.GridLayout>

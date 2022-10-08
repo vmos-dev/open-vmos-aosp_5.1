@@ -1,0 +1,23 @@
+Code completion in completion1.xml for style="@android:^style/Widget.Button":
+@android:style/
+@android:anim/
+@android:animator/
+@android:array/
+@android:attr/
+@android:bool/
+@android:color/
+@android:declare-styleable/
+@android:dimen/
+@android:drawable/
+@android:fraction/
+@android:id/
+@android:integer/
+@android:interpolator/
+@android:layout/
+@android:menu/
+@android:mipmap/
+@android:plurals/
+@android:public/
+@android:raw/
+@android:string/
+@android:xml/

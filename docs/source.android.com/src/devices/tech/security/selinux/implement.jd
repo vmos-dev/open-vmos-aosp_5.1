@@ -1,0 +1,184 @@
+page.title=Implementing SELinux
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>SELinux is set up to default-deny, which means that every single access for
+which it has a hook in the kernel must be explicitly allowed by policy.  This
+means a policy file is comprised of a large amount of information regarding
+rules, types, classes, permissions, and more.  A full consideration of SELinux
+is out of the scope of this document, but an understanding of how to write
+policy rules is now essential when bringing up new Android devices. There is a
+great deal of information available regarding SELinux already. See <a
+href="{@docRoot}devices/tech/security/se-linux.html#supporting_documentation">Supporting
+documentation</a> for suggested resources.</p>
+
+<h2 id=summary_of_steps>Summary of steps</h2>
+
+<p>Here is a brief summary of the steps needed to implement SELinux on your
+Android device:</p>
+
+<ol>
+  <li>Add SELinux support in the kernel and configuration.
+  <li>Grant each service (process or daemon) started from <code>init</code> its own domain.
+  <li>Identify these services by:
+  <ul>
+    <li>Reviewing the init file and finding all services.
+    <li>Examining warnings in <code>dmesg</code>.
+    <li>Searching (<code>grep</code>) through processes to see which run in the init domain.
+  </ul>
+  <li>Label all new processes, drivers, sockets, etc.
+All objects need to be labeled
+properly to ensure they interact properly with the policies you apply. See the
+labels used in AOSP for examples to follow in label name creation.
+  <li>Institute security policies that fully cover all labels and restrict
+permissions to their absolute minimum.
+</ol>
+
+<p>Ideally, OEMs start with the policies in the AOSP and then build upon them for
+their own customizations.</p>
+
+<h2 id=key_files>Key files</h2>
+
+<p>SELinux for Android is accompanied by everything you need to enable SELinux
+now. You merely need to integrate the <a href="https://android.googlesource.com/kernel/common/">latest Android kernel</a> and then incorporate the files found in the <a href="https://android.googlesource.com/platform/external/sepolicy/">external/sepolicy</a> directory:</p>
+
+<p><a href="https://android.googlesource.com/kernel/common/">https://android.googlesource.com/kernel/common/ </a></p>
+
+<p><a href="https://android.googlesource.com/platform/external/sepolicy/">https://android.googlesource.com/platform/external/sepolicy/</a></p>
+
+<p>Those files when compiled comprise the SELinux kernel security policy and cover
+the upstream Android operating system. You should not need to modify the
+external/sepolicy files directly. Instead, add your own device-specific policy
+files within the /device/manufacturer/device-name/sepolicy directory.</p>
+
+<p>Here are the files you must create or edit in order to implement SELinux:</p>
+
+<ul>
+  <li><em>New SELinux policy source (*.te) files</em> - Located in the <root>/device/manufacturer/device-name/sepolicy directory. These files define domains and their labels. The new policy files get
+concatenated with the existing policy files during compilation into a single
+SELinux kernel policy file.
+<p class="caution"><strong>Important:</strong> Do not alter the app.te file provided by the Android Open Source Project.
+Doing so risks breaking all third-party applications.</p>
+  <li><em>Updated BoardConfig.mk makefile</em> - Located in the <device-name> directory containing the sepolicy subdirectory. It must be updated to reference the sepolicy subdirectory once created if it
+wasn’t in initial implementation.
+  <li><em>Updated *_contexts files</em> - Located in the sepolicy subdirectory. These label files and
+are managed in the userspace. As you create new policies, update these files to
+reference them. In order to apply new *_contexts, you must run <code>restorecon</code> on the file to be relabeled.
+</ul>
+
+<p>Then just update your BoardConfig.mk makefile - located in the directory
+containing the sepolicy subdirectory - to reference the sepolicy subdirectory
+and each policy file once created, as shown below. The BOARD_SEPOLICY variables
+and their meaning is documented in the external/sepolicy/README file.</p>
+
+<pre>
+BOARD_SEPOLICY_DIRS += \
+        &lt;root>/device/manufacturer/device-name/sepolicy
+
+BOARD_SEPOLICY_UNION += \
+        genfs_contexts \
+        file_contexts \
+        sepolicy.te
+</pre>
+
+<p>After rebuilding your device, it is enabled with SELinux. You can now either
+customize your SELinux policies to accommodate your own additions to the
+Android operating system as described in <a
+href="customize.html">Customization</a> or verify your existing setup as
+covered in <a href="validate.html">Validation</a>.</p>
+
+<p>Once the new policy files and BoardConfig.mk updates are in place, the new
+policy settings are automatically built into the final kernel policy file.</p>
+
+<h2 id=use_cases>Use cases</h2>
+
+<p>Here are specific examples of exploits to consider when crafting your own
+software and associated SELinux policies:</p>
+
+<p><strong>Symlinks</strong> - Because symlinks appear as files, they are often read just as that. This can
+lead to exploits. For instance, some privileged components such as init change
+the permissions of certain files, sometimes to be excessively open.</p>
+
+<p>Attackers might then replace those files with symlinks to code they control,
+allowing the attacker to overwrite arbitrary files. But if you know your
+application will never traverse a symlink, you can prohibit it from doing so
+with SELinux.</p>
+
+<p><strong>System files</strong> - Consider the class of system files that should only be modified by the
+system server. Still, since netd, init, and vold run as root, they can access
+those system files. So if netd became compromised, it could compromise those
+files and potentially the system server itself.</p>
+
+<p>With SELinux, you can identify those files as system server data files.
+Therefore, the only domain that has read/write access to them is system server.
+Even if netd became compromised, it could not switch domains to the system
+server domain and access those system files although it runs as root.</p>
+
+<p><strong>App data</strong> - Another example is the class of functions that must run as root but should
+not get to access app data. This is incredibly useful as wide-ranging
+assertions can be made, such as certain domains unrelated to application data
+being prohibited from accessing the internet.</p>
+
+<p><strong>setattr</strong> - For commands such as chmod and chown, you could identify the set of files
+where the associated domain can conduct setattr. Anything outside of that could
+be prohibited from these changes, even by root. So an application might run
+chmod and chown against those labeled app_data_files but not shell_data_files
+or system_data_files.</p>
+
+<h2 id=steps_in_detail>Steps in detail</h2>
+
+<p>Here is a detailed view of how Android recommends you employ and customize
+SELinux to protect your devices:</p>
+
+<ol>
+  <li>Enable SELinux in the kernel:
+<code>CONFIG_SECURITY_SELINUX=y</code>
+  <li>Change the kernel_cmdline parameter so that:<br/>
+<code>BOARD_KERNEL_CMDLINE := androidboot.selinux=permissive</code>
+  <li>Boot up the system in permissive and see what denials are encountered on boot:<br/>
+<code>su -c dmesg | grep denied > ~/t.tmp su -c dmesg | grep denied | audit2allow</code>
+  <li>Evaluate the output. See <a href="validate.html">Validation</a> for instructions and tools.
+  <li>Identify devices, and other new files that need labeling.Identify devices, and
+other new files that need labeling.
+  <li>Use existing or new labels for your objects.
+Look at the *_contexts files to
+see how things were previously labeled and use knowledge of the label meanings
+to assign a new one. Ideally, this will be an existing label which will fit
+into policy, but sometimes a new label will be needed, and rules for access to
+that label will be needed, as well.
+  <li>Identify domains/processes that should have their own security domains. A policy will likely need to be written for each of these from scratch. All services spawned from <code>init</code>, for instance, should have their own. The following commands help reveal those that remain running (but ALL services need such a treatment):<br/>
+<code>$ adb shell su -c ps -Z | grep init</code><br/>
+<code>$ adb shell su -c dmesg | grep 'avc: '</code>
+  <li>Review init.<device>.rc to identify any which are without a type.
+These should
+be given domains EARLY in order to avoid adding rules to init or otherwise
+confusing <code>init</code> accesses with ones that are in their own policy.
+  <li>Set up <code>BOARD_CONFIG.mk</code> to use <code>BOARD_SEPOLICY_UNION</code> and <code>BOARD_SEPOLICY_DIRS</code>. See
+the README in /sepolicy for details on setting this up.
+  <li> Examine the init.&lt;device&gt;.rc file and make sure every use of “mount”
+corresponds to a properly labeled filesystem.
+  <li> Go through each denial and create SELinux policy to properly handle each. See
+the examples within <a href="customize.html">Customization</a>.
+</ol>

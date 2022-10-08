@@ -1,0 +1,24 @@
+type wlan_device, dev_type;
+
+type diag_device, dev_type;
+type ramdump_device, dev_type;
+
+type smd_device, dev_type;
+
+# Shared memory logger
+type shared_log_device, dev_type;
+
+type power_control_device, dev_type;
+
+# Real Time Clock
+type rtc, dev_type;
+
+type modem_block_device, dev_type;
+
+# secure software download partition
+type ssd_block_device, dev_type;
+
+type drm_block_device, dev_type;
+
+# Thermal engine
+type thermal_engine_device, dev_type;

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/LinearLayout1" android:layout_width="match_parent" android:layout_height="match_parent" android:baselineAligned="true">
+    <Button android:text="Button" android:id="@+id/button1" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
+    <RadioButton android:text="RadioButton" android:id="@+id/radioButton1" android:layout_width="wrap_content" android:layout_height="wrap_content"></RadioButton>
+    <Button android:layout_width="wrap_content" android:id="@+id/button2" android:text="Button" android:layout_height="150dip"></Button>
+</LinearLayout>
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.android.ide.eclipse.tests"
+      label="ADT Tests"
+      version="23.0.2.qualifier"
+      provider-name="The Android Open Source Project">
+
+   <copyright>
+      Copyright (C) 2007-2011 The Android Open Source Project
+   </copyright>
+
+   <requires>
+      <import plugin="org.junit"/>
+      <import plugin="com.android.ide.eclipse.adt" version="10.0.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="com.android.ide.eclipse.tests"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

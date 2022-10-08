@@ -1,0 +1,116 @@
+fullpage=true
+no_footer_links=true
+landing.page=true
+page.metaDescription=The official site for the Android Open Source Project.
+header.hide=1
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div class="wrap">
+
+  <div class="landing-banner">
+      <h1 itemprop="name" style="margin-bottom:0;">Welcome to the Android Open Source Project!</h1>
+
+      <p>
+      Android is an open-source software stack for a wide range of mobile devices and a corresponding open-source project led by 
+      Google. Here you can find the information and source code you need to learn more about the Android platform. From there you can
+      create custom variants of the Android software stack, port devices and accessories to the Android platform,
+      and ensure your devices are compatible with the Android compatibility definition.
+      </p>
+
+  </div>
+
+</div>
+
+<div class="wrap">
+
+  <div class="landing-docs">
+    <div class="col-8">
+    <h3>What's New</h3>
+
+<a href="{@docRoot}devices/audio.html">
+        <h4>Audio gains attributes, USB, and headset documentation</h4></a>
+        <p>The <strong><a
+        href="{@docRoot}devices/audio.html">Audio section</a></strong> now describes <strong><a
+	href="{@docRoot}devices/audio_attributes.html">Attributes</a></strong> and <strong><a
+        href="{@docRoot}devices/audio_usb.html">USB digital audio</a></strong> support, while a <strong><a
+	href="{@docRoot}accessories/headset-spec.html">Wired audio headset
+        specification</a></strong> can now be found in the <strong><a
+        href="{@docRoot}accessories/index.html">Accessories section</a></strong>.</p>
+
+<img border="0" src="images/Android_Robot_100.png" alt="Android Partner icon" style="display:inline;float:right;margin:5px 10px">
+
+<a href="{@docRoot}devices/tech/security/index.html">
+        <h4>Encryption and SELinux revised</h4></a>
+        <p><strong><a
+        href="{@docRoot}devices/tech/encryption/index.html">Encryption</a></strong> and <strong><a
+        href="{@docRoot}devices/tech/security/se-linux.html">Security-Enhanced Linux</a></strong> have been
+	updated to describe the latest features of Android 5.0, such as default
+        encryption and full enforcement of SELinux.</p>
+
+<a href="{@docRoot}devices/sensors/index.html">
+        <h4>Sensors and Power rewritten</h4></a>
+        <p><strong><a
+        href="{@docRoot}devices/sensors/index.html">Sensors</a></strong> and <strong><a
+	href="{@docRoot}devices/tech/power.html">Power</a></strong> have been
+	completely rewritten to reflect the latest Android release and include
+        new gesture sensors and tools for measuring power consumption.</p>
+
+<a href="{@docRoot}devices/tv/index.html">
+        <h4>TV Input Framework and more come to Android</h4></a>
+        <p>The <strong><a
+        href="{@docRoot}devices/tv/index.html">TV Input Framework</a></strong> and <strong><a
+        href="{@docRoot}devices/tv/HDMI-CEC.html">HDMI-CEC</a></strong> enable TV development, while <strong><a
+	href="{@docRoot}devices/audio_tv.html">TV Audio</a></strong> describes audio routing through televisions.</p>
+
+<a href="{@docRoot}devices/camera/versioning.html">
+        <h4>Camera versioning added, security enhancements updated</h4></a>
+        <p>The Camera team now describes its <strong><a
+        href="{@docRoot}devices/tv/index.html">Version support</a></strong>, while the Security team lists new <strong><a
+        href="{@docRoot}devices/tech/security/enhancements.html">Enhancements</a></strong> and <strong><a
+        href="{@docRoot}devices/tech/security/acknowledgements.html">Acknowledgements</a></strong>.</p>
+    </div>
+
+    <div class="col-8">
+      <h3>Getting Started</h3>
+      <a href="{@docRoot}source/index.html">
+        <h4>Explore the Source</h4></a>
+        <p>Get the complete Android platform and modify and build it to suit your needs. You can
+	also <strong><a
+href="https://android-review.googlesource.com/#/q/status:open">contribute to</a></strong> the <strong><a
+href="https://android.googlesource.com/">Android Open Source Project
+repository</a></strong> to make your changes available to everyone else in
+        the Android ecosystem.</p>
+      <a href="{@docRoot}devices/index.html">
+        <h4>Port Android to Devices</h4></a>
+        <p>Port the latest Android platform and
+        create compelling devices that your customers want.</p>
+
+      <a href="{@docRoot}accessories/index.html">
+        <h4>Build Accessories</h4></a>
+        <p>Sometimes, a device can't do it all. Tap into Android's open accessory standard and build accessories to complement the wide variety of Android-powered devices.</p>
+
+      <a href="{@docRoot}compatibility/index.html">
+        <h4>Get Compatible</h4></a>
+        <p>Being Android-compatible lets you offer custom features but still give users and developers a consistent
+          and standard experience across all Android-powered devices. Android provides guidance
+          and a test suite to verify your Android compatibility.</p>
+    </div>
+
+  </div>
+
+</div>

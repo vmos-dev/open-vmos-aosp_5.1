@@ -1,0 +1,11 @@
+recovery_only(`
+  allow recovery ctl_rildaemon_prop:property_service set;
+  allow recovery device:dir rw_dir_perms;
+  allow recovery rootfs:dir rw_dir_perms;
+  allow recovery rootfs:file create_file_perms;
+  allow recovery sysfs_devices_system_cpu:file rw_file_perms;
+  allow recovery self:capability mknod;
+  allow recovery usbfs:dir rw_dir_perms;
+  allow recovery device:chr_file create_file_perms;
+')
+

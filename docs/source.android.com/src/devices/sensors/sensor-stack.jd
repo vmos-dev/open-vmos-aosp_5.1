@@ -1,0 +1,182 @@
+page.title=Sensor stack
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>The figure below represents the Android sensor stack. Each component
+  communicates only with the components directly above and below it, though some
+  sensors can bypass the sensor hub when it is present. Control flows from the
+  applications down to the sensors, and data flows from the sensors up to the
+  applications.</p>
+<img src="images/sensor_layers.png" alt="Layers and owners of the Android sensor stack" />
+<p class="img-caption"><strong>Figure 1.</strong> Layers of the Android sensor stack and their respective owners</p>
+
+<h2 id="sdk">SDK</h2>
+<p>Applications access sensors through the <a href="http://developer.android.com/reference/android/hardware/SensorManager.html">Sensors SDK (Software Development Kit) API</a>. The SDK contains functions to list available sensors and to register to a
+  sensor.</p>
+<p>When registering to a sensor, the application specifies its preferred sampling
+  frequency and its latency requirements.</p>
+<ul>
+  <li> For example, an application might register to the default accelerometer,
+    requesting events at 100Hz, and allowing events to be reported with a 1-second
+    latency. </li>
+  <li> The application will receive events from the accelerometer at a rate of at
+    least 100Hz, and possibly delayed up to 1 second. </li>
+</ul>
+<p>See the <a href="index.html#targeted_at_developers">developer documentation</a> for more information on the SDK.</p>
+<h2 id="framework">Framework</h2>
+<p>The framework is in charge of linking the several applications to the <a href="hal-interface.html">HAL</a>. The HAL itself is single-client. Without this multiplexing happening at the
+  framework level, only a single application could access each sensor at any
+  given time.</p>
+<ul>
+  <li> When a first application registers to a sensor, the framework sends a request
+    to the HAL to activate the sensor. </li>
+  <li> When additional applications register to the same sensor, the framework takes
+    into account requirements from each application and sends the updated requested
+    parameters to the HAL.
+    <ul>
+      <li> The <a href="hal-interface.html#sampling_period_ns">sampling frequency</a> will be the maximum of the requested sampling frequencies, meaning some
+        applications will receive events at a frequency higher than the one they
+        requested. </li>
+      <li> The <a href="hal-interface.html#max_report_latency_ns">maximum reporting latency</a> will be the minimum of the requested ones. If one application requests one
+        sensor with a maximum reporting latency of 0, all applications will receive the
+        events from this sensor in continuous mode even if some requested the sensor
+        with a non-zero maximum reporting latency. See <a href="batching.html">Batching</a> for more details. </li>
+    </ul>
+  </li>
+  <li> When the last application registered to one sensor unregisters from it, the
+    frameworks sends a request to the HAL to deactivate the sensor so power is not
+    consumed unnecessarily. </li>
+</ul>
+<h3 id="impact_of_multiplexing">Impact of multiplexing</h3>
+<p>This need for a multiplexing layer in the framework explains some design
+  decisions.</p>
+<ul>
+  <li> When an application requests a specific sampling frequency, there is no
+    guarantee that events won’t arrive at a faster rate. If another application
+    requested the same sensor at a faster rate, the first application will also
+    receive them at the fast rate. </li>
+  <li> The same lack of guarantee applies to the requested maximum reporting latency:
+    applications might receive events with much less latency than they requested. </li>
+  <li> Besides sampling frequency and maximum reporting latency, applications cannot
+    configure sensor parameters.
+    <ul>
+      <li> For example, imagine a physical sensor that can function both in “high
+        accuracy” and “low power” modes. </li>
+      <li> Only one of those two modes can be used on an Android device, because
+        otherwise, an application could request the high accuracy mode, and another one
+        a low power mode; there would be no way for the framework to satisfy both
+        applications. The framework must always be able to satisfy all its clients, so
+        this is not an option. </li>
+    </ul>
+  </li>
+  <li> There is no mechanism to send data down from the applications to the sensors or
+    their drivers. This ensures one application cannot modify the behavior of the
+    sensors, breaking other applications. </li>
+</ul>
+<h3 id="sensor_fusion">Sensor fusion</h3>
+<p>The Android framework provides a default implementation for some composite
+  sensors. When a <a href="sensor-types.html#gyroscope">gyroscope</a>, an <a href="sensor-types.html#accelerometer">accelerometer</a> and a <a href="sensor-types.html#magnetic_field_sensor">magnetometer</a> are present on a device, but no <a href="sensor-types.html#rotation_vector">rotation vector</a>, <a href="sensor-types.html#gravity">gravity</a> and <a href="sensor-types.html#linear_acceleration">linear acceleration</a> sensors are present, the framework implements those sensors so applications
+  can still use them.</p>
+<p>The default implementation does not have access to all the data that other
+  implementations have access to, and it must run on the SoC, so it is not as
+  accurate nor as power efficient as other implementations can be. As much as
+  possible, device manufacturers should define their own fused sensors (rotation
+  vector, gravity and linear acceleration, as well as newer composite sensors like
+  the <a href="sensor-types.html#game_rotation_vector">game rotation vector</a>) rather than rely on this default implementation. Device manufacturers can
+  also request sensor chip vendors to provide them with an implementation.</p>
+<p>The default sensor fusion implementation is not being maintained and
+  might cause devices relying on it to fail CTS.</p>
+<h3 id="under_the_hood">Under the Hood</h3>
+<p>This section is provided as background information for those maintaining the
+  Android Open Source Project (AOSP) framework code. It is not relevant for
+  hardware manufacturers.</p>
+<h4 id="jni">JNI</h4>
+<p>The framework uses a Java Native Interface (JNI) associated with <a href="http://developer.android.com/reference/android/hardware/package-summary.html">android.hardware</a> and located in the <code>frameworks/base/core/jni/</code> directory. This code calls the
+  lower level native code to obtain access to the sensor hardware.</p>
+<h4 id="native_framework">Native framework</h4>
+<p>The native framework is defined in <code>frameworks/native/</code> and provides a native
+  equivalent to the <a href="http://developer.android.com/reference/android/hardware/package-summary.html">android.hardware</a> package. The native framework calls the Binder IPC proxies to obtain access to
+  sensor-specific services.</p>
+<h4 id="binder_ipc">Binder IPC</h4>
+<p>The Binder IPC proxies facilitate communication over process boundaries.</p>
+<h2 id="hal">HAL</h2>
+<p>The Sensors Hardware Abstraction Layer (HAL) API is the interface between the
+  hardware drivers and the Android framework. It consists of one HAL interface
+  sensors.h and one HAL implementation we refer to as sensors.cpp.</p>
+<p>The interface is defined by Android and AOSP contributors, and the
+  implementation is provided by the manufacturer of the device.</p>
+<p>The sensor HAL interface is located in <code>hardware/libhardware/include/hardware</code>.
+  See <a href="{@docRoot}devices/halref/sensors_8h.html">sensors.h</a> for additional details.</p>
+<h3 id="release_cycle">Release cycle</h3>
+<p>The HAL implementation specifies what version of the HAL interface it
+  implements by setting <code>your_poll_device.common.version</code>. The existing HAL
+  interface versions are defined in sensors.h, and functionality is tied to those
+  versions.</p>
+<p>The Android framework currently supports versions 1.0 and 1.3, but 1.0 will
+  soon not be supported anymore. This documentation describes the behavior of version
+  1.3, to which all devices should upgrade. For details on how to upgrade to
+  1.3, see <a href="versioning.html">HAL version deprecation</a>.</p>
+<h2 id="kernel_driver">Kernel driver</h2>
+<p>The sensor drivers interact with the physical devices. In some cases, the HAL
+  implementation and the drivers are the same software entity. In other cases,
+  the hardware integrator requests sensor chip manufacturers to provide the
+  drivers, but they are the ones writing the HAL implementation.</p>
+<p>In all cases, HAL implementation and kernel drivers are the responsibility of
+  the hardware manufacturers, and Android does not provide preferred approaches to
+  write them.</p>
+<h2 id="sensor_hub">Sensor hub</h2>
+<p>The sensor stack of a device can optionally include a sensor hub, useful to
+  perform some low-level computation at low power while the SoC can be in a
+  suspend mode. For example, step counting or sensor fusion can be performed on
+  those chips. It is also a good place to implement sensor batching, adding
+  hardware FIFOs for the sensor events. See <a
+href="batching.html">Batching</a> for more information.</p>
+<p>How the sensor hub is materialized depends on the architecture. It is sometimes
+  a separate chip, and sometimes included on the same chip as the SoC. Important
+  characteristics of the sensor hub is that it should contain sufficient memory
+  for batching and consume very little power to enable implementation of the low
+  power Android sensors. Some sensor hubs contain a microcontroller for generic
+  computation, and hardware accelerators to enable very low power computation for
+  low power sensors.</p>
+<p>How the sensor hub is architectured and how it communicates with the sensors
+  and the SoC (I2C bus, SPI bus, …) is not specified by Android, but it should aim
+  at minimizing overall power use.</p>
+<p>One option that appears to have a significant impact on implementation
+  simplicity is having two interrupt lines going from the sensor hub to the SoC:
+  one for wake-up interrupts (for wake-up sensors), and the other for non-wake-up
+  interrupts (for non-wake-up sensors).</p>
+<h2 id="sensors">Sensors</h2>
+<p>Those are the physical MEMs chips making the measurements. In many cases,
+  several physical sensors are present on the same chip. For example, some chips
+  include an accelerometer, a gyroscope and a magnetometer. (Such chips are often
+  called 9-axis chips, as each sensor provides data over 3 axes.)</p>
+<p>Some of those chips also contain some logic to perform usual computations such
+  as motion detection, step detection and 9-axis sensor fusion.</p>
+<p>Although the CDD power and accuracy requirements and recommendations target the
+  Android sensor and not the physical sensors, those requirements impact the
+  choice of physical sensors. For example, the accuracy requirement on the game
+  rotation vector has implications on the required accuracy for the physical
+  gyroscope. It is up to the device manufacturer to derive the requirements for
+  physical sensors.</p>

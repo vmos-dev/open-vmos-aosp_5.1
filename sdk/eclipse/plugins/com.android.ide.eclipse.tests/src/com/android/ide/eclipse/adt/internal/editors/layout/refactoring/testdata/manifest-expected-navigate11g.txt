@@ -1,0 +1,6 @@
+Go To Declaration in manifest.xml for <category android:name="android.intent.category.LA^UNCHER" />:
+Open XML Declaration :  [android.intent.category.LAUNCHER]
+
+
+After open, a browser is shown with this URL:
+  reference/android/content/Intent.html#CATEGORY_LAUNCHER

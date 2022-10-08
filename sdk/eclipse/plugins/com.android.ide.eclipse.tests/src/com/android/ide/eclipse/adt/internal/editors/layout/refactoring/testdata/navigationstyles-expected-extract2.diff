@@ -1,0 +1,5 @@
+@@ -28 +28
++     <style name="newstyle">
++         <item name="android:textColor">#FF00FF</item>
++         <item name="android:textSize">20pt</item>
++     </style>

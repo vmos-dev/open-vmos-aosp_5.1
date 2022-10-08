@@ -1,0 +1,196 @@
+// Script used to build ADT plugins, IDE and monitor
+// There are 2 major tasks done by this plugin:
+//    copydeps: copies tools/base, tools/swt and prebuilt jars into plugins' libs folder
+//    buildEclipse: builds Eclipse by running Tycho from the commandline
+//
+// Usage: $ ANDROID_SRC/tools/gradlew -i -b /path/to/this/build.gradle copydeps|buildEclipse
+
+// get tools/base version
+apply from: "../../tools/buildSrc/base/version.gradle"
+
+repositories {
+    maven { url '../../prebuilts/tools/common/m2/repository' }
+    maven { url '../../out/repo' }
+}
+
+ext {
+    // list of plugins whose manifest should be examined to identify dependencies
+    adtPlugins = new File(projectDir, 'plugins').listFiles().findAll { it.name.startsWith("com.android") }
+
+    //
+    def eclipseBuildDeps = new File(projectDir, "../../prebuilts/eclipse-build-deps").getCanonicalFile()
+    targetComponents = [
+            "platform": new File(eclipseBuildDeps, "platform/org.eclipse.platform-4.2.2.zip"),
+            "cdt"     : new File(eclipseBuildDeps, "cdt/cdt-master-8.0.2.zip"),
+            "emf"     : new File(eclipseBuildDeps, "emf/emf-xsd-Update-2.9.1.zip"),
+            "jdt"     : new File(eclipseBuildDeps, "jdt/org.eclipse.jdt.source-4.2.2.zip"),
+            "wtp"     : new File(eclipseBuildDeps, "wtp/wtp-repo-R-3.3.2-20120210195245.zip"),
+            "gef"     : new File(eclipseBuildDeps, "gef/GEF-Update-3.9.1.zip"),
+            "pde"     : new File(eclipseBuildDeps, "pde/org.eclipse.pde-3.8.zip"),
+            "egit"    : new File(eclipseBuildDeps, "egit/org.eclipse.egit.repository-2.2.0.201212191850-r.zip"),
+    ]
+
+    buildNumber = System.getenv("BUILD_NUMBER")
+    if (buildNumber == null) {
+        buildNumber = "SNAPSHOT"
+    }
+}
+
+// a mapping from the library names as used inside the plugin's MANIFEST.MF to the Maven artifact id
+def artifacts = [
+        // tools/base and tools/swt dependencies
+        'manifest-merger'     : "com.android.tools.build:manifest-merger:$ext.baseVersion",
+        'ddmlib'              : "com.android.tools.ddms:ddmlib:$ext.baseVersion",
+        'ddmuilib'            : "com.android.tools.ddms:ddmuilib:$ext.baseVersion",
+        'layoutlib-api'       : "com.android.tools.layoutlib:layoutlib-api:$ext.baseVersion",
+        'lint-api'            : "com.android.tools.lint:lint-api:$ext.baseVersion",
+        'lint-checks'         : "com.android.tools.lint:lint-checks:$ext.baseVersion",
+        'asset-studio'        : "com.android.tools:asset-studio:$ext.baseVersion",
+        'common'              : "com.android.tools:common:$ext.baseVersion",
+        'dvlib'               : "com.android.tools:dvlib:$ext.baseVersion",
+        'hierarchyviewer2lib' : "com.android.tools:hierarchyviewer2lib:$ext.baseVersion",
+        'ninepatch'           : "com.android.tools:ninepatch:$ext.baseVersion",
+        'rule-api'            : "com.android.tools:rule-api:$ext.baseVersion",
+        'sdk-common'          : "com.android.tools:sdk-common:$ext.baseVersion",
+        'sdklib'              : "com.android.tools:sdklib:$ext.baseVersion",
+        'sdkstats'            : "com.android.tools:sdkstats:$ext.baseVersion",
+        'sdkuilib'            : "com.android.tools:sdkuilib:$ext.baseVersion",
+        'swtmenubar'          : "com.android.tools:swtmenubar:$ext.baseVersion",
+        'testutils'           : "com.android.tools:testutils:$ext.baseVersion",
+        'traceview'           : "com.android.tools:traceview:$ext.baseVersion",
+        'uiautomatorviewer'   : "com.android.tools:uiautomatorviewer:$ext.baseVersion",
+
+        // prebuilts
+        'ant-glob'                         : 'com.android.tools.external:ant-glob:1.0',
+        'asm-4.0'                          : 'org.ow2.asm:asm:4.0',
+        'asm-analysis-4.0'                 : 'org.ow2.asm:asm-analysis:4.0',
+        'asm-tree-4.0'                     : 'org.ow2.asm:asm-tree:4.0',
+        'commons-codec-1.4'                : 'commons-codec:commons-codec:1.4',
+        'commons-compress-1.0'             : 'org.apache.commons:commons-compress:1.8.1',
+        'commons-logging-1.1.1'            : 'commons-logging:commons-logging:1.1.1',
+        'easymock'                         : 'org.easymock:easymock:2.4',
+        'freemarker-2.3.20'                : 'org.freemarker:freemarker:2.3.20',
+        'guava-15.0'                       : 'com.google.guava:guava:15.0',
+        'host-libprotobuf-java-2.3.0-lite' : 'com.android.tools.external:libprotobuf-java-lite:2.3.0',
+        'httpclient-4.1.1'                 : 'org.apache.httpcomponents:httpclient:4.1.1',
+        'httpcore-4.1'                     : 'org.apache.httpcomponents:httpcore:4.1',
+        'httpmime-4.1'                     : 'org.apache.httpcomponents:httpmime:4.1',
+        'jcommon-1.0.12'                   : 'jfree:jcommon:1.0.12',
+        'jfreechart-1.0.9'                 : 'jfree:jfreechart:1.0.9',
+        'jfreechart-swt-1.0.9'             : 'jfree:jfreechart-swt:1.0.9',
+        'kxml2-2.3.0'                      : 'net.sf.kxml:kxml2:2.3.0',
+        'liblzf-1.0'                       : 'com.android.tools.external:liblzf:1.0',
+        'lombok-ast-0.2.2'                 : 'com.android.tools.external.lombok:lombok-ast:0.2.2',
+        'propertysheet'                    : 'com.android.tools.external:propertysheet:1.0',
+]
+
+configurations {
+    compile
+}
+
+dependencies {
+    compile artifacts.values()
+}
+
+task copydeps << {
+    // get the resolved dependencies from the compile configuration
+    def resolvedDependencies = configurations.compile.resolvedConfiguration.firstLevelModuleDependencies
+
+    // generate a map from "xy.jar" -> "/path/to/xy-1.0.jar"
+    def artifactMap = [:]
+    resolvedDependencies.each { dependency ->
+        def dependencyId = dependency.getName()
+        def artifactName = artifacts.find{ it.value == dependencyId}?.key
+
+        // get the jar file corresponding to the dependency
+        def artifact = getArtifact(dependency)
+        artifactMap.put(artifactName + ".jar", artifact)
+    }
+
+    project.adtPlugins.each { File pluginFile ->
+        def manifestDeps = getManifestDependencies(new File(pluginFile, "META-INF/MANIFEST.MF"))
+        logger.info("Dependencies for " + pluginFile.toString() + ": " + manifestDeps.join(","))
+
+        File dest = new File(pluginFile, "libs")
+        if (!manifestDeps.isEmpty() && !dest.isDirectory()) {
+            dest.mkdirs()
+        }
+
+        manifestDeps.each {
+            if (!artifactMap.containsKey(it)) {
+                throw new RuntimeException("No resolved artifact for: " + it + ", required for: "
+                        + pluginFile.getPath())
+            }
+
+            String destName = artifactMap.get(it)
+            logger.info("\tCopying " + destName + " to " + dest)
+            ant.copy(file: destName, tofile: new File(dest, it))
+        }
+    }
+}
+
+// unzip eclipse prebuilts into the out folder to create a target platform for the build
+task unzipTargetPlatform << {
+    File targetDir = new File(projectDir, "../../out/host/maven/target").getCanonicalFile()
+    targetDir.mkdirs()
+
+    project.targetComponents.each { String k, File v ->
+        File d = new File(targetDir, k)
+        logger.info("Unzipping " + v.getPath() + " into: " + d.getPath())
+        ant.unzip(src: v, dest: d)
+    }
+}
+
+task buildEclipse(type: Exec, dependsOn: unzipTargetPlatform) {
+    def maven = new File(projectDir, "../../prebuilts/eclipse/maven/apache-maven-3.2.1/bin/mvn").getCanonicalFile()
+    def androidOut = new File(projectDir, "../../out").getCanonicalPath()
+    environment("M2_HOME", maven.getParentFile().getParentFile().getCanonicalPath())
+    workingDir projectDir
+    commandLine maven.getCanonicalPath(), "-s", "settings.xml", "-DforceContextQualifier=$project.buildNumber", "-DANDROID_OUT=$androidOut", "package"
+}
+
+private File getArtifact(ResolvedDependency dependency) {
+    if (dependency.moduleArtifacts.size() != 1) {
+        String msg = String.format("Each dependency is expected to map to a single jar file, " +
+                "but %s maps to the following artifacts: %s",
+                dependency,
+                dependency.moduleArtifacts.collect { it.file })
+        throw new RuntimeException(msg);
+    }
+
+    return dependency.moduleArtifacts.iterator().next().file
+}
+
+// parse a plugin's manifest file and return the list of jar dependencies expected to be
+// bundled inside
+private List<String> getManifestDependencies(File manifest) {
+    if (manifest == null || !manifest.exists()) {
+        return []
+    }
+
+    def entries = []
+
+    def fis = new FileInputStream(manifest)
+    try {
+        java.util.jar.Manifest m = new java.util.jar.Manifest(fis)
+        def classPath = m.getMainAttributes().getValue("Bundle-ClassPath")
+        if (classPath == null) {
+            return []
+        }
+
+        classPath.split(',').each {
+            if (!it.equals(".")) {
+                if (!it.startsWith("libs/") || !it.endsWith(".jar")) {
+                    throw new RuntimeException(
+                            "Unexpected classpath entry: " + it + " in file: " + manifest)
+                }
+
+                entries.add(it.substring("libs/".length()))
+            }
+        }
+    } finally {
+        fis.close()
+    }
+
+    return entries
+}

@@ -1,0 +1,7 @@
+Go To Declaration in navigation1.xml for android:text="@string/app^_name":
+Open Declaration in values/strings.xml :  [@string/app_name]
+    L/PROJECTNAME/res/values/strings.xml
+
+
+After open, the selected text is:
+    [^<string name="app_name">PROJECTNAME</string>]

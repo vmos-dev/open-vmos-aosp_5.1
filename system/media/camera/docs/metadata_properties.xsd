@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2012 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://schemas.android.com/service/camera/metadata/"
+    targetNamespace="http://schemas.android.com/service/camera/metadata/"
+    elementFormDefault="qualified">
+
+    <element name="metadata" type="tns:MetadataType">
+        <key name="TypeNameKey">
+            <selector xpath="tns:types/tns:typedef" />
+            <field xpath="@name" />
+        </key>
+
+        <!-- ensure that <entry typedef="..."> refers to a valid <typedef name='..."/> -->
+        <keyref name="TypeNameKeyRef" refer="tns:TypeNameKey">
+            <selector xpath=".//tns:entry" /> <!-- recursively find any descendant entry -->
+            <field xpath="@typedef" />
+        </keyref>
+    </element>
+
+    <complexType name="MetadataType">
+        <sequence>
+            <element name="tags" type="tns:TagsType" maxOccurs="1" minOccurs="0"></element>
+            <element name="types" type="tns:TypesType" maxOccurs="1" minOccurs="0"></element>
+            <element name="namespace" type="tns:NamespaceType"
+                maxOccurs="unbounded" minOccurs="1">
+            </element>
+        </sequence>
+    </complexType>
+
+    <complexType name="NamespaceType">
+        <sequence>
+            <element name="section" type="tns:SectionType" maxOccurs="unbounded" minOccurs="1"></element>
+        </sequence>
+        <attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="SectionType">
+        <sequence>
+            <choice maxOccurs="unbounded">
+                <element name="controls" type="tns:SectionKindType" maxOccurs="unbounded" minOccurs="0"></element>
+                <element name="static" type="tns:SectionKindType" maxOccurs="unbounded" minOccurs="0"></element>
+                <element name="dynamic" type="tns:SectionKindType" maxOccurs="unbounded" minOccurs="0"></element>
+            </choice>
+        </sequence>
+        <attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="SectionKindType">
+        <complexContent>
+            <extension base="tns:BaseNamespaceOrSectionKindType">
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="InnerNamespaceType">
+        <complexContent>
+            <extension base="tns:BaseNamespaceOrSectionKindType">
+                <attribute name="name" type="string" use="required"></attribute>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <complexType name="BaseNamespaceOrSectionKindType">
+        <sequence maxOccurs="unbounded">
+            <choice>
+                <element name="namespace" type="tns:InnerNamespaceType"></element>
+                <element name="entry" type="tns:EntryType"></element>
+                <element name="clone" type="tns:CloneType"></element>
+            </choice>
+        </sequence>
+    </complexType>
+
+    <complexType name="TagsType">
+        <sequence>
+            <element name="tag" type="tns:TagType" maxOccurs="unbounded" minOccurs="0"></element>
+        </sequence>
+    </complexType>
+
+    <complexType name="TagType">
+        <simpleContent>
+            <extension base="string">
+                <attribute name="id" type="string" use="required"></attribute>
+            </extension>
+        </simpleContent>
+    </complexType>
+
+    <complexType name="TypesType">
+        <sequence>
+            <element name="typedef" type="tns:TypedefType" maxOccurs="unbounded" minOccurs="0">
+            </element>
+        </sequence>
+    </complexType>
+
+    <complexType name="TypedefType">
+        <sequence>
+            <element name="language" type="tns:LanguageType" maxOccurs="unbounded" minOccurs="1"></element>
+        </sequence>
+        <attribute name="name" type="string" use="required" />
+    </complexType>
+
+    <complexType name="LanguageType">
+        <simpleContent>
+            <extension base="string">
+                <attribute name="name" use="required">
+                    <simpleType>
+                        <restriction base="string">
+                            <enumeration value="java" />
+                            <enumeration value="c" />
+                            <enumeration value="c++" />
+                        </restriction>
+                    </simpleType>
+                </attribute>
+            </extension>
+        </simpleContent>
+    </complexType>
+
+    <group name="BaseEntryGroup">
+        <sequence>
+            <element name="description" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="units" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="range" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="details" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+            <element name="hal_details" type="string" maxOccurs="1"
+                minOccurs="0">
+            </element>
+
+            <element name="tag" type="tns:TagType" maxOccurs="unbounded"
+                minOccurs="0">
+            </element>
+        </sequence>
+    </group>
+
+    <complexType name="EntryType">
+        <sequence>
+            <element name="array" type="tns:ArrayType" maxOccurs="1" minOccurs="0"></element>
+            <element name="enum" type="tns:EnumType" maxOccurs="1" minOccurs="0"></element>
+            <element name="tuple" type="tns:TupleType" maxOccurs="1" minOccurs="0"></element>
+
+            <group ref="tns:BaseEntryGroup" />
+        </sequence>
+
+        <attribute name="name" type="string" use="required" />
+        <attribute name="type" use="required">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="byte" />
+                    <enumeration value="int32" />
+                    <enumeration value="int64" />
+                    <enumeration value="float" />
+                    <enumeration value="double" />
+                    <enumeration value="rational" />
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="type_notes" type="string" />
+        <attribute name="container">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="array" />
+                    <enumeration value="tuple" />
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="enum">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="true"></enumeration>
+                    <enumeration value="false"></enumeration>
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="visibility">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="system" /> <!-- do not expose to java -->
+                    <enumeration value="hidden" /> <!-- java as @hide -->
+                    <enumeration value="public" /> <!-- java as public SDK -->
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="synthetic" default="false">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="false" /> <!-- expose to C -->
+                    <enumeration value="true" /> <!-- do not expose to C -->
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="deprecated" default="false">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="false" /> <!-- normal -->
+                    <enumeration value="true" /> <!-- mark @Deprecated -->
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="optional" default="false">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="false" />
+                    <enumeration value="true" />
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="typedef" type="string" />
+        <attribute name="hwlevel" default="full">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="full" />
+                    <enumeration value="limited" />
+                    <enumeration value="legacy" />
+                </restriction>
+            </simpleType>
+        </attribute>
+    </complexType>
+
+    <complexType name="EnumType">
+        <sequence>
+            <element name="value" type="tns:EnumValueType" maxOccurs="unbounded"></element>
+        </sequence>
+    </complexType>
+
+    <complexType name="TupleType">
+        <sequence>
+            <element name="value" type="string" minOccurs="1" maxOccurs="unbounded"></element>
+        </sequence>
+    </complexType>
+
+    <complexType name="ArrayType">
+        <sequence>
+            <element name="size" type="string" minOccurs="1" maxOccurs="unbounded"></element>
+        </sequence>
+    </complexType>
+
+    <complexType name="EnumValueType" mixed="true">
+
+        <sequence>
+            <element name="notes" type="string" minOccurs="0" maxOccurs="1" />
+        </sequence>
+
+        <attribute name="optional">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="true"></enumeration>
+                    <enumeration value="false"></enumeration>
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="hidden">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="true"></enumeration>
+                    <enumeration value="false"></enumeration>
+                </restriction>
+            </simpleType>
+        </attribute>
+        <attribute name="id" type="string" />
+    </complexType>
+
+    <complexType name="CloneType">
+        <sequence>
+                <group ref="tns:BaseEntryGroup" />
+        </sequence>
+
+        <!--
+             the semantic correctness of the next 2 attributes
+             are validated by metadata_validate.py
+
+             due to the inability of XSD to generate paths recursively
+        -->
+        <attribute name="entry">
+        </attribute>
+        <attribute name="kind">
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="controls"></enumeration>
+                    <enumeration value="static"></enumeration>
+                    <enumeration value="dynamic"></enumeration>
+                </restriction>
+            </simpleType>
+        </attribute>
+    </complexType>
+</schema>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="stylename">
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/title_color</item>
+        <item name="android:shadowColor">@an</item>
+        <item name="android:gravity">  </item>
+        <item name="gr">@color/title_color</item>
+        <item name="an">@color/title_color</item>
+        <item ></item>
+        <item name=""></item>
+        <item name="android:allowSingleTap"></item>
+        <item name="android:alwaysDrawnWithCache">  false  </item>
+        <item name="android:orientation">h</item>
+        <item name="android:gravity">
+           c
+        </item>
+    </style>
+</resources>
+

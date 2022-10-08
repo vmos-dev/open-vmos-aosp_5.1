@@ -1,0 +1,9 @@
+android.widget.LinearLayout [0,36,240,320]  <LinearLayout>
+    android.widget.Button [95,0,144,36]  <Button>
+    android.widget.Button [95,36,144,72]  <Button>
+    android.widget.Button [191,72,240,108]  <Button>
+    android.widget.LinearLayout [0,108,240,284]  <LinearLayout>
+        android.widget.Button [0,70,49,106]  <Button>
+        android.widget.Button [49,70,98,106]  <Button>
+        android.widget.Button [98,140,147,176]  <Button>
+

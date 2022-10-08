@@ -1,0 +1,600 @@
+page.title=USB Digital Audio
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+This article reviews Android support for USB digital audio and related
+USB-based protocols.
+</p>
+
+<h3 id="audience">Audience</h3>
+
+<p>
+The target audience of this article is Android device OEMs, SoC vendors,
+USB audio peripheral suppliers, advanced audio application developers,
+and others seeking detailed understanding of USB digital audio internals on Android.
+</p>
+
+<p>
+End users should see the <a href="https://support.google.com/android/">Help Center</a> instead.
+Though this article is not oriented towards end users,
+certain audiophile consumers may find portions of interest.
+</p>
+
+<h2 id="overview">Overview of USB</h2>
+
+<p>
+Universal Serial Bus (USB) is informally described in the Wikipedia article
+<a href="http://en.wikipedia.org/wiki/USB">USB</a>,
+and is formally defined by the standards published by the
+<a href="http://www.usb.org/">USB Implementers Forum, Inc</a>.
+For convenience, we summarize the key USB concepts here,
+but the standards are the authoritative reference.
+</p>
+
+<h3 id="terminology">Basic concepts and terminology</h3>
+
+<p>
+USB is a <a href="http://en.wikipedia.org/wiki/Bus_(computing)">bus</a>
+with a single initiator of data transfer operations, called the <i>host</i>.
+The host communicates with
+<a href="http://en.wikipedia.org/wiki/Peripheral">peripherals</a> via the bus.
+</p>
+
+<p>
+<b>Note:</b> the terms <i>device</i> or <i>accessory</i> are common synonyms for
+<i>peripheral</i>.  We avoid those terms here, as they could be confused with
+Android <a href="http://en.wikipedia.org/wiki/Mobile_device">device</a>
+or the Android-specific concept called
+<a href="http://developer.android.com/guide/topics/connectivity/usb/accessory.html">accessory mode</a>.
+</p>
+
+<p>
+A critical host role is <i>enumeration</i>:
+the process of detecting which peripherals are connected to the bus,
+and querying their properties expressed via <i>descriptors</i>.
+</p>
+
+<p>
+A peripheral may be one physical object
+but actually implement multiple logical <i>functions</i>.
+For example, a webcam peripheral could have both a camera function and a
+microphone audio function.
+</p>
+
+<p>
+Each peripheral function has an <i>interface</i> that
+defines the protocol to communicate with that function.
+</p>
+
+<p>
+The host communicates with a peripheral over a
+<a href="http://en.wikipedia.org/wiki/Stream_(computing)">pipe</a>
+to an <a href="http://en.wikipedia.org/wiki/Communication_endpoint">endpoint</a>,
+a data source or sink
+provided by one of the peripheral's functions.
+</p>
+
+<p>
+There are two kinds of pipes: <i>message</i> and <i>stream</i>.
+A message pipe is used for bi-directional control and status.
+A stream pipe is used for uni-directional data transfer.
+</p>
+
+<p>
+The host initiates all data transfers,
+hence the terms <i>input</i> and <i>output</i> are expressed relative to the host.
+An input operation transfers data from the peripheral to the host,
+while an output operation transfers data from the host to the peripheral.
+</p>
+
+<p>
+There are three major data transfer modes:
+<i>interrupt</i>, <i>bulk</i>, and <i>isochronous</i>.
+Isochronous mode will be discussed further in the context of audio.
+</p>
+
+<p>
+The peripheral may have <i>terminals</i> that connect to the outside world,
+beyond the peripheral itself.  In this way, the peripheral serves
+to translate between USB protocol and "real world" signals.
+The terminals are logical objects of the function.
+</p>
+
+<h2 id="androidModes">Android USB modes</h2>
+
+<h3 id="developmentMode">Development mode</h3>
+
+<p>
+<i>Development mode</i> has been present since the initial release of Android.
+The Android device appears as a USB peripheral
+to a host PC running a desktop operating system such as Linux,
+Mac OS X, or Windows.  The only visible peripheral function is either
+<a href="http://en.wikipedia.org/wiki/Android_software_development#Fastboot">Android fastboot</a>
+or
+<a href="http://developer.android.com/tools/help/adb.html">Android Debug Bridge (adb)</a>.
+The fastboot and adb protocols are layered over USB bulk data transfer mode.
+</p>
+
+<h3 id="hostMode">Host mode</h3>
+
+<p>
+<i>Host mode</i> is introduced in Android 3.1 (API level 12).
+</p>
+
+<p>
+As the Android device must act as host, and most Android devices include
+a micro-USB connector that does not directly permit host operation,
+an on-the-go (<a href="http://en.wikipedia.org/wiki/USB_On-The-Go">OTG</a>) adapter
+such as this is usually required:
+</p>
+
+<img src="audio/images/otg.jpg" style="image-orientation: 90deg;" height="50%" width="50%" alt="OTG">
+
+<p>
+An Android device might not provide sufficient power to operate a
+particular peripheral, depending on how much power the peripheral needs,
+and how much the Android device is capable of supplying.  Even if
+adequate power is available, the Android device battery charge may
+be significantly shortened.  For these situations, use a powered
+<a href="http://en.wikipedia.org/wiki/USB_hub">hub</a> such as this:
+</p>
+
+<img src="audio/images/hub.jpg" alt="Powered hub">
+
+<h3 id="accessoryMode">Accessory mode</h3>
+
+<p>
+<i>Accessory mode</i> was introduced in Android 3.1 (API level 12) and back-ported to Android 2.3.4.
+In this mode, the Android device operates as a USB peripheral,
+under the control of another device such as a dock that serves as host.
+The difference between development mode and accessory mode
+is that additional USB functions are visible to the host, beyond adb.
+The Android device begins in development mode and then
+transitions to accessory mode via a re-negotiation process.
+</p>
+
+<p>
+Accessory mode was extended with additional features in Android 4.1,
+in particular audio described below.
+</p>
+
+<h2 id="audioClass">USB audio</h2>
+
+<h3 id="class">USB classes</h3>
+
+<p>
+Each peripheral function has an associated <i>device class</i> document
+that specifies the standard protocol for that function.
+This enables <i>class compliant</i> hosts and peripheral functions
+to inter-operate, without detailed knowledge of each other's workings.
+Class compliance is critical if the host and peripheral are provided by
+different entities.
+</p>
+
+<p>
+The term <i>driverless</i> is a common synonym for <i>class compliant</i>,
+indicating that it is possible to use the standard features of such a
+peripheral without requiring an operating-system specific
+<a href="http://en.wikipedia.org/wiki/Device_driver">driver</a> to be installed.
+One can assume that a peripheral advertised as "no driver needed"
+for major desktop operating systems
+will be class compliant, though there may be exceptions.
+</p>
+
+<h3 id="audioClass">USB audio class</h3>
+
+<p>
+Here we concern ourselves only with peripherals that implement
+audio functions, and thus adhere to the audio device class.  There are two
+editions of the USB audio class specification: class 1 (UAC1) and 2 (UAC2).
+</p>
+
+<h3 id="otherClasses">Comparison with other classes</h3>
+
+<p>
+USB includes many other device classes, some of which may be confused
+with the audio class.  The
+<a href="http://en.wikipedia.org/wiki/USB_mass_storage_device_class">mass storage class</a>
+(MSC) is used for
+sector-oriented access to media, while
+<a href="http://en.wikipedia.org/wiki/Media_Transfer_Protocol">Media Transfer Protocol</a>
+(MTP) is for full file access to media.
+Both MSC and MTP may be used for transferring audio files,
+but only USB audio class is suitable for real-time streaming.
+</p>
+
+<h3 id="audioTerminals">Audio terminals</h3>
+
+<p>
+The terminals of an audio peripheral are typically analog.
+The analog signal presented at the peripheral's input terminal is converted to digital by an
+<a href="http://en.wikipedia.org/wiki/Analog-to-digital_converter">analog-to-digital converter</a>
+(ADC),
+and is carried over USB protocol to be consumed by
+the host.  The ADC is a data <i>source</i>
+for the host.  Similarly, the host sends a
+digital audio signal over USB protocol to the peripheral, where a
+<a href="http://en.wikipedia.org/wiki/Digital-to-analog_converter">digital-to-analog converter</a>
+(DAC)
+converts and presents to an analog output terminal.
+The DAC is a <i>sink</i> for the host.
+</p>
+
+<h3 id="channels">Channels</h3>
+
+<p>
+A peripheral with audio function can include a source terminal, sink terminal, or both.
+Each direction may have one channel (<i>mono</i>), two channels
+(<i>stereo</i>), or more.
+Peripherals with more than two channels are called <i>multichannel</i>.
+It is common to interpret a stereo stream as consisting of
+<i>left</i> and <i>right</i> channels, and by extension to interpret a multichannel stream as having
+spatial locations corresponding to each channel.  However, it is also quite appropriate
+(especially for USB audio more so than
+<a href="http://en.wikipedia.org/wiki/HDMI">HDMI</a>)
+to not assign any particular
+standard spatial meaning to each channel.  In this case, it is up to the
+application and user to define how each channel is used.
+For example, a four-channel USB input stream might have the first three
+channels attached to various microphones within a room, and the final
+channel receiving input from an AM radio.
+</p>
+
+<h3 id="isochronous">Isochronous transfer mode</h3>
+
+<p>
+USB audio uses isochronous transfer mode for its real-time characteristics,
+at the expense of error recovery.
+In isochronous mode, bandwidth is guaranteed, and data transmission
+errors are detected using a cyclic redundancy check (CRC).  But there is
+no packet acknowledgement or re-transmission in the event of error.
+</p>
+
+<p>
+Isochronous transmissions occur each Start Of Frame (SOF) period.
+The SOF period is one millisecond for full-speed, and 125 microseconds for
+high-speed.  Each full-speed frame carries up to 1023 bytes of payload,
+and a high-speed frame carries up to 1024 bytes.  Putting these together,
+we calculate the maximum transfer rate as 1,023,000 or 8,192,000 bytes
+per second.  This sets a theoretical upper limit on the combined audio
+sample rate, channel count, and bit depth.  The practical limit is lower.
+</p>
+
+<p>
+Within isochronous mode, there are three sub-modes:
+</p>
+
+<ul>
+<li>Adaptive</li>
+<li>Asynchronous</li>
+<li>Synchronous</li>
+</ul>
+
+<p>
+In adaptive sub-mode, the peripheral sink or source adapts to a potentially varying sample rate
+of the host.
+</p>
+
+<p>
+In asynchronous (also called implicit feedback) sub-mode,
+the sink or source determines the sample rate, and the host accomodates.
+The primary theoretical advantage of asynchronous sub-mode is that the source
+or sink USB clock is physically and electrically closer to (and indeed may
+be the same as, or derived from) the clock that drives the DAC or ADC.
+This proximity means that asynchronous sub-mode should be less susceptible
+to clock jitter.  In addition, the clock used by the DAC or ADC may be
+designed for higher accuracy and lower drift than the host clock.
+</p>
+
+<p>
+In synchronous sub-mode, a fixed number of bytes is transferred each SOF period.
+The audio sample rate is effectively derived from the USB clock.
+Synchronous sub-mode is not commonly used with audio because both
+host and peripheral are at the mercy of the USB clock.
+</p>
+
+<p>
+The table below summarizes the isochronous sub-modes:
+</p>
+
+<table>
+<tr>
+  <th>Sub-mode</th>
+  <th>Byte count<br \>per packet</th>
+  <th>Sample rate<br \>determined by</th>
+  <th>Used for audio</th>
+</tr>
+<tr>
+  <td>adaptive</td>
+  <td>variable</td>
+  <td>host</td>
+  <td>yes</td>
+</tr>
+<tr>
+  <td>asynchronous</td>
+  <td>variable</td>
+  <td>peripheral</td>
+  <td>yes</td>
+</tr>
+<tr>
+  <td>synchronous</td>
+  <td>fixed</td>
+  <td>USB clock</td>
+  <td>no</td>
+</tr>
+</table>
+
+<p>
+In practice, the sub-mode does of course matter, but other factors
+should also be considered.
+</p>
+
+<h2 id="androidSupport">Android support for USB audio class</h2>
+
+<h3 id="developmentAudio">Development mode</h3>
+
+<p>
+USB audio is not supported in development mode.
+</p>
+
+<h3 id="hostAudio">Host mode</h3>
+
+<p>
+Android 5.0 (API level 21) and above supports a subset of USB audio class 1 (UAC1) features:
+</p>
+
+<ul>
+<li>The Android device must act as host</li>
+<li>The audio format must be PCM (interface type I)</li>
+<li>The bit depth must be 16-bits, 24-bits, or 32-bits where
+24 bits of useful audio data are left-justified within the most significant
+bits of the 32-bit word</li>
+<li>The sample rate must be either 48, 44.1, 32, 24, 22.05, 16, 12, 11.025, or 8 kHz</li>
+<li>The channel count must be 1 (mono) or 2 (stereo)</li>
+</ul>
+
+<p>
+Perusal of the Android framework source code may show additional code
+beyond the minimum needed to support these features.  But this code
+has not been validated, so more advanced features are not yet claimed.
+</p>
+
+<h3 id="accessoryAudio">Accessory mode</h3>
+
+<p>
+Android 4.1 (API level 16) added limited support for audio playback to the host.
+While in accessory mode, Android automatically routes its audio output to USB.
+That is, the Android device serves as a data source to the host, for example a dock.
+</p>
+
+<p>
+Accessory mode audio has these features:
+</p>
+
+<ul>
+<li>
+The Android device must be controlled by a knowledgeable host that
+can first transition the Android device from development mode to accessory mode,
+and then the host must transfer audio data from the appropriate endpoint.
+Thus the Android device does not appear "driverless" to the host.
+</li>
+<li>The direction must be <i>input</i>, expressed relative to the host</li>
+<li>The audio format must be 16-bit PCM</li>
+<li>The sample rate must be 44.1 kHz</li>
+<li>The channel count must be 2 (stereo)</li>
+</ul>
+
+<p>
+Accessory mode audio has not been widely adopted,
+and is not currently recommended for new designs.
+</p>
+
+<h2 id="applications">Applications of USB digital audio</h2>
+
+<p>
+As the name indicates, the USB digital audio signal is represented
+by a <a href="http://en.wikipedia.org/wiki/Digital_data">digital</a> data stream
+rather than the <a href="http://en.wikipedia.org/wiki/Analog_signal">analog</a>
+signal used by the common TRS mini
+<a href=" http://en.wikipedia.org/wiki/Phone_connector_(audio)">headset connector</a>.
+Eventually any digital signal must be converted to analog before it can be heard.
+There are tradeoffs in choosing where to place that conversion.
+</p>
+
+<h3 id="comparison">A tale of two DACs</h3>
+
+<p>
+In the example diagram below, we compare two designs.  First we have a
+mobile device with Application Processor (AP), on-board DAC, amplifier,
+and analog TRS connector attached to headphones.  We also consider a
+mobile device with USB connected to external USB DAC and amplifier,
+also with headphones.
+</p>
+
+<img src="audio/images/dac.png" alt="DAC comparison">
+
+<p>
+Which design is better?  The answer depends on your needs.
+Each has advantages and disadvantages.
+<b>Note:</b> this is an artificial comparison, since
+a real Android device would probably have both options available.
+</p>
+
+<p>
+The first design A is simpler, less expensive, uses less power,
+and will be a more reliable design assuming otherwise equally reliable components.
+However, there are usually audio quality tradeoffs vs. other requirements.
+For example, if this is a mass-market device, it may be designed to fit
+the needs of the general consumer, not for the audiophile.
+</p>
+
+<p>
+In the second design, the external audio peripheral C can be designed for
+higher audio quality and greater power output without impacting the cost of
+the basic mass market Android device B.  Yes, it is a more expensive design,
+but the cost is absorbed only by those who want it.
+</p>
+
+<p>
+Mobile devices are notorious for having high-density
+circuit boards, which can result in more opportunities for
+<a href="http://en.wikipedia.org/wiki/Crosstalk_(electronics)">crosstalk</a>
+that degrades adjacent analog signals.  Digital communication is less susceptible to
+<a href="http://en.wikipedia.org/wiki/Noise_(electronics)">noise</a>,
+so moving the DAC from the Android device A to an external circuit board
+C allows the final analog stages to be physically and electrically
+isolated from the dense and noisy circuit board, resulting in higher fidelity audio.
+</p>
+
+<p>
+On the other hand,
+the second design is more complex, and with added complexity come more
+opportunities for things to fail.  There is also additional latency
+from the USB controllers.
+</p>
+
+<h3 id="applications">Applications</h3>
+
+<p>
+Typical USB host mode audio applications include:
+</p>
+
+<ul>
+<li>music listening</li>
+<li>telephony</li>
+<li>instant messaging and voice chat</li>
+<li>recording</li>
+</ul>
+
+<p>
+For all of these applications, Android detects a compatible USB digital
+audio peripheral, and automatically routes audio playback and capture
+appropriately, based on the audio policy rules.
+Stereo content is played on the first two channels of the peripheral.
+</p>
+
+<p>
+There are no APIs specific to USB digital audio.
+For advanced usage, the automatic routing may interfere with applications
+that are USB-aware.  For such applications, disable automatic routing
+via the corresponding control in the Media section of
+<a href="http://developer.android.com/tools/index.html">Settings / Developer Options</a>.
+</p>
+
+<h2 id="compatibility">Implementing USB audio</h2>
+
+<h3 id="recommendationsPeripheral">Recommendations for audio peripheral vendors</h3>
+
+<p>
+In order to inter-operate with Android devices, audio peripheral vendors should:
+</p>
+
+<ul>
+<li>design for audio class compliance;
+currently Android targets class 1, but it is wise to plan for class 2</li>
+<li>avoid <a href="http://en.wiktionary.org/wiki/quirk">quirks</a>
+<li>test for inter-operability with reference and popular Android devices</li>
+<li>clearly document supported features, audio class compliance, power requirements, etc.
+so that consumers can make informed decisions</li>
+</ul>
+
+<h3 id="recommendationsAndroid">Recommendations for Android device OEMs and SoC vendors</h3>
+
+<p>
+In order to support USB digital audio, device OEMs and SoC vendors should:
+</p>
+
+<ul>
+<li>enable all kernel features needed: USB host mode, USB audio, isochronous transfer mode</li>
+<li>keep up-to-date with recent kernel releases and patches;
+despite the noble goal of class compliance, there are extant audio peripherals
+with <a href="http://en.wiktionary.org/wiki/quirk">quirks</a>,
+and recent kernels have workarounds for such quirks
+</li>
+<li>enable USB audio policy as described below</li>
+<li>test for inter-operability with common USB audio peripherals</li>
+</ul>
+
+<h3 id="enable">How to enable USB audio policy</h3>
+
+<p>
+To enable USB audio, add an entry to the
+audio policy configuration file.  This is typically
+located here:
+<pre>device/oem/codename/audio_policy.conf</pre>
+The pathname component "oem" should be replaced by the name
+of the OEM who manufactures the Android device,
+and "codename" should be replaced by the device code name.
+</p>
+
+<p>
+An example entry is shown here:
+</p>
+
+<pre>
+audio_hw_modules {
+  ...
+  usb {
+    outputs {
+      usb_accessory {
+        sampling_rates 44100
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_USB_ACCESSORY
+      }
+      usb_device {
+        sampling_rates dynamic
+        channel_masks dynamic
+        formats dynamic
+        devices AUDIO_DEVICE_OUT_USB_DEVICE
+      }
+    }
+    inputs {
+      usb_device {
+        sampling_rates dynamic
+        channel_masks AUDIO_CHANNEL_IN_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_IN_USB_DEVICE
+      }
+    }
+  }
+  ...
+}
+</pre>
+
+<h3 id="sourceCode">Source code</h3>
+
+<p>
+The audio Hardware Abstraction Layer (HAL)
+implementation for USB audio is located here:
+<pre>hardware/libhardware/modules/usbaudio/</pre>
+The USB audio HAL relies heavily on
+<i>tinyalsa</i>, described at <a href="audio_terminology.html">Audio Terminology</a>.
+Though USB audio relies on isochronous transfers,
+this is abstracted away by the ALSA implementation.
+So the USB audio HAL and tinyalsa do not need to concern
+themselves with this part of USB protocol.
+</p>

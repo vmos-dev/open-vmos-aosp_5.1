@@ -1,0 +1,116 @@
+page.title=Bluetooth
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+
+<p>Android provides a default Bluetooth stack, BlueDroid, that is divided into two layers: The Bluetooth Embedded System (BTE), which implements the core
+Bluetooth functionality and the Bluetooth Application Layer (BTA), which communicates
+with Android framework applications. A Bluetooth system service communicates with the Bluetooth stack through JNI and with applications through
+Binder IPC. The system service provides developers access to various Bluetooth profiles. The following
+diagram shows the general structure of the Bluetooth stack:
+</p>
+
+<p><img src="images/bt.png"></p>
+
+<dl>
+  <dt>Application framework</dt>
+  <dd>At the application framework level is the app's code, which utilizes the <a 
+  href="http://developer.android.com/reference/android/bluetooth/package-summary.html">android.bluetooth</a>
+  APIs to interact with the bluetooth hardware. Internally, this code calls the Bluetooth process through
+  the Binder IPC mechanism.</dd>
+  
+  <dt>Bluetooth system service</dt>
+  <dd>The Bluetooth system service, located in <code>packages/apps/Bluetooth</code>, is packaged as an Android
+  	app and implements the Bluetooth service and profiles at the Android framework layer. This app
+  	calls into the HAL layer via JNI.</p>
+
+  <dt>JNI</dt>
+  <dd>The JNI code associated with <a 
+  href="http://developer.android.com/reference/android/bluetooth/package-summary.html">android.bluetooth</a> is located in
+  <code>packages/apps/Bluetooth/jni</code>. The JNI code calls into the HAL layer and receives
+  callbacks from the HAL when certain Bluetooth operations occur, such as when devices are
+  discovered.</dd>
+
+  <dt>HAL</dt>
+  <dd>The hardware abstraction layer defines the standard interface that the <a 
+  href="http://developer.android.com/reference/android/bluetooth/package-summary.html">android.bluetooth</a> APIs
+  	and Bluetooth process calls into and that you must implement to have your bluetooth hardware
+  	function correctly. The header files for the Bluetooth HAL is located
+  in the <code>hardware/libhardware/include/hardware/bluetooth.h</code> and
+  <code>hardware/libhardware/include/hardware/bt_*.h</code> files.
+  </dd>
+
+    <dt>Bluetooth stack</dt>
+  <dd>The default Bluetooth stack is provided for you and is located in
+  <code>external/bluetooth/bluedroid</code>. The stack implements the generic Bluetooth HAL as well
+  as customizes it with extensions and configuration changes.
+  </dd>
+
+    <dt>Vendor extensions</dt>
+  <dd>To add custom extensions and an HCI layer for tracing, you can create a libbt-vendor module
+  	and specify these components.
+  </dd>
+
+  </dl>
+
+
+<h2 id="implementing">Implementing the HAL</h2>
+<p>The Bluetooth HAL is located in the <code>hardware/libhardware/include/hardware/</code> directory
+ and consists of the following header files:
+
+<ul>
+  <li><code>bluetooth.h</code>: Contains the HAL for the Bluetooth hardware on the device</li>
+  <li><code>bt_av.h</code>: Contains the HAL for the advanced audio profile.</li>
+  <li><code>bt_hf.h</code>: Contains the HAL for the handsfree profile.</li>
+  <li><code>bt_hh.h</code>: Contains the HAL for the HID host profile</li>
+  <li><code>bt_hl.h</code>: Contains the HAL for the health profile</li>
+  <li><code>bt_pan.h</code>: Contains the HAL for the pan profile</li>
+  <li><code>bt_sock.h</code>: Contains the HAL for the socket profile.</li>
+</ul>
+
+</p>
+
+<p>Keep in mind that your Bluetooth implementation is not constrained to the features
+	and profiles exposed in the HAL. You can find the default implementation located
+	in the BlueDroid Bluetooth stack in the <code>external/bluetooth/bluedroid</code> directory,
+	which implements the default HAL and also extra features and customizations.</p>
+</p>
+
+<h2>Customizing the BlueDroid Stack</h2>
+
+<p>If you are using the default BlueDroid stack, but want to make a few customizations, you can
+	do the following things:</p>
+
+<ul>
+	<li>Custom Bluetooth profiles - If you want to add Bluetooth profiles that do not have
+		HAL interfaces provided by Android, you must supply an SDK add-on download to make the profile available to app developers,
+		make the APIs available in the Bluetooth system	process app (<code>packages/apps/Bluetooth</code>), and add them
+		to the BlueDroid stack (<code>external/bluetooth/bluedroid</code>).</li>
+	<li>Custom vendor extensions and configuration changes - You can add things such as extra AT commands or device-specific configuration changes
+		by creating a <code>libbt-vendor</code> module. See the <code>vendor/broadcom/libbt-vendor</code> directory
+		for an example.</li>
+	<li>Host Controller Interface (HCI) - You can provide your own HCI by creating a <code>libbt-hci</code> module, which
+		is mainly used for debug tracing. See the <code>external/bluetooth/hci</code> directory for an example.</li>
+</ul>

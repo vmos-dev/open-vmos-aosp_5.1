@@ -1,0 +1,7 @@
+# This file gets copied as /init.fugu.diag.rc
+
+on boot
+    # Voice search logging collection
+    chmod 444 /dev/snd_atvr_pcm
+    chmod 444 /dev/snd_atvr_mSBC
+    chmod 444 /dev/snd_atvr_adpcm

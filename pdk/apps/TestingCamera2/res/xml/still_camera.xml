@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<testingcamera2_config>
+  <target_panes>
+    <target_pane type="id" />
+  </target_panes>
+
+  <camera_panes>
+    <camera_pane camera_id="1" id="3" />
+  </camera_panes>
+
+</testingcamera2_config>

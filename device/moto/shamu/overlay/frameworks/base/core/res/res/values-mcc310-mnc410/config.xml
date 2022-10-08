@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+** Copyright 2014, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Configure mobile tcp buffer sizes in the form:
+         rat-name:rmem_min,rmem_def,rmem_max,wmem_min,wmem_def,wmem_max
+         If no value is found for the rat-name in use, the system default will be applied.
+    -->
+    <string-array name="config_mobile_tcp_buffers">
+        <item>umts:131072,262144,1452032,4096,16384,399360</item>
+        <item>hspa:131072,262144,1452032,4096,16384,399360</item>
+        <item>hsdpa:131072,262144,1452032,4096,16384,399360</item>
+        <item>hsupa:131072,262144,1452032,4096,16384,399360</item>
+        <item>hspap:131072,262144,1452032,4096,16384,399360</item>
+        <item>edge:4093,26280,35040,4096,16384,35040</item>
+        <item>gprs:4092,8760,11680,4096,8760,11680</item>
+        <item>evdo:4094,87380,262144,4096,16384,262144</item>
+        <item>lte:524288,1048576,8388608,262144,524288,4194304</item>
+    </string-array>
+
+    <!-- Values for GPS configuration (AT&T) -->
+    <string-array translatable="false" name="config_gpsParameters">
+        <item>SUPL_HOST=NONE</item>
+        <item>SUPL_PORT=7275</item>
+        <item>XTRA_SERVER_1=http://xtrapath1.izatcloud.net/xtra2.bin</item>
+        <item>XTRA_SERVER_2=http://xtrapath2.izatcloud.net/xtra2.bin</item>
+        <item>XTRA_SERVER_3=http://xtrapath3.izatcloud.net/xtra2.bin</item>
+        <item>NTP_SERVER=north-america.pool.ntp.org</item>
+        <item>SUPL_VER=0x20000</item>
+        <item>NMEA_PROVIDER=0</item>
+        <item>A_GLONASS_POS_PROTOCOL_SELECT=0</item>
+        <item>ERR_ESTIMATE=0</item>
+        <item>INTERMEDIATE_POS=0</item>
+        <item>GPS_LOCK=1</item>
+        <item>LPP_PROFILE=3</item>
+        <item>SUPL_MODE=1</item>
+        <item>SUPL_ES=0</item>
+    </string-array>
+
+    <!-- If Voice Radio Technology is RIL_RADIO_TECHNOLOGY_LTE:14 this is the Values
+         that should be used instead. A value of RIL_RADIO_TECHNOLOGY_UNKNOWN:0 means
+         there is no replacement value and VoLTE is assumed to be supported -->
+    <integer name="config_volte_replacement_rat">3</integer>
+
+    <string-array translatable="false" name="config_mobile_hotspot_provision_app">
+        <item>com.motorola.entitlement</item>
+        <item>com.motorola.entitlement.EntitlementDialogActivity</item>
+    </string-array>
+    <string translatable="false" name="config_mobile_hotspot_provision_app_no_ui">com.motorola.entitlement.SILENT_ENTITLEMENT_CHECK</string>
+    <string translatable="false" name="config_mobile_hotspot_provision_response">com.motorola.entitlement.SILENT_ENTITLEMENT_CHECK_RESULT</string>
+
+</resources>

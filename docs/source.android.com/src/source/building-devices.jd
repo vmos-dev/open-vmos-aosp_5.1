@@ -1,0 +1,302 @@
+page.title=Building for devices
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>This page complements the main page about
+<a href="building-running.html">Building and Running</a> with
+information that is specific to individual devices.</p>
+
+<p>With the current release, it is possible to build for
+Nexus 4, Nexus 7, and for some variants of Galaxy Nexus.
+The exact level of functionality for each device depends on the availability
+of the relevant proprietary hardware-specific binaries.</p>
+<p>For Nexus 4 and Nexus 7, all configurations can be used,
+and all the hardware is functional.
+Due to hardware differences, do not use 4.1.1 on a Nexus 7 that
+was originally sold with 4.1.2 or newer.</p>
+<p>All configurations of Nexus 10 "manta" can be used with 4.2.2.
+On those devices, graphics, audio,
+Wi-Fi, Bluetooth, camera, NFC, GPS and orientation sensors are functional.</p>
+<p>The variants of Galaxy Nexus that can be used are the GSM/HSPA+ configuration
+"maguro" (only if it was originally sold with a "yakju" or "takju" operating
+system) and the VZW CDMA/LTE configuration "toro". On those devices, graphics
+and audio are functional, as well as Wi-Fi, Bluetooth, and access to the
+respective cellular networks. NFC and the orientation sensors are functional.</p>
+<p>The Sprint CDMA/LTE configuration "toroplus" of Galaxy Nexus is supported
+experimentally, in the jb-mr1-dev-plus-aosp branch. On that configuration,
+the cellular network is not functional,
+and the other peripherals work like they do on "toro".</p>
+<p>The Motorola Xoom can be used in the Wi-Fi configuration "wingray"
+sold in the USA, with Android 4.1.2. Graphics and audio are functional
+as well as Wi-Fi and Bluetooth and the orientation sensors.</p>
+<p>All configurations of Nexus S and Nexus S 4G can be used with Android 4.1.2.
+On those devices all the hardware is functional.</p>
+<p>In addition, <a href="http://pandaboard.org">PandaBoard</a> a.k.a. "panda" can be used
+in the jb-mr1-dev-plus-aosp branch, but is considered experimental.
+The specific details to use a PandaBoard with the Android Open-Source Project
+are in the file <code>device/ti/panda/README</code> in the source tree.</p>
+
+<h2 id="building-fastboot-and-adb">Building fastboot and adb</h2>
+<p>If you don't already have those tools, fastboot and adb can be built with
+the regular build system. Follow the instructions on the page about
+<a href="building-running.html">Building and Running</a>, and replace the main <code>make</code> command with</p>
+<pre><code>$ make fastboot adb
+</code></pre>
+<h2 id="booting-into-fastboot-mode">Booting into fastboot mode</h2>
+<p>During a cold boot, the following key combinations can be used to boot into fastboot mode,
+which is a mode in the bootloader that can be used to flash the devices:</p>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Keys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hammerhead</td>
+<td>Press and hold both <em>Volume Up</em> and <em>Volume Down</em>, then press
+and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>flo</td>
+<td>Press and hold <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>deb</td>
+<td>Press and hold <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>manta</td>
+<td>Press and hold both <em>Volume Up</em> and <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>mako</td>
+<td>Press and hold <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>grouper</td>
+<td>Press and hold <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>tilapia</td>
+<td>Press and hold <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>phantasm</td>
+<td>Power the device, cover it with one hand after the LEDs light up and until they turn red</td>
+</tr>
+<tr>
+<td>maguro</td>
+<td>Press and hold both <em>Volume Up</em> and <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>toro</td>
+<td>Press and hold both <em>Volume Up</em> and <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>toroplus</td>
+<td>Press and hold both <em>Volume Up</em> and <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>panda</td>
+<td>Press and hold <em>Input</em>, then press <em>Power</em></td>
+</tr>
+<tr>
+<td>wingray</td>
+<td>Press and hold <em>Volume Down</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>crespo</td>
+<td>Press and hold <em>Volume Up</em>, then press and hold <em>Power</em></td>
+</tr>
+<tr>
+<td>crespo4g</td>
+<td>Press and hold <em>Volume Up</em>, then press and hold <em>Power</em></td>
+</tr>
+</tbody>
+</table>
+<p>Also, the command <code>adb reboot bootloader</code> can be used to reboot from
+Android directly into the bootloader with no key combinations.</p>
+<h2 id="unlocking-the-bootloader">Unlocking the bootloader</h2>
+<p>It's only possible to flash a custom system if the bootloader allows it.</p>
+<p>The bootloader is locked by default. With the device in fastboot mode, the
+bootloader is unlocked with</p>
+<pre><code>$ fastboot oem unlock
+</code></pre>
+<p>The procedure must be confirmed on-screen, and deletes the user data for
+privacy reasons. It only needs to be run once.</p>
+<p>All data on the phone is erased, i.e. both the applications' private data
+and the shared data that is accessible over USB, including photos and
+movies. Be sure to make a backup of any precious files you have before
+unlocking the bootloader.</p>
+<p>On Nexus 10, after unlocking the bootloader, the internal storage is
+left unformatted and must be formatted with</p>
+<pre><code>$ fastboot format cache
+$ fastboot format userdata
+</code></pre>
+<p>The bootloader can be locked back with</p>
+<pre><code>$ fastboot oem lock
+</code></pre>
+<p>Note that this erases user data on Xoom (including the shared USB data).</p>
+<h2 id="obtaining-proprietary-binaries">Obtaining proprietary binaries</h2>
+<p>The Android Open-Source Project can't be used
+from pure source code only, and requires additional hardware-related proprietary
+libraries to run, specifically for hardware graphics acceleration.</p>
+<p>Official binaries for the supported devices running tagged AOSP release
+branches can be downloaded from <a
+href="https://developers.google.com/android/nexus/drivers">Google's Nexus
+driver page</a>. These add access to additional hardware capabilities with
+non-open-source code. To instead build the AOSP master branch, use the <a
+href="https://developers.google.com/android/nexus/blobs-preview">Binaries
+Preview for Nexus Devices</a>.</p>
+<p>When building the master branch for a device, the binaries for the most
+recent numbered release or with the most recent date are the ones that should
+be used.</p>
+<h3 id="extracting-the-proprietary-binaries">Extracting the proprietary binaries</h3>
+<p>Each set of binaries comes as a self-extracting script in a compressed archive.
+After uncompressing each archive, run the included self-extracting script
+from the root of the source tree, confirm that you agree to the terms of the
+enclosed license agreement, and the binaries and their matching makefiles
+will get installed in the <code>vendor/</code> hierarchy of the source tree.</p>
+<h3 id="cleaning-up-when-adding-proprietary-binaries">Cleaning up when adding proprietary binaries</h3>
+<p>In order to make sure that the newly installed binaries are properly
+taken into account after being extracted, the existing output of any previous
+build needs to be deleted with</p>
+<pre><code>$ make clobber
+</code></pre>
+<h2 id="picking-and-building-the-configuration-that-matches-a-device">Picking and building the configuration that matches a device</h2>
+<p>The steps to configure and build the Android Open Source Project
+are described in the <a href="building.html">Building</a> page.</p>
+<p>The recommended builds for the various devices are available through
+the lunch menu, accessed when running the <code>lunch</code> command with no arguments. Factory images and binaries for Nexus devices can be downloaded from:</p>
+<p><a href="https://developers.google.com/android/nexus/images">https://developers.google.com/android/nexus/images</a></p>
+<p><a href="https://developers.google.com/android/nexus/drivers">https://developers.google.com/android/nexus/drivers</a></p>
+<table>
+<thead>
+<tr>
+  <th>Device</th>
+<th>Code name</th>
+<th>Build configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Nexus 5 (GSM/LTE)</td>
+<td>hammerhead</td>
+<td>aosp_hammerhead-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus 7 (Wi-Fi)</td>
+<td>razor (flo)</td>
+<td>aosp_flo-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus 7 (Mobile)</td>
+<td>razorg (deb)</td>
+<td>aosp_deb-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus 10</td>
+<td>mantaray (manta)</td>
+<td>full_manta-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus 4</td>
+<td>occam (mako)</td>
+<td>full_mako-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus 7 (Wi-Fi)</td>
+<td>nakasi (grouper)</td>
+<td>full_grouper-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus 7 (Mobile)</td>
+<td>nakasig (tilapia)</td>
+<td>full_tilapia-userdebug</td>
+</tr>
+<tr>
+  <td>Galaxy Nexus (GSM/HSPA+)</td>
+<td>yakju (maguro)</td>
+<td>full_maguro-userdebug</td>
+</tr>
+<tr>
+  <td>Galaxy Nexus (Verizon)</td>
+<td>mysid (toro)</td>
+<td>aosp_toro-userdebug</td>
+</tr>
+<tr>
+  <td>Galaxy Nexus (Experimental)</td>
+<td>mysidspr (toroplus)</td>
+<td>aosp_toroplus-userdebug</td>
+</tr>
+<tr>
+  <td>PandaBoard (Archived)</td>
+<td>panda</td>
+<td>aosp_panda-userdebug</td>
+</tr>
+<tr>
+  <td>Motorola Xoom (U.S. Wi-Fi)</td>
+<td>wingray</td>
+<td>full_wingray-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus S</td>
+<td>soju (crespo)</td>
+<td>full_crespo-userdebug</td>
+</tr>
+<tr>
+  <td>Nexus S 4G</td>
+<td>sojus (crespo4g)</td>
+<td>full_crespo4g-userdebug</td>
+</tr>
+</tbody>
+</table>
+<p>Do not use 4.1.1 on a Nexus 7 that was originally sold with 4.1.2
+or newer.</p>
+<h2 id="flashing-a-device">Flashing a device</h2>
+<p>Set the device in fastboot mode if necessary (see above).</p>
+<p>An entire Android system can be flashed in a single command: this writes
+the boot, recovery and system partitions together after verifying that the
+system being flashed is compatible with the installed bootloader and radio,
+and reboots the system. This also erases all the user data, similarly to
+<code>fastboot oem unlock</code> mentioned earlier.</p>
+<pre><code>$ fastboot -w flashall
+</code></pre>
+<p>Note that filesystems created via fastboot on Motorola Xoom aren't working
+optimally, and it is strongly recommended to re-create them through recovery</p>
+<pre><code>$ adb reboot recovery
+</code></pre>
+<p>Once in recovery, open the menu (press Power + Volume Up), wipe the cache
+partition, then wipe data.</p>
+<h2 id="restoring-a-device-to-its-original-factory-state">Restoring a device to
+its original factory state</h2>
+<p>Factory images for Nexus 5, Nexus 10, Nexus 4, Nexus Q, Nexus 7, Galaxy
+Nexus (GSM/HSPA+ "yakju" and "takju",
+and CDMA/LTE "mysid" and "mysidspr"), Nexus S, and Nexus S 4G are available
+from <a href="https://developers.google.com/android/nexus/images">Google's
+factory image</a> page.</p>
+<p>Factory images for the Motorola Xoom are distributed directly by Motorola.</p>

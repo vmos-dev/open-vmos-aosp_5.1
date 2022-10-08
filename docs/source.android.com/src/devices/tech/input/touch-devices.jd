@@ -1,0 +1,1163 @@
+page.title=Touch Devices
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Android supports a variety of touch screens and touch pads, including
+stylus-based digitizer tablets.</p>
+<p>Touch screens are touch devices that are associated with a display such that
+the user has the impression of directly manipulating items on screen.</p>
+<p>Touch pads are touch devices that are not associated with a display such as a
+digitizer tablet.  Touch pads are typically used for pointing or for
+absolute indirect positioning or gesture-based control of a user interface.</p>
+<p>Touch devices may have buttons whose functions are similar to mouse buttons.</p>
+<p>Touch devices can sometimes be manipulated using a variety of different tools
+such as fingers or a stylus depending on the underlying touch sensor technology.</p>
+<p>Touch devices are sometimes used to implement virtual keys.  For example, on
+some Android devices, the touch screen sensor area extends beyond the edge of
+the display and serves dual purpose as part of a touch sensitive key pad.</p>
+<p>Due to the great variety of touch devices, Android relies on a large number of
+configuration properties to describe the characteristics and desired behavior
+of each device.</p>
+<h2 id="touch-device-classification">Touch Device Classification</h2>
+<p>An input device is classified as a <em>multi-touch</em> device if both of
+the following conditions hold:</p>
+<ul>
+<li>
+<p>The input device reports the presence of the <code>ABS_MT_POSITION_X</code> and
+    <code>ABS_MT_POSITION_Y</code> absolute axes.</p>
+</li>
+<li>
+<p>The input device does not have any gamepad buttons.  This condition
+    resolves an ambiguity with certain gamepads that report axes with codes
+    that overlaps those of the MT axes.</p>
+</li>
+</ul>
+<p>An input device is classified as a <em>single-touch</em> device if both of the
+following conditions hold:</p>
+<ul>
+<li>
+<p>The input device is not classified as a multi-touch device.  An input device
+    is either classified as a single-touch device or as a multi-touch device,
+    never both.</p>
+</li>
+<li>
+<p>The input device reports the presence of the <code>ABS_X</code> and <code>ABS_Y</code> absolute
+    axes, and the presence of the <code>BTN_TOUCH</code> key code.</p>
+</li>
+</ul>
+<p>Once an input device has been classified as a touch device, the presence
+of virtual keys is determined by attempting to load the virtual key map file
+for the device.  If a virtual key map is available, then the key layout
+file for the device is also loaded.</p>
+<p>Refer to the section below about the location and format of virtual key map
+files.</p>
+<p>Next, the system loads the input device configuration file for the touch device.</p>
+<p><strong>All built-in touch devices should have input device configuration files.</strong>
+If no input device configuration file is present, the system will
+choose a default configuration that is appropriate for typical general-purpose
+touch peripherals such as external USB or Bluetooth HID touch screens
+or touch pads.  These defaults are not designed for built-in touch screens and
+will most likely result in incorrect behavior.</p>
+<p>After the input device configuration loaded, the system will classify the
+input device as a <em>touch screen</em>, <em>touch pad</em> or <em>pointer</em> device.</p>
+<ul>
+<li>
+<p>A <em>touch screen</em> device is used for direct manipulation of objects on the
+    screen.  Since the user is directly touching the screen, the system does
+    not require any additional affordances to indicate the objects being
+    manipulated.</p>
+</li>
+<li>
+<p>A <em>touch pad</em> device is used to provide absolute positioning information
+    to an application about touches on a given sensor area.  It may be useful
+    for digitizer tablets.</p>
+</li>
+<li>
+<p>A <em>pointer</em> device is used for indirect manipulation of objects on the
+    screen using a cursor.  Fingers are interpreted as multi-touch pointer
+    gestures.  Other tools, such as styluses, are interpreted using
+    absolute positions.</p>
+<p>See <a href="#indirect-multi-touch-pointer-gestures">Indirect Multi-touch Pointer Gestures</a>
+for more information.</p>
+</li>
+</ul>
+<p>The following rules are used to classify the input device as a <em>touch screen</em>,
+<em>touch pad</em> or <em>pointer</em> device.</p>
+<ul>
+<li>
+<p>If the <code>touch.deviceType</code> property is set, then the device type will be
+    set as indicated.</p>
+</li>
+<li>
+<p>If the input device reports the presence of the <code>INPUT_PROP_DIRECT</code>
+    input property (via the <code>EVIOCGPROP</code> ioctl), then the device type will
+    be set to <em>touch screen</em>.  This condition assumes that direct input touch
+    devices are attached to a display that is also connected.</p>
+</li>
+<li>
+<p>If the input device reports the presence of the <code>INPUT_PROP_POINTER</code>
+    input property (via the <code>EVIOCGPROP</code> ioctl), then the device type will
+    be set to <em>pointer</em>.</p>
+</li>
+<li>
+<p>If the input device reports the presence of the <code>REL_X</code> or <code>REL_Y</code> relative
+    axes, then the device type will be set to <em>touch pad</em>.  This condition
+    resolves an ambiguity for input devices that consist of both a mouse and
+    a touch pad.  In this case, the touch pad will not be used to control
+    the pointer because the mouse already controls it.</p>
+</li>
+<li>
+<p>Otherwise, the device type will be set to <em>pointer</em>.  This default ensures
+    that touch pads that have not been designated any other special purpose
+    will serve to control the pointer.</p>
+</li>
+</ul>
+<h2 id="buttons">Buttons</h2>
+<p>Buttons are <em>optional</em> controls that may be used by applications to perform
+additional functions.  Buttons on touch devices behave similarly to mouse
+buttons and are mainly of use with <em>pointer</em> type touch devices or with a
+stylus.</p>
+<p>The following buttons are supported:</p>
+<ul>
+<li>
+<p><code>BTN_LEFT</code>: mapped to <code>MotionEvent.BUTTON_PRIMARY</code>.</p>
+</li>
+<li>
+<p><code>BTN_RIGHT</code>: mapped to <code>MotionEvent.BUTTON_SECONDARY</code>.</p>
+</li>
+<li>
+<p><code>BTN_MIDDLE</code>: mapped to <code>MotionEvent.BUTTON_MIDDLE</code>.</p>
+</li>
+<li>
+<p><code>BTN_BACK</code> and <code>BTN_SIDE</code>: mapped to <code>MotionEvent.BUTTON_BACK</code>.
+    Pressing this button also synthesizes a key press with the key code
+    <code>KeyEvent.KEYCODE_BACK</code>.</p>
+</li>
+<li>
+<p><code>BTN_FORWARD</code> and <code>BTN_EXTRA</code>: mapped to <code>MotionEvent.BUTTON_FORWARD</code>.
+    Pressing this button also synthesizes a key press with the key code
+    <code>KeyEvent.KEYCODE_FORWARD</code>.</p>
+</li>
+<li>
+<p><code>BTN_STYLUS</code>: mapped to <code>MotionEvent.BUTTON_SECONDARY</code>.</p>
+</li>
+<li>
+<p><code>BTN_STYLUS2</code>: mapped to <code>MotionEvent.BUTTON_TERTIARY</code>.</p>
+</li>
+</ul>
+<h2 id="tools-and-tool-types">Tools and Tool Types</h2>
+<p>A <em>tool</em> is a finger, stylus or other apparatus that is used to interact with
+the touch device.  Some touch devices can distinguish between different
+types of tools.</p>
+<p>Elsewhere in Android, as in the <code>MotionEvent</code> API, a <em>tool</em> is often referred
+to as a <em>pointer</em>.</p>
+<p>The following tool types are supported:</p>
+<ul>
+<li>
+<p><code>BTN_TOOL_FINGER</code> and <code>MT_TOOL_FINGER</code>: mapped to <code>MotionEvent.TOOL_TYPE_FINGER</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_PEN</code> and <code>MT_TOOL_PEN</code>: mapped to <code>MotionEvent.TOOL_TYPE_STYLUS</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_RUBBER</code>: mapped to <code>MotionEvent.TOOL_TYPE_ERASER</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_BRUSH</code>: mapped to <code>MotionEvent.TOOL_TYPE_STYLUS</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_PENCIL</code>: mapped to <code>MotionEvent.TOOL_TYPE_STYLUS</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_AIRBRUSH</code>: mapped to <code>MotionEvent.TOOL_TYPE_STYLUS</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_MOUSE</code>: mapped to <code>MotionEvent.TOOL_TYPE_MOUSE</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_LENS</code>: mapped to <code>MotionEvent.TOOL_TYPE_MOUSE</code>.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_DOUBLETAP</code>, <code>BTN_TOOL_TRIPLETAP</code>, and <code>BTN_TOOL_QUADTAP</code>:
+    mapped to <code>MotionEvent.TOOL_TYPE_FINGER</code>.</p>
+</li>
+</ul>
+<h2 id="hovering-vs-touching-tools">Hovering vs. Touching Tools</h2>
+<p>Tools can either be in contact with the touch device or in range and hovering
+above it.  Not all touch devices are able to sense the presence of a tool
+hovering above the touch device.  Those that do, such as RF-based stylus digitizers,
+can often detect when the tool is within a limited range of the digitizer.</p>
+<p>The <code>InputReader</code> component takes care to distinguish touching tools from hovering
+tools.  Likewise, touching tools and hovering tools are reported to applications
+in different ways.</p>
+<p>Touching tools are reported to applications as touch events
+using <code>MotionEvent.ACTION_DOWN</code>, <code>MotionEvent.ACTION_MOVE</code>, <code>MotionEvent.ACTION_DOWN</code>,
+<code>MotionEvent.ACTION_POINTER_DOWN</code> and <code>MotionEvent.ACTION_POINTER_UP</code>.</p>
+<p>Hovering tools are reported to applications as generic motion events using
+<code>MotionEvent.ACTION_HOVER_ENTER</code>, <code>MotionEvent.ACTION_HOVER_MOVE</code>
+and <code>MotionEvent.ACTION_HOVER_EXIT</code>.</p>
+<h2 id="touch-device-driver-requirements">Touch Device Driver Requirements</h2>
+<ol>
+<li>
+<p>Touch device drivers should only register axes and key codes for the axes
+    and buttons that they actually support.  Registering excess axes or key codes
+    may confuse the device classification algorithm or cause the system to incorrectly
+    detect the capabilities of the device.</p>
+<p>For example, if the device reports the <code>BTN_TOUCH</code> key code, the system will
+assume that <code>BTN_TOUCH</code> will always be used to indicate whether the tool is
+actually touching the screen or is merely in range and hovering.</p>
+</li>
+<li>
+<p>Single-touch devices use the following Linux input events:</p>
+<ul>
+<li>
+<p><code>ABS_X</code>: <em>(REQUIRED)</em> Reports the X coordinate of the tool.</p>
+</li>
+<li>
+<p><code>ABS_Y</code>: <em>(REQUIRED)</em> Reports the Y coordinate of the tool.</p>
+</li>
+<li>
+<p><code>ABS_PRESSURE</code>: <em>(optional)</em> Reports the physical pressure applied to the tip
+    of the tool or the signal strength of the touch contact.</p>
+</li>
+<li>
+<p><code>ABS_TOOL_WIDTH</code>: <em>(optional)</em> Reports the cross-sectional area or width of the
+    touch contact or of the tool itself.</p>
+</li>
+<li>
+<p><code>ABS_DISTANCE</code>: <em>(optional)</em> Reports the distance of the tool from the surface of
+    the touch device.</p>
+</li>
+<li>
+<p><code>ABS_TILT_X</code>: <em>(optional)</em> Reports the tilt of the tool from the surface of the
+    touch device along the X axis.</p>
+</li>
+<li>
+<p><code>ABS_TILT_Y</code>: <em>(optional)</em> Reports the tilt of the tool from the surface of the
+    touch device along the Y axis.</p>
+</li>
+<li>
+<p><code>BTN_TOUCH</code>: <em>(REQUIRED)</em> Indicates whether the tool is touching the device.</p>
+</li>
+<li>
+<p><code>BTN_LEFT</code>, <code>BTN_RIGHT</code>, <code>BTN_MIDDLE</code>, <code>BTN_BACK</code>, <code>BTN_SIDE</code>, <code>BTN_FORWARD</code>,
+    <code>BTN_EXTRA</code>, <code>BTN_STYLUS</code>, <code>BTN_STYLUS2</code>:
+    <em>(optional)</em> Reports <a href="#buttons">button</a> states.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_FINGER</code>, <code>BTN_TOOL_PEN</code>, <code>BTN_TOOL_RUBBER</code>, <code>BTN_TOOL_BRUSH</code>,
+    <code>BTN_TOOL_PENCIL</code>, <code>BTN_TOOL_AIRBRUSH</code>, <code>BTN_TOOL_MOUSE</code>, <code>BTN_TOOL_LENS</code>,
+    <code>BTN_TOOL_DOUBLETAP</code>, <code>BTN_TOOL_TRIPLETAP</code>, <code>BTN_TOOL_QUADTAP</code>:
+    <em>(optional)</em> Reports the <a href="#tools-and-tool-types">tool type</a>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Multi-touch devices use the following Linux input events:</p>
+<ul>
+<li>
+<p><code>ABS_MT_POSITION_X</code>: <em>(REQUIRED)</em> Reports the X coordinate of the tool.</p>
+</li>
+<li>
+<p><code>ABS_MT_POSITION_Y</code>: <em>(REQUIRED)</em> Reports the Y coordinate of the tool.</p>
+</li>
+<li>
+<p><code>ABS_MT_PRESSURE</code>: <em>(optional)</em> Reports the physical pressure applied to the
+    tip of the tool or the signal strength of the touch contact.</p>
+</li>
+<li>
+<p><code>ABS_MT_TOUCH_MAJOR</code>: <em>(optional)</em> Reports the cross-sectional area of the
+    touch contact, or the length of the longer dimension of the touch contact.</p>
+</li>
+<li>
+<p><code>ABS_MT_TOUCH_MINOR</code>: <em>(optional)</em> Reports the length of the shorter dimension of the
+    touch contact.  This axis should not be used if <code>ABS_MT_TOUCH_MAJOR</code> is reporting an
+    area measurement.</p>
+</li>
+<li>
+<p><code>ABS_MT_WIDTH_MAJOR</code>: <em>(optional)</em> Reports the cross-sectional area of the tool itself,
+    or the length of the longer dimension of the tool itself.
+    This axis should not be used if the dimensions of the tool itself are unknown.</p>
+</li>
+<li>
+<p><code>ABS_MT_WIDTH_MINOR</code>: <em>(optional)</em> Reports the length of the shorter dimension of
+    the tool itself. This axis should not be used if <code>ABS_MT_WIDTH_MAJOR</code> is reporting
+    an area measurement or if the dimensions of the tool itself are unknown.</p>
+</li>
+<li>
+<p><code>ABS_MT_ORIENTATION</code>: <em>(optional)</em> Reports the orientation of the tool.</p>
+</li>
+<li>
+<p><code>ABS_MT_DISTANCE</code>: <em>(optional)</em> Reports the distance of the tool from the
+    surface of the touch device.</p>
+</li>
+<li>
+<p><code>ABS_MT_TOOL_TYPE</code>: <em>(optional)</em> Reports the <a href="#tools-and-tool-types">tool type</a> as
+    <code>MT_TOOL_FINGER</code> or <code>MT_TOOL_PEN</code>.</p>
+</li>
+<li>
+<p><code>ABS_MT_TRACKING_ID</code>: <em>(optional)</em> Reports the tracking id of the tool.
+    The tracking id is an arbitrary non-negative integer that is used to identify
+    and track each tool independently when multiple tools are active.  For example,
+    when multiple fingers are touching the device, each finger should be assigned a distinct
+    tracking id that is used as long as the finger remains in contact.  Tracking ids
+    may be reused when their associated tools move out of range.</p>
+</li>
+<li>
+<p><code>ABS_MT_SLOT</code>: <em>(optional)</em> Reports the slot id of the tool, when using the Linux
+    multi-touch protocol 'B'.  Refer to the Linux multi-touch protocol documentation
+    for more details.</p>
+</li>
+<li>
+<p><code>BTN_TOUCH</code>: <em>(REQUIRED)</em> Indicates whether the tool is touching the device.</p>
+</li>
+<li>
+<p><code>BTN_LEFT</code>, <code>BTN_RIGHT</code>, <code>BTN_MIDDLE</code>, <code>BTN_BACK</code>, <code>BTN_SIDE</code>, <code>BTN_FORWARD</code>,
+    <code>BTN_EXTRA</code>, <code>BTN_STYLUS</code>, <code>BTN_STYLUS2</code>:
+    <em>(optional)</em> Reports <a href="#buttons">button</a> states.</p>
+</li>
+<li>
+<p><code>BTN_TOOL_FINGER</code>, <code>BTN_TOOL_PEN</code>, <code>BTN_TOOL_RUBBER</code>, <code>BTN_TOOL_BRUSH</code>,
+    <code>BTN_TOOL_PENCIL</code>, <code>BTN_TOOL_AIRBRUSH</code>, <code>BTN_TOOL_MOUSE</code>, <code>BTN_TOOL_LENS</code>,
+    <code>BTN_TOOL_DOUBLETAP</code>, <code>BTN_TOOL_TRIPLETAP</code>, <code>BTN_TOOL_QUADTAP</code>:
+    <em>(optional)</em> Reports the <a href="#tools-and-tool-types">tool type</a>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If axes for both the single-touch and multi-touch protocol are defined, then
+    only the multi-touch axes will be used and the single-touch axes will be ignored.</p>
+</li>
+<li>
+<p>The minimum and maximum values of the <code>ABS_X</code>, <code>ABS_Y</code>, <code>ABS_MT_POSITION_X</code>
+    and <code>ABS_MT_POSITION_Y</code> axes define the bounds of the active area of the device
+    in device-specific surface units.  In the case of a touch screen, the active area
+    describes the part of the touch device that actually covers the display.</p>
+<p>For a touch screen, the system automatically interpolates the reported touch
+positions in surface units to obtain touch positions in display pixels according
+to the following calculation:</p>
+<pre><code>displayX = (x - minX) * displayWidth / (maxX - minX + 1)
+displayY = (y - minY) * displayHeight / (maxY - minY + 1)
+</code></pre>
+<p>A touch screen may report touches outside of the reported active area.</p>
+<p>Touches that are initiated outside the active area are not delivered to applications
+but may be used for virtual keys.</p>
+<p>Touches that are initiated inside the active area, or that enter and exit the display
+area are delivered to applications.  Consequently, if a touch starts within the
+bounds of an application and then moves outside of the active area, the application
+may receive touch events with display coordinates that are negative or beyond the
+bounds of the display.  This is expected behavior.</p>
+<p>A touch device should never clamp touch coordinates to the bounds of the active
+area.  If a touch exits the active area, it should be reported as being outside of
+the active area, or it should not be reported at all.</p>
+<p>For example, if the user's finger is touching near the top-left corner of the
+touch screen, it may report a coordinate of (minX, minY).  If the finger continues
+to move further outside of the active area, the touch screen should either start
+reporting coordinates with components less than minX and minY, such as
+(minX - 2, minY - 3), or it should stop reporting the touch altogether.
+In other words, the touch screen should <em>not</em> be reporting (minX, minY)
+when the user's finger is really touching outside of the active area.</p>
+<p>Clamping touch coordinates to the display edge creates an artificial
+hard boundary around the edge of the screen which prevents the system from
+smoothly tracking motions that enter or exit the bounds of the display area.</p>
+</li>
+<li>
+<p>The values reported by <code>ABS_PRESSURE</code> or <code>ABS_MT_PRESSURE</code>, if they
+    are reported at all, must be non-zero when the tool is touching the device
+    and zero otherwise to indicate that the tool is hovering.</p>
+<p>Reporting pressure information is <em>optional</em> but strongly recommended.
+Applications can use pressure information to implement pressure-sensitive drawing
+and other effects.</p>
+</li>
+<li>
+<p>The values reported by <code>ABS_TOOL_WIDTH</code>, <code>ABS_MT_TOUCH_MAJOR</code>, <code>ABS_MT_TOUCH_MINOR</code>,
+    <code>ABS_MT_WIDTH_MAJOR</code>, or <code>ABS_MT_WIDTH_MINOR</code> should be non-zero when the tool
+    is touching the device and zero otherwise, but this is not required.
+    For example, the touch device may be able to measure the size of finger touch
+    contacts but not stylus touch contacts.</p>
+<p>Reporting size information is <em>optional</em> but strongly recommended.
+Applications can use pressure information to implement size-sensitive drawing
+and other effects.</p>
+</li>
+<li>
+<p>The values reported by <code>ABS_DISTANCE</code> or <code>ABS_MT_DISTANCE</code> should approach
+    zero when the tool is touching the device.  The distance may remain non-zero
+    even when the tool is in direct contact.  The exact values reported depend
+    on the manner in which the hardware measures distance.</p>
+<p>Reporting distance information is <em>optional</em> but recommended for
+stylus devices.</p>
+</li>
+<li>
+<p>The values reported by <code>ABS_TILT_X</code> and <code>ABS_TILT_Y</code> should be zero when the
+    tool is perpendicular to the device.  A non-zero tilt is taken as an indication
+    that the tool is held at an incline.</p>
+<p>The tilt angles along the X and Y axes are assumed to be specified in degrees
+from perpendicular.  The center point (perfectly perpendicular) is given
+by <code>(max + min) / 2</code> for each axis.  Values smaller than the center point
+represent a tilt up or to the left, values larger than the center point
+represent a tilt down or to the right.</p>
+<p>The <code>InputReader</code> converts the X and Y tilt components into a perpendicular
+tilt angle ranging from 0 to <code>PI / 2</code> radians and a planar orientation angle
+ranging from <code>-PI</code> to <code>PI</code> radians.  This representation results in a
+description of orientation that is compatible with what is used to describe
+finger touches.</p>
+<p>Reporting tilt information is <em>optional</em> but recommended for stylus devices.</p>
+</li>
+<li>
+<p>If the tool type is reported by <code>ABS_MT_TOOL_TYPE</code>, it will supercede any tool
+    type information reported by <code>BTN_TOOL_*</code>.
+    If no tool type information is available at all, the tool type defaults to
+    <code>MotionEvent.TOOL_TYPE_FINGER</code>.</p>
+</li>
+<li>
+<p>A tool is determined to be active based on the following conditions:</p>
+<ul>
+<li>
+<p>When using the single-touch protocol, the tool is active if <code>BTN_TOUCH</code>,
+    or <code>BTN_TOOL_*</code> is 1.</p>
+<p>This condition implies that the <code>InputReader</code> needs to have at least some
+information about the nature of the tool, either whether it is touching,
+or at least its tool type.  If no information is available,
+then the tool is assumed to be inactive (out of range).</p>
+</li>
+<li>
+<p>When using the multi-touch protocol 'A', the tool is active whenever it
+    appears in the most recent sync report.  When the tool stops appearing in
+    sync reports, it ceases to exist.</p>
+</li>
+<li>
+<p>When using the multi-touch protocol 'B', the tool is active as long as
+    it has an active slot.  When the slot it cleared, the tool ceases to exist.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>A tool is determined to be hovering based on the following conditions:</p>
+<ul>
+<li>
+<p>If the tool is <code>BTN_TOOL_MOUSE</code> or <code>BTN_TOOL_LENS</code>, then the tool
+    is not hovering, even if either of the following conditions are true.</p>
+</li>
+<li>
+<p>If the tool is active and the driver reports pressure information,
+    and the reported pressure is zero, then the tool is hovering.</p>
+</li>
+<li>
+<p>If the tool is active and the driver supports the <code>BTN_TOUCH</code> key code and
+    <code>BTN_TOUCH</code> has a value of zero, then the tool is hovering.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>The <code>InputReader</code> supports both multi-touch protocol 'A' and 'B'.  New drivers
+    should use the 'B' protocol but either will work.</p>
+</li>
+<li>
+<p><strong>As of Android Ice Cream Sandwich 4.0, touch screen drivers may need to be changed
+    to comply with the Linux input protocol specification.</strong></p>
+<p>The following changes may be required:</p>
+<ul>
+<li>
+<p>When a tool becomes inactive (finger goes "up"), it should stop appearing
+    in subsequent multi-touch sync reports.  When all tools become inactive
+    (all fingers go "up"), the driver should send an empty sync report packet,
+    such as <code>SYN_MT_REPORT</code> followed by <code>SYN_REPORT</code>.</p>
+<p>Previous versions of Android expected "up" events to be reported by sending
+a pressure value of 0.  The old behavior was incompatible with the
+Linux input protocol specification and is no longer supported.</p>
+</li>
+<li>
+<p>Physical pressure or signal strength information should be reported using
+    <code>ABS_MT_PRESSURE</code>.</p>
+<p>Previous versions of Android retrieved pressure information from
+<code>ABS_MT_TOUCH_MAJOR</code>.  The old behavior was incompatible with the
+Linux input protocol specification and is no longer supported.</p>
+</li>
+<li>
+<p>Touch size information should be reported using <code>ABS_MT_TOUCH_MAJOR</code>.</p>
+<p>Previous versions of Android retrieved size information from
+<code>ABS_MT_TOOL_MAJOR</code>.  The old behavior was incompatible with the
+Linux input protocol specification and is no longer supported.</p>
+</li>
+</ul>
+<p>Touch device drivers no longer need Android-specific customizations.
+By relying on the standard Linux input protocol, Android can support a
+wider variety of touch peripherals, such as external HID multi-touch
+touch screens, using unmodified drivers.</p>
+</li>
+</ol>
+<h2 id="touch-device-operation">Touch Device Operation</h2>
+<p>The following is a brief summary of the touch device operation on Android.</p>
+<ol>
+<li>
+<p>The <code>EventHub</code> reads raw events from the <code>evdev</code> driver.</p>
+</li>
+<li>
+<p>The <code>InputReader</code> consumes the raw events and updates internal state about
+    the position and other characteristics of each tool.  It also tracks
+    button states.</p>
+</li>
+<li>
+<p>If the BACK or FORWARD buttons were pressed or released, the <code>InputReader</code>
+    notifies the <code>InputDispatcher</code> about the key event.</p>
+</li>
+<li>
+<p>The <code>InputReader</code> determines whether a virtual key press occurred.  If so,
+    it notifies the <code>InputDispatcher</code> about the key event.</p>
+</li>
+<li>
+<p>The <code>InputReader</code> determines whether the touch was initiated within the
+    bounds of the display.  If so, it notifies the <code>InputDispatcher</code> about
+    the touch event.</p>
+</li>
+<li>
+<p>If there are no touching tools but there is at least one hovering tool,
+    the <code>InputReader</code> notifies the <code>InputDispatcher</code> about the hover event.</p>
+</li>
+<li>
+<p>If the touch device type is <em>pointer</em>, the <code>InputReader</code> performs pointer
+    gesture detection, moves the pointer and spots accordingly and notifies
+    the <code>InputDispatcher</code> about the pointer event.</p>
+</li>
+<li>
+<p>The <code>InputDispatcher</code> uses the <code>WindowManagerPolicy</code> to determine whether
+    the events should be dispatched and whether they should wake the device.
+    Then, the <code>InputDispatcher</code> delivers the events to the appropriate applications.</p>
+</li>
+</ol>
+<h2 id="touch-device-configuration">Touch Device Configuration</h2>
+<p>Touch device behavior is determined by the device's axes, buttons, input properties,
+input device configuration, virtual key map and key layout.</p>
+<p>Refer to the following sections for more details about the files that
+participate in keyboard configuration:</p>
+<ul>
+<li><a href="input-device-configuration-files.html">Input Device Configuration Files</a></li>
+<li><a href="#virtual-key-map-files">Virtual Key Map Files</a></li>
+</ul>
+<h3 id="properties">Properties</h3>
+<p>The system relies on many input device configuration properties to configure
+and calibrate touch device behavior.</p>
+<p>One reason for this is that the device drivers for touch devices often report
+the characteristics of touches using device-specific units.</p>
+<p>For example, many touch devices measure the touch contact area
+using an internal device-specific scale, such as the total number of
+sensor nodes that were triggered by the touch.  This raw size value would
+not be meaningful applications because they would need to know about the
+physical size and other characteristics of the touch device sensor nodes.</p>
+<p>The system uses calibration parameters encoded in input device configuration
+files to decode, transform, and normalize the values reported by the touch
+device into a simpler standard representation that applications can understand.</p>
+<h3 id="documentation-conventions">Documentation Conventions</h3>
+<p>For documentation purposes, we will use the following conventions to describe
+the values used by the system during the calibration process.</p>
+<h4 id="raw-axis-values">Raw Axis Values</h4>
+<p>The following expressions denote the raw values reported by the touch
+device driver as <code>EV_ABS</code> events.</p>
+<dl>
+<dt><code>raw.x</code></dt>
+<dd>The value of the <code>ABS_X</code> or <code>ABS_MT_POSITION_X</code> axis.</dd>
+<dt><code>raw.y</code></dt>
+<dd>The value of the <code>ABS_Y</code> or <code>ABS_MT_POSITION_Y</code> axis.</dd>
+<dt><code>raw.pressure</code></dt>
+<dd>The value of the <code>ABS_PRESSURE</code> or <code>ABS_MT_PRESSURE</code> axis, or 0 if not available.</dd>
+<dt><code>raw.touchMajor</code></dt>
+<dd>The value of the <code>ABS_MT_TOUCH_MAJOR</code> axis, or 0 if not available.</dd>
+<dt><code>raw.touchMinor</code></dt>
+<dd>The value of the <code>ABS_MT_TOUCH_MINOR</code> axis, or <code>raw.touchMajor</code> if not available.</dd>
+<dt><code>raw.toolMajor</code></dt>
+<dd>The value of the <code>ABS_TOOL_WIDTH</code> or <code>ABS_MT_WIDTH_MAJOR</code> axis, or 0 if not available.</dd>
+<dt><code>raw.toolMinor</code></dt>
+<dd>The value of the <code>ABS_MT_WIDTH_MINOR</code> axis, or <code>raw.toolMajor</code> if not available.</dd>
+<dt><code>raw.orientation</code></dt>
+<dd>The value of the <code>ABS_MT_ORIENTATION</code> axis, or 0 if not available.</dd>
+<dt><code>raw.distance</code></dt>
+<dd>The value of the <code>ABS_DISTANCE</code> or <code>ABS_MT_DISTANCE</code> axis, or 0 if not available.</dd>
+<dt><code>raw.tiltX</code></dt>
+<dd>The value of the <code>ABS_TILT_X</code> axis, or 0 if not available.</dd>
+<dt><code>raw.tiltY</code></dt>
+<dd>The value of the <code>ABS_TILT_Y</code> axis, or 0 if not available.</dd>
+</dl>
+<h4 id="raw-axis-ranges">Raw Axis Ranges</h4>
+<p>The following expressions denote the bounds of raw values.  They are obtained
+by calling <code>EVIOCGABS</code> ioctl for each axis.</p>
+<dl>
+<dt><code>raw.*.min</code></dt>
+<dd>The inclusive minimum value of the raw axis.</dd>
+<dt><code>raw.*.max</code></dt>
+<dd>The inclusive maximum value of the raw axis.</dd>
+<dt><code>raw.*.range</code></dt>
+<dd>Equivalent to <code>raw.*.max - raw.*.min</code>.</dd>
+<dt><code>raw.*.fuzz</code></dt>
+<dd>The accuracy of the raw axis.  eg. fuzz = 1 implies values are accurate to +/- 1 unit.</dd>
+<dt><code>raw.width</code></dt>
+<dd>The inclusive width of the touch area, equivalent to <code>raw.x.range + 1</code>.</dd>
+<dt><code>raw.height</code></dt>
+<dd>The inclusive height of the touch area, equivalent to <code>raw.y.range + 1</code>.</dd>
+</dl>
+<h4 id="output-ranges">Output Ranges</h4>
+<p>The following expressions denote the characteristics of the output coordinate system.
+The system uses linear interpolation to translate touch position information from
+the surface units used by the touch device into the output units that will
+be reported to applications such as display pixels.</p>
+<dl>
+<dt><code>output.width</code></dt>
+<dd>The output width.  For touch screens (associated with a display), this
+is the display width in pixels.  For touch pads (not associated with a display),
+the output width equals <code>raw.width</code>, indicating that no interpolation will
+be performed.</dd>
+<dt><code>output.height</code></dt>
+<dd>The output height.  For touch screens (associated with a display), this
+is the display height in pixels.  For touch pads (not associated with a display),
+the output height equals <code>raw.height</code>, indicating that no interpolation will
+be performed.</dd>
+<dt><code>output.diag</code></dt>
+<dd>The diagonal length of the output coordinate system, equivalent to
+<code>sqrt(output.width ^2 + output.height ^2)</code>.</dd>
+</dl>
+<h3 id="basic-configuration">Basic Configuration</h3>
+<p>The touch input mapper uses many configuration properties in the input device
+configuration file to specify calibration values.  The following table describes
+some general purpose configuration properties.  All other properties are described
+in the following sections along with the fields they are used to calibrate.</p>
+<h4 id="touchdevicetype"><code>touch.deviceType</code></h4>
+<p><em>Definition:</em> <code>touch.deviceType</code> = <code>touchScreen</code> | <code>touchPad</code> | <code>pointer</code> | <code>default</code></p>
+<p>Specifies the touch device type.</p>
+<ul>
+<li>
+<p>If the value is <code>touchScreen</code>, the touch device is a touch screen associated
+    with a display.</p>
+</li>
+<li>
+<p>If the value is <code>touchPad</code>, the touch device is a touch pad not associated
+    with a display.</p>
+</li>
+<li>
+<p>If the value is <code>pointer</code>, the touch device is a touch pad not associated
+    with a display, and its motions are used for
+    <a href="#indirect-multi-touch-pointer-gestures">indirect multi-touch pointer gestures</a>.</p>
+</li>
+<li>
+<p>If the value is <code>default</code>, the system automatically detects the device type
+    according to the classification algorithm.</p>
+</li>
+</ul>
+<p>Refer to the <a href="#touch-device-classification">Classification</a> section for more details
+about how the device type influences the behavior of the touch device.</p>
+<p>Prior to Honeycomb, all touch devices were assumed to be touch screens.</p>
+<h4 id="touchorientationaware"><code>touch.orientationAware</code></h4>
+<p><em>Definition:</em> <code>touch.orientationAware</code> = <code>0</code> | <code>1</code></p>
+<p>Specifies whether the touch device should react to display orientation changes.</p>
+<ul>
+<li>
+<p>If the value is <code>1</code>, touch positions reported by the touch device are rotated
+    whenever the display orientation changes.</p>
+</li>
+<li>
+<p>If the value is <code>0</code>, touch positions reported by the touch device are immune
+    to display orientation changes.</p>
+</li>
+</ul>
+<p>The default value is <code>1</code> if the device is a touch screen, <code>0</code> otherwise.</p>
+<p>The system distinguishes between internal and external touch screens and displays.
+An orientation aware internal touch screen is rotated based on the orientation
+of the internal display.  An orientation aware external touch screen is rotated
+based on the orientation of the external display.</p>
+<p>Orientation awareness is used to support rotation of touch screens on devices
+like the Nexus One.  For example, when the device is rotated clockwise 90 degrees
+from its natural orientation, the absolute positions of touches are remapped such
+that a touch in the top-left corner of the touch screen's absolute coordinate system
+is reported as a touch in the top-left corner of the display's rotated coordinate system.
+This is done so that touches are reported with the same coordinate system that
+applications use to draw their visual elements.</p>
+<p>Prior to Honeycomb, all touch devices were assumed to be orientation aware.</p>
+<h4 id="touchgesturemode"><code>touch.gestureMode</code></h4>
+<p><em>Definition:</em> <code>touch.gestureMode</code> = <code>pointer</code> | <code>spots</code> | <code>default</code></p>
+<p>Specifies the presentation mode for pointer gestures.  This configuration property
+is only relevant when the touch device is of type <em>pointer</em>.</p>
+<ul>
+<li>
+<p>If the value is <code>pointer</code>, the touch pad gestures are presented by way of a cursor
+    similar to a mouse pointer.</p>
+</li>
+<li>
+<p>If the value is <code>spots</code>, the touch pad gestures are presented by an anchor
+    that represents the centroid of the gesture and a set of circular spots
+    that represent the position of individual fingers.</p>
+</li>
+</ul>
+<p>The default value is <code>pointer</code> when the <code>INPUT_PROP_SEMI_MT</code> input property
+is set, or <code>spots</code> otherwise.</p>
+<h3 id="x-and-y-fields"><code>X</code> and <code>Y</code> Fields</h3>
+<p>The X and Y fields provide positional information for the center of the contact area.</p>
+<h4 id="calculation">Calculation</h4>
+<p>The calculation is straightforward: positional information from the touch driver is
+linearly interpolated to the output coordinate system.</p>
+<pre><code>xScale = output.width / raw.width
+yScale = output.height / raw.height
+
+If not orientation aware or screen rotation is 0 degrees:
+output.x = (raw.x - raw.x.min) * xScale
+output.y = (raw.y - raw.y.min) * yScale
+Else If rotation is 90 degrees:
+    output.x = (raw.y - raw.y.min) * yScale
+    output.y = (raw.x.max - raw.x) * xScale
+Else If rotation is 180 degrees:
+    output.x = (raw.x.max - raw.x) * xScale
+    output.y = (raw.y.max - raw.y) * yScale
+Else If rotation is 270 degrees:
+    output.x = (raw.y.max - raw.y) * yScale
+    output.y = (raw.x - raw.x.min) * xScale
+End If
+</code></pre>
+<h3 id="touchmajor-touchminor-toolmajor-toolminor-size-fields"><code>TouchMajor</code>, <code>TouchMinor</code>, <code>ToolMajor</code>, <code>ToolMinor</code>, <code>Size</code> Fields</h3>
+<p>The <code>TouchMajor</code> and <code>TouchMinor</code> fields describe the approximate dimensions
+of the contact area in output units (pixels).</p>
+<p>The <code>ToolMajor</code> and <code>ToolMinor</code> fields describe the approximate dimensions
+of the <a href="#tools-and-tool-types">tool</a> itself in output units (pixels).</p>
+<p>The <code>Size</code> field describes the normalized size of the touch relative to
+the largest possible touch that the touch device can sense.  The smallest
+possible normalized size is 0.0 (no contact, or it is unmeasurable), and the largest
+possible normalized size is 1.0 (sensor area is saturated).</p>
+<p>When both the approximate length and breadth can be measured, then the <code>TouchMajor</code> field
+specifies the longer dimension and the <code>TouchMinor</code> field specifies the shorter dimension
+of the contact area.  When only the approximate diameter of the contact area can be measured,
+then the <code>TouchMajor</code> and <code>TouchMinor</code> fields will be equal.</p>
+<p>Likewise, the <code>ToolMajor</code> field specifies the longer dimension and the <code>ToolMinor</code>
+field specifies the shorter dimension of the tool's cross-sectional area.</p>
+<p>If the touch size is unavailable but the tool size is available, then the tool size
+will be set equal to the touch size.  Conversely, if the tool size is unavailable
+but the touch size is available, then the touch size will be set equal to the tool size.</p>
+<p>Touch devices measure or report the touch size and tool size in various ways.
+The current implementation supports three different kinds of measurements:
+diameter, area, and geometric bounding box in surface units.</p>
+<h4 id="touchsizecalibration"><code>touch.size.calibration</code></h4>
+<p><em>Definition:</em> <code>touch.size.calibration</code> = <code>none</code> | <code>geometric</code> | <code>diameter</code>
+| <code>area</code> | <code>default</code></p>
+<p>Specifies the kind of measurement used by the touch driver to report the
+touch size and tool size.</p>
+<ul>
+<li>
+<p>If the value is <code>none</code>, the size is set to zero.</p>
+</li>
+<li>
+<p>If the value is <code>geometric</code>, the size is assumed to be specified in the same
+    surface units as the position, so it is scaled in the same manner.</p>
+</li>
+<li>
+<p>If the value is <code>diameter</code>, the size is assumed to be proportional to
+    the diameter (width) of the touch or tool.</p>
+</li>
+<li>
+<p>If the value is <code>area</code>, the size is assumed to be proportional to the
+    area of the touch or tool.</p>
+</li>
+<li>
+<p>If the value is <code>default</code>, the system uses the <code>geometric</code> calibration if the
+    <code>raw.touchMajor</code> or <code>raw.toolMajor</code> axis is available, otherwise it uses
+    the <code>none</code> calibration.</p>
+</li>
+</ul>
+<h4 id="touchsizescale"><code>touch.size.scale</code></h4>
+<p><em>Definition:</em> <code>touch.size.scale</code> = &lt;a non-negative floating point number&gt;</p>
+<p>Specifies a constant scale factor used in the calibration.</p>
+<p>The default value is <code>1.0</code>.</p>
+<h4 id="touchsizebias"><code>touch.size.bias</code></h4>
+<p><em>Definition:</em> <code>touch.size.bias</code> = &lt;a non-negative floating point number&gt;</p>
+<p>Specifies a constant bias value used in the calibration.</p>
+<p>The default value is <code>0.0</code>.</p>
+<h4 id="touchsizeissummed"><code>touch.size.isSummed</code></h4>
+<p><em>Definition:</em> <code>touch.size.isSummed</code> = <code>0</code> | <code>1</code></p>
+<p>Specifies whether the size is reported as the sum of the sizes of all
+active contacts, or is reported individually for each contact.</p>
+<ul>
+<li>
+<p>If the value is <code>1</code>, the reported size will be divided by the number
+    of contacts prior to use.</p>
+</li>
+<li>
+<p>If the value is <code>0</code>, the reported size will be used as is.</p>
+</li>
+</ul>
+<p>The default value is <code>0</code>.</p>
+<p>Some touch devices, particularly "Semi-MT" devices cannot distinguish the
+individual dimensions of multiple contacts so they report a size measurement
+that represents their total area or width.  This property should only be set to
+<code>1</code> for such devices.  If in doubt, set this value to <code>0</code>.</p>
+<h4 id="calculation_1">Calculation</h4>
+<p>The calculation of the <code>TouchMajor</code>, <code>TouchMinor</code>, <code>ToolMajor</code>, <code>ToolMinor</code>
+and <code>Size</code> fields depends on the specified calibration parameters.</p>
+<pre><code>If raw.touchMajor and raw.toolMajor are available:
+    touchMajor = raw.touchMajor
+    touchMinor = raw.touchMinor
+    toolMajor = raw.toolMajor
+    toolMinor = raw.toolMinor
+Else If raw.touchMajor is available:
+    toolMajor = touchMajor = raw.touchMajor
+    toolMinor = touchMinor = raw.touchMinor
+Else If raw.toolMajor is available:
+    touchMajor = toolMajor = raw.toolMajor
+    touchMinor = toolMinor = raw.toolMinor
+Else
+    touchMajor = toolMajor = 0
+    touchMinor = toolMinor = 0
+    size = 0
+End If
+
+size = avg(touchMajor, touchMinor)
+
+If touch.size.isSummed == 1:
+    touchMajor = touchMajor / numberOfActiveContacts
+    touchMinor = touchMinor / numberOfActiveContacts
+    toolMajor = toolMajor / numberOfActiveContacts
+    toolMinor = toolMinor / numberOfActiveContacts
+    size = size / numberOfActiveContacts
+End If
+
+If touch.size.calibration == "none":
+    touchMajor = toolMajor = 0
+    touchMinor = toolMinor = 0
+    size = 0
+Else If touch.size.calibration == "geometric":
+    outputScale = average(output.width / raw.width, output.height / raw.height)
+    touchMajor = touchMajor * outputScale
+    touchMinor = touchMinor * outputScale
+    toolMajor = toolMajor * outputScale
+    toolMinor = toolMinor * outputScale
+Else If touch.size.calibration == "area":
+    touchMajor = sqrt(touchMajor)
+    touchMinor = touchMajor
+    toolMajor = sqrt(toolMajor)
+    toolMinor = toolMajor
+Else If touch.size.calibration == "diameter":
+    touchMinor = touchMajor
+    toolMinor = toolMajor
+End If
+
+If touchMajor != 0:
+    output.touchMajor = touchMajor * touch.size.scale + touch.size.bias
+Else
+    output.touchMajor = 0
+End If
+
+If touchMinor != 0:
+    output.touchMinor = touchMinor * touch.size.scale + touch.size.bias
+Else
+    output.touchMinor = 0
+End If
+
+If toolMajor != 0:
+    output.toolMajor = toolMajor * touch.size.scale + touch.size.bias
+Else
+    output.toolMajor = 0
+End If
+
+If toolMinor != 0:
+    output.toolMinor = toolMinor * touch.size.scale + touch.size.bias
+Else
+    output.toolMinor = 0
+End If
+
+output.size = size
+</code></pre>
+<h3 id="pressure-field"><code>Pressure</code> Field</h3>
+<p>The <code>Pressure</code> field describes the approximate physical pressure applied to the
+touch device as a normalized value between 0.0 (no touch) and 1.0 (full force).</p>
+<p>A zero pressure indicates that the tool is hovering.</p>
+<h4 id="touchpressurecalibration"><code>touch.pressure.calibration</code></h4>
+<p><em>Definition:</em> <code>touch.pressure.calibration</code> = <code>none</code> | <code>physical</code> | <code>amplitude</code> | <code>default</code></p>
+<p>Specifies the kind of measurement used by the touch driver to report the pressure.</p>
+<ul>
+<li>
+<p>If the value is <code>none</code>, the pressure is unknown so it is set to 1.0 when
+    touching and 0.0 when hovering.</p>
+</li>
+<li>
+<p>If the value is <code>physical</code>, the pressure axis is assumed to measure the actual
+    physical intensity of pressure applied to the touch pad.</p>
+</li>
+<li>
+<p>If the value is <code>amplitude</code>, the pressure axis is assumed to measure the signal
+    amplitude, which is related to the size of the contact and the pressure applied.</p>
+</li>
+<li>
+<p>If the value is <code>default</code>, the system uses the <code>physical</code> calibration if the
+    pressure axis available, otherwise uses <code>none</code>.</p>
+</li>
+</ul>
+<h4 id="touchpressurescale"><code>touch.pressure.scale</code></h4>
+<p><em>Definition:</em> <code>touch.pressure.scale</code> = &lt;a non-negative floating point number&gt;</p>
+<p>Specifies a constant scale factor used in the calibration.</p>
+<p>The default value is <code>1.0 / raw.pressure.max</code>.</p>
+<h4 id="calculation_2">Calculation</h4>
+<p>The calculation of the <code>Pressure</code> field depends on the specified calibration parameters.</p>
+<pre><code>If touch.pressure.calibration == "physical" or "amplitude":
+    output.pressure = raw.pressure * touch.pressure.scale
+Else
+    If hovering:
+        output.pressure = 0
+    Else
+        output.pressure = 1
+    End If
+End If
+</code></pre>
+<h3 id="orientation-and-tilt-fields"><code>Orientation</code> and <code>Tilt</code> Fields</h3>
+<p>The <code>Orientation</code> field describes the orientation of the touch and tool as an
+angular measurement.  An orientation of <code>0</code> indicates that the major axis is
+oriented vertically, <code>-PI/2</code> indicates that the major axis is oriented to the left,
+<code>PI/2</code> indicates that the major axis is oriented to the right.  When a stylus
+tool is present, the orientation range may be described in a full circle range
+from <code>-PI</code> or <code>PI</code>.</p>
+<p>The <code>Tilt</code> field describes the inclination of the tool as an angular measurement.
+A tilt of <code>0</code> indicates that the tool is perpendicular to the surface.
+A tilt of <code>PI/2</code> indicates that the tool is flat on the surface.</p>
+<h4 id="touchorientationcalibration"><code>touch.orientation.calibration</code></h4>
+<p><em>Definition:</em> <code>touch.orientation.calibration</code> = <code>none</code> | <code>interpolated</code> | <code>vector</code> | <code>default</code></p>
+<p>Specifies the kind of measurement used by the touch driver to report the orientation.</p>
+<ul>
+<li>
+<p>If the value is <code>none</code>, the orientation is unknown so it is set to 0.</p>
+</li>
+<li>
+<p>If the value is <code>interpolated</code>, the orientation is linearly interpolated such that a
+    raw value of <code>raw.orientation.min</code> maps to <code>-PI/2</code> and a raw value of
+    <code>raw.orientation.max</code> maps to <code>PI/2</code>.  The center value of
+    <code>(raw.orientation.min + raw.orientation.max) / 2</code> maps to <code>0</code>.</p>
+</li>
+<li>
+<p>If the value is <code>vector</code>, the orientation is interpreted as a packed vector consisiting
+    of two signed 4-bit fields.  This representation is used on Atmel Object Based Protocol
+    parts.  When decoded, the vector yields an orientation angle and confidence
+    magnitude.  The confidence magnitude is used to scale the size information,
+    unless it is geometric.</p>
+</li>
+<li>
+<p>If the value is <code>default</code>, the system uses the <code>interpolated</code> calibration if the
+    orientation axis available, otherwise uses <code>none</code>.</p>
+</li>
+</ul>
+<h4 id="calculation_3">Calculation</h4>
+<p>The calculation of the <code>Orientation</code> and <code>Tilt</code> fields depends on the specified
+calibration parameters and available input.</p>
+<pre><code>If touch.tiltX and touch.tiltY are available:
+    tiltXCenter = average(raw.tiltX.min, raw.tiltX.max)
+    tiltYCenter = average(raw.tiltY.min, raw.tiltY.max)
+    tiltXAngle = (raw.tiltX - tiltXCenter) * PI / 180
+    tiltYAngle = (raw.tiltY - tiltYCenter) * PI / 180
+    output.orientation = atan2(-sin(tiltXAngle), sinf(tiltYAngle))
+    output.tilt = acos(cos(tiltXAngle) * cos(tiltYAngle))
+Else If touch.orientation.calibration == "interpolated":
+    center = average(raw.orientation.min, raw.orientation.max)
+    output.orientation = PI / (raw.orientation.max - raw.orientation.min)
+    output.tilt = 0
+Else If touch.orientation.calibration == "vector":
+    c1 = (raw.orientation &amp; 0xF0) &gt;&gt; 4
+    c2 = raw.orientation &amp; 0x0F
+
+    If c1 != 0 or c2 != 0:
+        If c1 &gt;= 8 Then c1 = c1 - 16
+        If c2 &gt;= 8 Then c2 = c2 - 16
+        angle = atan2(c1, c2) / 2
+        confidence = sqrt(c1*c1 + c2*c2)
+
+        output.orientation = angle
+
+        If touch.size.calibration == "diameter" or "area":
+            scale = 1.0 + confidence / 16
+            output.touchMajor *= scale
+            output.touchMinor /= scale
+            output.toolMajor *= scale
+            output.toolMinor /= scale
+        End If
+    Else
+        output.orientation = 0
+    End If
+    output.tilt = 0
+Else
+    output.orientation = 0
+    output.tilt = 0
+End If
+
+If orientation aware:
+    If screen rotation is 90 degrees:
+        output.orientation = output.orientation - PI / 2
+    Else If screen rotation is 270 degrees:
+        output.orientation = output.orientation + PI / 2
+    End If
+End If
+</code></pre>
+<h3 id="distance-field"><code>Distance</code> Field</h3>
+<p>The <code>Distance</code> field describes the distance between the tool and the touch device
+surface.  A value of 0.0 indicates direct contact and larger values indicate
+increasing distance from the surface.</p>
+<h4 id="touchdistancecalibration"><code>touch.distance.calibration</code></h4>
+<p><em>Definition:</em> <code>touch.distance.calibration</code> = <code>none</code> | <code>scaled</code> | <code>default</code></p>
+<p>Specifies the kind of measurement used by the touch driver to report the distance.</p>
+<ul>
+<li>
+<p>If the value is <code>none</code>, the distance is unknown so it is set to 0.</p>
+</li>
+<li>
+<p>If the value is <code>scaled</code>, the reported distance is multiplied by a
+    constant scale factor.</p>
+</li>
+<li>
+<p>If the value is <code>default</code>, the system uses the <code>scaled</code> calibration if the
+    distance axis available, otherwise uses <code>none</code>.</p>
+</li>
+</ul>
+<h4 id="touchdistancescale"><code>touch.distance.scale</code></h4>
+<p><em>Definition:</em> <code>touch.distance.scale</code> = &lt;a non-negative floating point number&gt;</p>
+<p>Specifies a constant scale factor used in the calibration.</p>
+<p>The default value is <code>1.0</code>.</p>
+<h4 id="calculation_4">Calculation</h4>
+<p>The calculation of the <code>Distance</code> field depends on the specified calibration parameters.</p>
+<pre><code>If touch.distance.calibration == "scaled":
+    output.distance = raw.distance * touch.distance.scale
+Else
+    output.distance = 0
+End If
+</code></pre>
+<h3 id="example">Example</h3>
+<pre><code># Input device configuration file for a touch screen that supports pressure,
+# size and orientation.  The pressure and size scale factors were obtained
+# by measuring the characteristics of the device itself and deriving
+# useful approximations based on the resolution of the touch sensor and the
+# display.
+#
+# Note that these parameters are specific to a particular device model.
+# Different parameters will need to be used for other devices.
+
+# Basic Parameters
+touch.deviceType = touchScreen
+touch.orientationAware = 1
+
+# Size
+# Based on empirical measurements, we estimate the size of the contact
+# using size = sqrt(area) * 28 + 0.
+touch.size.calibration = area
+touch.size.scale = 28
+touch.size.bias = 0
+touch.size.isSummed = 0
+
+# Pressure
+# Driver reports signal strength as pressure.
+#
+# A normal index finger touch typically registers about 80 signal strength
+# units although we don't expect these values to be accurate.
+touch.pressure.calibration = amplitude
+touch.pressure.scale = 0.0125
+
+# Orientation
+touch.orientation.calibration = vector
+</code></pre>
+<h3 id="compatibility-notes">Compatibility Notes</h3>
+<p>The configuration properties for touch devices changed significantly in
+Android Ice Cream Sandwich 4.0.  <strong>All input device configuration files for touch
+devices must be updated to use the new configuration properties.</strong></p>
+<p>Older touch device <a href="#touch-device-driver-requirements">drivers</a> may also need to be
+updated.</p>
+<h2 id="virtual-key-map-files">Virtual Key Map Files</h2>
+<p>Touch devices are often used to implement virtual keys.</p>
+<p>There are several ways of doing this, depending on the capabilities of the
+touch controller.  Some touch controllers can be directly configured to implement
+soft keys by setting firmware registers.  Other times it is desirable to perform
+the mapping from touch coordinates to key codes in software.</p>
+<p>When virtual keys are implemented in software, the kernel must export a virtual key map
+file called <code>virtualkeys.&lt;devicename&gt;</code> as a board property.  For example,
+if the touch screen device drivers reports its name as "touchyfeely" then
+the virtual key map file must have the path <code>/sys/board_properties/virtualkeys.touchyfeely</code>.</p>
+<p>A virtual key map file describes the coordinates and Linux key codes of virtual keys
+on the touch screen.</p>
+<p>In addition to the virtual key map file, there must be a corresponding key layout
+file and key character map file to map the Linux key codes to Android key codes and
+to specify the type of the keyboard device (usually <code>SPECIAL_FUNCTION</code>).</p>
+<h3 id="syntax">Syntax</h3>
+<p>A virtual key map file is a plain text file consisting of a sequence of virtual key
+layout descriptions either separated by newlines or by colons.</p>
+<p>Comment lines begin with '#' and continue to the end of the line.</p>
+<p>Each virtual key is described by 6 colon-delimited components:</p>
+<ul>
+<li><code>0x01</code>: A version code.  Must always be <code>0x01</code>.</li>
+<li>&lt;Linux key code&gt;: The Linux key code of the virtual key.</li>
+<li>&lt;centerX&gt;: The X pixel coordinate of the center of the virtual key.</li>
+<li>&lt;centerY&gt;: The Y pixel coordinate of the center of the virtual key.</li>
+<li>&lt;width&gt;: The width of the virtual key in pixels.</li>
+<li>&lt;height&gt;: The height of the virtual key in pixels.</li>
+</ul>
+<p>All coordinates and sizes are specified in terms of the display coordinate system.</p>
+<p>Here is a virtual key map file all written on one line.</p>
+<pre><code># All on one line
+0x01:158:55:835:90:55:0x01:139:172:835:125:55:0x01:102:298:835:115:55:0x01:217:412:835:95:55
+</code></pre>
+<p>The same virtual key map file can also be written on multiple lines.</p>
+<pre><code># One key per line
+0x01:158:55:835:90:55
+0x01:139:172:835:125:55
+0x01:102:298:835:115:55
+0x01:217:412:835:95:55
+</code></pre>
+<p>In the above example, the touch screen has a resolution of 480x800.  Accordingly, all of
+the virtual keys have a &lt;centerY&gt; coordinate of 835, which is a little bit below
+the visible area of the touch screen.</p>
+<p>The first key has a Linux scan code of <code>158</code> (<code>KEY_BACK</code>), centerX of <code>55</code>,
+centerY of <code>835</code>, width of <code>90</code> and height of <code>55</code>.</p>
+<h3 id="example_1">Example</h3>
+<p>Virtual key map file: <code>/sys/board_properties/virtualkeys.touchyfeely</code>.</p>
+<pre><code>0x01:158:55:835:90:55
+0x01:139:172:835:125:55
+0x01:102:298:835:115:55
+0x01:217:412:835:95:55
+</code></pre>
+<p>Key layout file: <code>/system/usr/keylayout/touchyfeely.kl</code>.</p>
+<pre><code>key 158 BACK
+key 139 MENU
+key 102 HOME
+key 217 SEARCH
+</code></pre>
+<p>Key character map file: <code>/system/usr/keychars/touchyfeely.kcm</code>.</p>
+<pre><code>type SPECIAL_FUNCTION
+</code></pre>
+<h2 id="indirect-multi-touch-pointer-gestures">Indirect Multi-touch Pointer Gestures</h2>
+<p>In pointer mode, the system interprets the following gestures:</p>
+<ol>
+<li>
+<p>Single finger tap: click.</p>
+</li>
+<li>
+<p>Single finger motion: move the pointer.</p>
+</li>
+<li>
+<p>Single finger motion plus button presses: drag the pointer.</p>
+</li>
+<li>
+<p>Two finger motion both fingers moving in the same direction: drag the area under the pointer
+    in that direction.  The pointer itself does not move.</p>
+</li>
+<li>
+<p>Two finger motion both fingers moving towards each other or apart in
+    different directions: pan/scale/rotate the area surrounding the pointer.
+    The pointer itself does not move.</p>
+</li>
+<li>
+<p>Multiple finger motion: freeform gesture.</p>
+</li>
+</ol>
+<h2 id="further-reading">Further Reading</h2>
+<ol>
+<li><a href="http://www.kernel.org/doc/Documentation/input/multi-touch-protocol.txt">Linux multi-touch protocol</a></li>
+<li><a href="http://lii-enac.fr/en/architecture/linux-input/multitouch-devices.html">ENAC list of available multitouch devices on Linux</a></li>
+</ol>

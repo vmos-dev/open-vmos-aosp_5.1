@@ -1,0 +1,14 @@
+*.d
+*.gcda
+*.o
+*.gcno
+*.run
+*.memcheck
+*.massif
+/authorization_set_test
+/coverage.info
+/coverage/
+/google_keymaster_messages_test
+/google_keymaster_test
+/key_blob_test
+/trusty_keymaster_device_test

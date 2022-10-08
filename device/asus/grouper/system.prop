@@ -1,0 +1,19 @@
+ro.opengles.version = 131072
+wifi.interface=wlan0
+rild.libpath=/system/lib/libril-icera.so
+rild.libargs=-e wwan0
+persist.tegra.nvmmlite = 1
+ro.audio.monitorOrientation=true
+
+#NFC
+debug.nfc.fw_download=false
+debug.nfc.se=false
+
+# set default lcd density to TVDPI
+ro.sf.lcd_density=213
+
+# don't preload OpenGL in Zygote, the Tegra drivers do not like it
+ro.zygote.disable_gl_preload=true
+
+# configure PRISM
+persist.tegra.didim.video = 5

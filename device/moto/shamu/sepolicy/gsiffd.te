@@ -1,0 +1,25 @@
+type gsiffd, domain;
+type gsiffd_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(gsiffd)
+
+# Write to /data/misc/location/gsiff/
+allow gsiffd gsiffd_data_file:dir rw_dir_perms;
+allow gsiffd gsiffd_data_file:fifo_file create_file_perms;
+
+# Write to /data/misc/location/quipc/
+allow gsiffd quipc_data_file:dir rw_dir_perms;
+allow gsiffd quipc_data_file:sock_file create_file_perms;
+
+# Create sockets
+allow gsiffd self:socket create_socket_perms;
+
+# Talk to qmux
+qmux_socket(gsiffd)
+
+# Run stat on /dev/sensors
+allow gsiffd sensors_device:chr_file getattr;
+
+# Talk to the sensors daemon
+unix_socket_connect(gsiffd, sensors, sensors)

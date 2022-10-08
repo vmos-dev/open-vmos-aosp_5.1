@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+     <item name="main_layout" type="layout">@layout/main2</item>
+     <item name="main_layout2" type="layout"> @layout/main_layout </item>
+     <item name="main_layout3" type="layout"> </item>
+     <item name="main_layout4" type="layout"></item>
+     <item name="main_layout5" type="string">@string/app_name</item>
+</resources>

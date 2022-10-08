@@ -1,0 +1,42 @@
+PCB Fabrication Package.  Google Mega2560 Arduino Rev. C 2011-03-23
+
+Gerber Files in RS-274-X Format
+   m256_tslk.gbr  - Top Silkscreen
+   m256_tpst.gbr  - Top Solderpaste (Stencil)
+   m256_tmsk.gbr  - Top Soldermask
+   m256_tcmp.gbr  - Top Copper
+   m256_bcmp.gbr  - Bottom Copper
+   m256_bmsk.gbr  - Bottom Soldermask
+   m256_bslk.gbr  - Bottom Silkscreen
+
+Drill files:
+   m256_drl.drl   - Excellon Drill file
+
+Fab drawing:
+
+   m256_fab.pdf
+
+Coordinates:
+
+   m256.mnt       - Top SMD coordinates
+
+Board dimensions/outline included as zero width trace in silkscreen layer
+for reference.  Board is made from 0.062" FR4 with 1oz copper on all
+layers.  Minimum trace/space is 6/6 mils.
+
+NOTE: Board contains 3 plated slots, each slot is marked at the two ends
+and center with 0.041" drills.
+
+Board layers stacked as follows:
+
+     Top Silkscreen (Black)
+     Top Soldermask (White)
+     Top Copper (1oz)
+     FR4 (62 mil)
+     Bottom Copper (1oz)
+     Bottom Soldermask (White)
+     Bottom Silkscreen (Black)
+
+Process the silkscreen layer against the soldermask layer to prevent
+overlapping silkscreen on the pads through mask openings.
+

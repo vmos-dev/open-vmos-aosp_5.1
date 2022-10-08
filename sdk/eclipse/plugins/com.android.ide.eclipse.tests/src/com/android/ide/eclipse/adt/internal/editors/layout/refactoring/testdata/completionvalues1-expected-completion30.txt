@@ -1,0 +1,8 @@
+Code completion in completionvalues1.xml for <item name="an^">:
+android:
+android:animateFirstView : Defines whether to animate the current View when the ViewAnimation  is first displayed.  [boolean]
+android:animateLayoutChanges : Defines whether changes in layout (caused by adding and removing  items) should cause a LayoutTransition to run.  [boolean]
+android:animateOnClick : Indicates whether the drawer should be opened/closed with an  animation when the user clicks the handle.  [boolean]
+android:animationCache : Defines whether layout animations should create a drawing cache  for their children.  [boolean]
+android:animationDuration : Sets how long a transition animation should run (in milliseconds)  when layout has changed.  [integer]
+android:animationResolution : Timeout between frames of animation in milliseconds  * Deprecated: Not used by the framework.  [integer]

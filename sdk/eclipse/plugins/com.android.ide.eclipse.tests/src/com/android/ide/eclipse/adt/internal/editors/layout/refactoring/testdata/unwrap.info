@@ -1,0 +1,4 @@
+android.widget.LinearLayout [0,56,1280,104] <LinearLayout>
+    android.widget.FrameLayout [0,0,1280,48] <FrameLayout>
+        android.widget.TextView [0,0,1280,17] <TextView>
+        android.widget.Button [0,0,1280,48] <Button>

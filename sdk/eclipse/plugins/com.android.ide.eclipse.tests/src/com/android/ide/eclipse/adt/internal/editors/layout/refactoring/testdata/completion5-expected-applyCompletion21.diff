@@ -1,0 +1,4 @@
+Code completion in completion5.xml for android:layout_width='^wrap_content' selecting match_parent:
+@@ -11 +11
+-         android:layout_width='^wrap_content'
++         android:layout_width='match_parent'^

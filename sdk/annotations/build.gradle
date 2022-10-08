@@ -1,0 +1,20 @@
+apply plugin: 'java'
+apply plugin: 'sdk-files'
+
+jar {
+    archiveName = 'annotations.jar'
+}
+
+sourceSets {
+    main.java.srcDirs 'src'
+}
+
+sdk {
+    common {
+        item(jar.archivePath) {
+            into 'support'
+            notice 'NOTICE'
+            builtBy jar
+        }
+    }
+}

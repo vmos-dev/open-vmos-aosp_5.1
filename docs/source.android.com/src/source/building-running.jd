@@ -1,0 +1,191 @@
+page.title=Building the System
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+The following instructions to build the Android source tree apply to all branches, including master. 
+
+<h2 id="choosing-a-branch">Choosing a Branch</h2>
+<p>Some of the requirements for your build environment are determined by which
+version of the source code you plan to compile. See
+<a href="build-numbers.html">Codenames, Tags, and Build Numbers</a> for a full listing of branches you may
+choose from. You may also choose to download and build the latest source code
+(called "master"), in which case you will simply omit the branch specification
+when you initialize the repository.</p>
+<p>Once you have selected a branch, follow the appropriate instructions below to
+set up your build environment.</p>
+
+
+<p>The basic sequence of build commands is as follows:</p>
+<h2 id="initialize">Initialize</h2>
+<p>Initialize the environment with the <code>envsetup.sh</code> script. Note
+that replacing "source" with a single dot saves a few characters,
+and the short form is more commonly used in documentation.</p>
+<pre><code>$ source build/envsetup.sh
+</code></pre>
+<p>or</p>
+<pre><code>$ . build/envsetup.sh
+</code></pre>
+<h2 id="choose-a-target">Choose a Target</h2>
+<p>Choose which target to build with <code>lunch</code>.  The exact configuration can be passed as
+an argument, e.g. </p>
+<pre><code>$ lunch aosp_arm-eng
+</code></pre>
+<p>The example above refers to a complete build for the emulator, with all debugging enabled.</p>
+<p>If run with no arguments <code>lunch</code> will prompt you to choose a target from the menu. </p>
+<p>All build targets take the form BUILD-BUILDTYPE, where the BUILD is a codename
+referring to the particular feature combination. Here's a partial list:</p>
+<table>
+<thead>
+<tr>
+<th>Build name</th>
+<th>Device</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>aosp_arm</td>
+<td>ARM emulator</td>
+<td>AOSP, fully configured with all languages, apps, input methods</td>
+</tr>
+<tr>
+<td>aosp_maguro</td>
+<td>maguro</td>
+<td>AOSP, running on Galaxy Nexus GSM/HSPA+ ("maguro")</td>
+</tr>
+<tr>
+<td>aosp_panda</td>
+<td>panda</td>
+<td>AOSP, running on PandaBoard ("panda")</td>
+</tr>
+</tbody>
+</table>
+<p>and the BUILDTYPE is one of the following:</p>
+<table>
+<thead>
+<tr>
+<th>Buildtype</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user</td>
+<td>limited access; suited for production</td>
+</tr>
+<tr>
+<td>userdebug</td>
+<td>like "user" but with root access and debuggability; preferred for debugging</td>
+</tr>
+<tr>
+<td>eng</td>
+<td>development configuration with additional debugging tools</td>
+</tr>
+</tbody>
+</table>
+<p>For more information about building for and running on actual hardware, see
+<a href="building-devices.html">Building for Devices</a>.</p>
+<h2 id="build-the-code">Build the Code</h2>
+<p>Build everything with <code>make</code>. GNU make can handle parallel
+tasks with a <code>-jN</code> argument, and it's common to use a number of
+tasks N that's between 1 and 2 times the number of hardware
+threads on the computer being used for the build. E.g. on a
+dual-E5520 machine (2 CPUs, 4 cores per CPU, 2 threads per core),
+the fastest builds are made with commands between <code>make -j16</code> and
+<code>make -j32</code>.</p>
+<pre><code>$ make -j4
+</code></pre>
+<h2 id="run-it">Run It!</h2>
+<p>You can either run your build on an emulator or flash it on a device. Please note that you have already selected your build target with <code>lunch</code>, and it is unlikely at best to run on a different target than it was built for.</p>
+<h3 id="flash-a-device">Flash a Device</h3>
+<p>To flash a device, you will need to use <code>fastboot</code>, which should be included in your path after a successful build. Place the device in fastboot mode either manually by holding the appropriate key combination at boot, or from the shell with</p>
+<pre><code>$ adb reboot bootloader
+</code></pre>
+<p>Once the device is in fastboot mode, run </p>
+<pre><code>$ fastboot flashall -w
+</code></pre>
+<p>The <code>-w</code> option wipes the <code>/data</code> partition on the device; this is useful for your first time flashing a particular device, but is otherwise unnecessary.</p>
+<p>For more information about building for and running on actual hardware, see
+<a href="building-devices.html">Building for Devices.</a></p>
+<h3 id="emulate-an-android-device">Emulate an Android Device</h3>
+<p>The emulator is added to your path automatically by the build process. To run the emulator, type</p>
+<pre><code>$ emulator
+</code></pre>
+<h2 id="using-ccache">Using ccache</h2>
+<p>ccache is a compiler cache for C and C++ that can help make builds faster.
+In the root of the source tree, do the following:</p>
+<pre><code>$ export USE_CCACHE=1
+$ export CCACHE_DIR=/&lt;path_of_your_choice&gt;/.ccache
+$ prebuilts/misc/linux-x86/ccache/ccache -M 50G
+</code></pre>
+<p>The suggested cache size is 50-100G.</p>
+<p>You can watch ccache being used by doing the following:</p>
+<pre><code>$ watch -n1 -d prebuilts/misc/linux-x86/ccache/ccache -s
+</code></pre>
+<p>On OSX, you should replace <code>linux-x86</code> with <code>darwin-x86</code>.</p>
+<p>When using Ice Cream Sandwich (4.0.x) or older, you should replace
+<code>prebuilts/misc</code> with <code>prebuilt</code>.</p>
+<h2 id="troubleshooting-common-build-errors">Troubleshooting Common Build Errors</h2>
+<h3 id="wrong-java-version">Wrong Java Version</h3>
+<p>If you are attempting to build a version of Android inconsistent with your
+version of Java, <code>make</code> will abort with a message such as</p>
+<pre><code>************************************************************
+You are attempting to build with the incorrect version
+of java.
+
+Your version is: WRONG_VERSION.
+The correct version is: RIGHT_VERSION.
+
+Please follow the machine setup instructions at
+    https://source.android.com/source/download.html
+************************************************************
+</code></pre>
+<p>This may be caused by:</p>
+<ul>
+<li>
+<p>Failing to install the correct JDK as specified in <a href="initializing.html">Initializing the Build Environment</a>.</p>
+</li>
+<li>
+<p>Another JDK previously installed appearing in your path. Prepend the correct JDK to the beginning of your PATH or remove the problematic JDK.</p>
+</li>
+</ul>
+<h3 id="python-version-3">Python Version 3</h3>
+<p>Repo is built on particular functionality from Python 2.x and is unfortunately incompatible with Python 3.  In order to use repo, please install Python 2.x:</p>
+<pre><code>$ apt-get install python
+</code></pre>
+<h3 id="case-insensitive-filesystem">Case Insensitive Filesystem</h3>
+<p>If you are building on an HFS filesystem on Mac OS X, you may encounter an error such as</p>
+<pre><code>************************************************************
+You are building on a case-insensitive filesystem.
+Please move your source tree to a case-sensitive filesystem.
+************************************************************
+</code></pre>
+<p>Please follow the instructions in <a href="initializing.html">Initializing the Build Environment</a> for creating a case-sensitive disk image.</p>
+<h3 id="no-usb-permission">No USB Permission</h3>
+<p>On most Linux systems, unprivileged users cannot access USB ports by default. If you see a permission denied error, follow the instructions
+<a href="initializing.html">Initializing the Build Environment</a> for configuring USB access.  </p>
+<p>If adb was already running and cannot connect to the device after
+getting those rules set up, it can be killed with <code>adb kill-server</code>.
+That will cause adb to restart with the new configuration.</p>

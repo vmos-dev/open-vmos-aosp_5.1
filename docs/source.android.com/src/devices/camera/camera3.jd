@@ -1,0 +1,185 @@
+page.title=Camera HAL v3 overview
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+Android's camera Hardware Abstraction Layer (HAL) connects the higher level 
+camera framework APIs in 
+<a
+href="http://developer.android.com/reference/android/hardware/Camera.html">android.hardware.Camera</a> 
+to your underlying camera driver and hardware. The latest version of Android 
+introduces a new, underlying implementation of the camera stack. If you have 
+previously developed a camera HAL module and driver for other versions of 
+Android, be aware that there are significant changes in the camera pipeline.</p>
+<p>Version 1 of the camera HAL is still supported for future releases of Android 
+  because many devices still rely on it. Implementing both HALs is also supported 
+  by the Android camera service, which is useful when you want to support a less 
+  capable front-facing camera with version 1 of the HAL and a more advanced 
+  back-facing camera with version 3 of the HAL. Version 2 was a stepping stone to 
+  version 3 and is not supported.</p>
+
+<p>
+There is only one camera HAL module (with its own version number, currently 1, 2,
+or 2.1), which lists multiple independent camera devices that each have
+their own version. Camera module v2 or newer is required to support devices v2 or newer, and such
+camera modules can have a mix of camera device versions. This is what we mean
+when we say Android supports implementing both HALs.
+</p>
+
+<p class="note"><strong>Note:</strong> The new camera HAL is in active
+development and can change at any time. This document describes at a high level
+the design of the camera subsystem and omits many details. See <a
+href="versioning.html">Camera version support</a> for our plans.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>
+Version 1 of the camera subsystem was designed as a black box with high-level 
+controls. Roughly speaking, the old subsystem has three operating modes:</p>
+
+<ul>
+<li>Preview</li>
+<li>Video Record</li>
+<li>Still Capture</li>
+</ul>
+
+<p>Each mode has slightly different and overlapping capabilities. This made it hard 
+to implement new types of features, such as burst mode, since it would fall 
+between two of these modes.<br/>
+<img src="images/camera_block.png" alt="Camera block diagram"/><br/>
+<strong>Figure 1.</strong> Camera components</p>
+
+<h2 id="v3-enhance">Version 3 enhancements</h2>
+
+<p>The aim of the Android Camera API redesign is to substantially increase the 
+ability of applications to control the camera subsystem on Android devices while 
+reorganizing the API to make it more efficient and maintainable.</p>
+
+<p>The additional control makes it easier to build high-quality camera applications 
+on Android devices that can operate reliably across multiple products while 
+still using device-specific algorithms whenever possible to maximize quality and 
+performance.</p>
+
+<p>Version 3 of the camera subsystem structures the operation modes into a single 
+unified view, which can be used to implement any of the previous modes and 
+several others, such as burst mode. This results in better user control for 
+focus and exposure and more post-processing, such as noise reduction, contrast 
+and sharpening. Further, this simplified view makes it easier for application 
+developers to use the camera's various functions.<br/>
+The API models the camera subsystem as a pipeline that converts incoming 
+requests for frame captures into frames, on a 1:1 basis. The requests 
+encapsulate all configuration information about the capture and processing of a 
+frame. This includes: resolution and pixel format; manual sensor, lens and flash 
+control; 3A operating modes; RAW->YUV processing control; statistics generation; 
+and so on.</p>
+
+<p>In simple terms, the application framework requests a frame from the camera 
+subsystem, and the camera subsystem returns results to an output stream. In 
+addition, metadata that contains information such as color spaces and lens 
+shading is generated for each set of results. The following sections and 
+diagrams give you more detail about each component.<br/>
+You can think of camera version 3 as a pipeline to camera version 1's one-way 
+stream. It converts each capture request into one image captured by the sensor, 
+which is processed into: </p>
+
+<ul>
+<li>A Result object with metadata about the capture.</li>
+<li>One to N buffers of image data, each into its own destination Surface.</li>
+</ul>
+
+<p>The set of possible output Surfaces is preconfigured:</p>
+
+<ul>
+<li>Each Surface is a destination for a stream of image buffers of a fixed 
+resolution.</li>
+<li>Only a small number of Surfaces can be configured as outputs at once (~3).</li>
+</ul>
+
+<p>A request contains all desired capture settings and the list of output Surfaces 
+to push image buffers into for this request (out of the total configured set). A 
+request can be one-shot ( with capture() ), or it may be repeated indefinitely 
+(with setRepeatingRequest() ). Captures have priority over repeating
+requests.</p>
+<img src="images/camera_simple_model.png" alt="Camera data model"/>
+<p><strong>Figure 2.</strong> Camera core operation model</p>
+
+<h2 id="supported-version">Supported version</h2>
+
+<p>Camera devices that support this version of the HAL must return 
+CAMERA_DEVICE_API_VERSION_3_1 in camera_device_t.common.version and in 
+camera_info_t.device_version (from camera_module_t.get_camera_info).<br/>
+Camera modules that may contain version 3.1 devices must implement at least 
+version 2.0 of the camera module interface (as defined by 
+camera_module_t.common.module_api_version).<br/>
+See camera_common.h for more versioning details.</p>
+
+<h2 id="version-history">Version history</h2>
+
+<h4><strong>1.0</strong></h4>
+
+<p>Initial Android camera HAL (Android 4.0) [camera.h]:</p>
+
+<ul>
+<li>Converted from C++ CameraHardwareInterface abstraction layer.</li>
+<li>Supports android.hardware.Camera API.</li>
+</ul>
+
+<h4><strong>2.0</strong></h4>
+
+<p>Initial release of expanded-capability HAL (Android 4.2) [camera2.h]:</p>
+
+<ul>
+<li>Sufficient for implementing existing android.hardware.Camera API.</li>
+<li>Allows for ZSL queue in camera service layer</li>
+<li>Not tested for any new features such manual capture control, Bayer RAW 
+capture, reprocessing of RAW data.</li>
+</ul>
+
+<h4><strong>3.0</strong></h4>
+
+<p>First revision of expanded-capability HAL:</p>
+
+<ul>
+<li>Major version change since the ABI is completely different. No change to the 
+required hardware capabilities or operational model from 2.0.</li>
+<li>Reworked input request and stream queue interfaces: Framework calls into HAL 
+with next request and stream buffers already dequeued. Sync framework support 
+is included, necessary for efficient implementations.</li>
+<li>Moved triggers into requests, most notifications into results.</li>
+<li>Consolidated all callbacks into framework into one structure, and all setup 
+methods into a single initialize() call.</li>
+<li>Made stream configuration into a single call to simplify stream management. 
+Bidirectional streams replace STREAM_FROM_STREAM construct.</li>
+<li>Limited mode semantics for older/limited hardware devices.</li>
+</ul>
+
+<h4><strong>3.1</strong></h4>
+
+<p>Minor revision of expanded-capability HAL:</p>
+
+<ul>
+<li>configure_streams passes consumer usage flags to the HAL.</li>
+<li>flush call to drop all in-flight requests/buffers as fast as possible.</li>
+</ul>

@@ -1,0 +1,4 @@
+allow shell efs_file:dir search;
+allow shell efs_file:file r_file_perms;
+allow shell bluetooth_efs_file:dir search;
+allow shell bluetooth_efs_file:file r_file_perms;

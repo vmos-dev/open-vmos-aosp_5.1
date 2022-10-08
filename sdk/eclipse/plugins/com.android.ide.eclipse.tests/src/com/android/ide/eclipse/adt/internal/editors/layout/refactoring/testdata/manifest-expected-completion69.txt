@@ -1,0 +1,18 @@
+Code completion in manifest.xml for <uses-sdk android:minSdkVersion="^11" />:
+17 : API 17: Android 4.2 (Jelly Bean)
+16 : API 16: Android 4.1 (Jelly Bean)
+15 : API 15: Android 4.0.3 (IceCreamSandwich)
+14 : API 14: Android 4.0 (IceCreamSandwich)
+13 : API 13: Android 3.2 (Honeycomb)
+12 : API 12: Android 3.1 (Honeycomb)
+11 : API 11: Android 3.0 (Honeycomb)
+10 : API 10: Android 2.3.3 (Gingerbread)
+9 : API 9: Android 2.3 (Gingerbread)
+8 : API 8: Android 2.2 (Froyo)
+7 : API 7: Android 2.1 (Eclair)
+6 : API 6: Android 2.0.1 (Eclair)
+5 : API 5: Android 2.0 (Eclair)
+4 : API 4: Android 1.6 (Donut)
+3 : API 3: Android 1.5 (Cupcake)
+2 : API 2: Android 1.1
+1 : API 1: Android 1.0

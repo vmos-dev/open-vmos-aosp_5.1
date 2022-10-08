@@ -1,0 +1,51 @@
+apply plugin: 'c'
+apply plugin: 'sdk-files'
+apply plugin: 'native-setup'
+
+executables {
+    mksdcard {}
+}
+
+sources {
+    mksdcard {
+        c {
+            source {
+                srcDir "src/source"
+                include "**/*.c"
+            }
+        }
+    }
+}
+
+binaries.all {
+    cCompiler.args "-D_FILE_OFFSET_BITS=64"
+}
+
+sdk {
+    mac {
+        item( { getExeName("darwin") } ) {
+            executable true
+            builtBy 'darwinMksdcardExecutable'
+        }
+    }
+    linux {
+        item( { getExeName("linux") } ) {
+            executable true
+            builtBy 'linuxMksdcardExecutable'
+        }
+    }
+    windows {
+        item( { getExeName("windows") } ) {
+            name 'mksdcard.exe'
+            builtBy 'windowsMksdcardExecutable'
+        }
+    }
+}
+
+def getExeName(String platform) {
+    // binaries will return a set of binaries
+    def binaries = executables.mksdcard.binaries.matching { it.name == "${platform}MksdcardExecutable" }
+    // calling .exeFile on the set returns an array with the result from each item in the set...
+    return binaries.executableFile.get(0)
+}
+

@@ -1,0 +1,4 @@
+Code completion in animator1.xml for ^<set xmlns:
+<animator ></animator>
+<objectAnimator ></objectAnimator>
+<set ></set>

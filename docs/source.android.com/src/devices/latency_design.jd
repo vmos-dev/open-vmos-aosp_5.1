@@ -1,0 +1,230 @@
+page.title=Design For Reduced Latency
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+The Android 4.1 release introduced internal framework changes for
+a lower latency audio output path. There were no public client API
+or HAL API changes. This document describes the initial design,
+which is expected to evolve over time.
+Having a good understanding of this design should help device OEM and
+SoC vendors implement the design correctly on their particular devices
+and chipsets.  This article is not intended for application developers.
+</p>
+
+<h2 id="trackCreation">Track Creation</h2>
+
+<p>
+The client can optionally set bit <code>AUDIO_OUTPUT_FLAG_FAST</code> in the
+<code>audio_output_flags_t</code> parameter of AudioTrack C++ constructor or
+<code>AudioTrack::set()</code>. Currently the only clients that do so are:
+</p>
+
+<ul>
+<li>OpenSL ES</li>
+<li>SoundPool</li>
+<li>ToneGenerator</li>
+</ul>
+
+<p>
+The AudioTrack C++ implementation reviews the <code>AUDIO_OUTPUT_FLAG_FAST</code>
+request and may optionally deny the request at client level. If it
+decides to pass the request on, it does so using <code>TRACK_FAST</code> bit of
+the <code>track_flags_t</code> parameter of the <code>IAudioTrack</code> factory method
+<code>IAudioFlinger::createTrack()</code>.
+</p>
+
+<p>
+The AudioFlinger audio server reviews the <code>TRACK_FAST</code> request and may
+optionally deny the request at server level. It informs the client
+whether or not the request was accepted, via bit <code>CBLK_FAST</code> of the
+shared memory control block.
+</p>
+
+<p>
+The factors that impact the decision include:
+</p>
+
+<ul>
+<li>Presence of a fast mixer thread for this output (see below)</li>
+<li>Track sample rate</li>
+<li>Presence of a client thread to execute callback handlers for this track</li>
+<li>Track buffer size</li>
+<li>Available fast track slots (see below)</li>
+</ul>
+
+<p>
+If the client's request was accepted, it is called a "fast track."
+Otherwise it's called a "normal track."
+</p>
+
+<h2 id="mixerThreads">Mixer Threads</h2>
+
+<p>
+At the time AudioFlinger creates a normal mixer thread, it decides
+whether or not to also create a fast mixer thread. Both the normal
+mixer and fast mixer are not associated with a particular track,
+but rather with a set of tracks. There is always a normal mixer
+thread. The fast mixer thread, if it exists, is subservient to the
+normal mixer thread and acts under its control.
+</p>
+
+<h3 id="fastMixer">Fast mixer</h3>
+
+<h4>Features</h4>
+
+<p>
+The fast mixer thread provides these features:
+</p>
+
+<ul>
+<li>Mixing of the normal mixer's sub-mix and up to 7 client fast tracks</li>
+<li>Per track attenuation</li>
+</ul>
+
+<p>
+Omitted features:
+</p>
+
+<ul>
+<li>Per track sample rate conversion</li>
+<li>Per track effects</li>
+<li>Per mix effects</li>
+</ul>
+
+<h4>Period</h4>
+
+<p>
+The fast mixer runs periodically, with a recommended period of two
+to three milliseconds (ms), or slightly higher if needed for scheduling stability.
+This number was chosen so that, accounting for the complete
+buffer pipeline, the total latency is on the order of 10 ms. Smaller
+values are possible but may result in increased power consumption
+and chance of glitches depending on CPU scheduling predictability.
+Larger values are possible, up to 20 ms, but result in degraded
+total latency and so should be avoided.
+</p>
+
+<h4>Scheduling</h4>
+
+<p>
+The fast mixer runs at elevated <code>SCHED_FIFO</code> priority. It needs very
+little CPU time, but must run often and with low scheduling jitter.
+Running too late will result in glitches due to underrun. Running
+too early will result in glitches due to pulling from a fast track
+before the track has provided data.
+</p>
+
+<h4>Blocking</h4>
+
+<p>
+Ideally the fast mixer thread never blocks, other than at HAL
+<code>write()</code>. Other occurrences of blocking within the fast mixer are
+considered bugs. In particular, mutexes are avoided.
+</p>
+
+<h4>Relationship to other components</h4>
+
+<p>
+The fast mixer has little direct interaction with clients. In
+particular, it does not see binder-level operations, but it does
+access the client's shared memory control block.
+</p>
+
+<p>
+The fast mixer receives commands from the normal mixer via a state queue.
+</p>
+
+<p>
+Other than pulling track data, interaction with clients is via the normal mixer.
+</p>
+
+<p>
+The fast mixer's primary sink is the audio HAL.
+</p>
+
+<h3 id="normalMixer">Normal mixer</h3>
+
+<h4>Features</h4>
+
+<p>
+All features are enabled:
+</p>
+
+<ul>
+<li>Up to 32 tracks</li>
+<li>Per track attenuation</li>
+<li>Per track sample rate conversion</li>
+<li>Effects processing</li>
+</ul>
+
+<h4>Period</h4>
+
+<p>
+The period is computed to be the first integral multiple of the
+fast mixer period that is >= 20 ms.
+</p>
+
+<h4>Scheduling</h4>
+
+<p>
+The normal mixer runs at elevated <code>SCHED_OTHER</code> priority.
+</p>
+
+<h4>Blocking</h4>
+
+<p>
+The normal mixer is permitted to block, and often does so at various
+mutexes as well as at a blocking pipe to write its sub-mix.
+</p>
+
+<h4>Relationship to other components</h4>
+
+<p>
+The normal mixer interacts extensively with the outside world,
+including binder threads, audio policy manager, fast mixer thread,
+and client tracks.
+</p>
+
+<p>
+The normal mixer's sink is a blocking pipe to the fast mixer's track 0.
+</p>
+
+<h2 id="flags">Flags</h2>
+
+<p>
+<code>AUDIO_OUTPUT_FLAG_FAST</code> bit is a hint. There's no guarantee the
+request will be fulfilled.
+</p>
+
+<p>
+<code>AUDIO_OUTPUT_FLAG_FAST</code> is a client-level concept. It does not appear
+in server.
+</p>
+
+<p>
+<code>TRACK_FAST</code> is a client -> server concept.
+</p>
+

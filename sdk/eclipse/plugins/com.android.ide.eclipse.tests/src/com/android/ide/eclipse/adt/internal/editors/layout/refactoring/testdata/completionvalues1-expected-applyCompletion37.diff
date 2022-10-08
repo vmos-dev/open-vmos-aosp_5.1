@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item name="android:orientation">h^</item> selecting horizontal:
+@@ -14 +14
+-         <item name="android:orientation">h^</item>
++         <item name="android:orientation">horizontal^</item>

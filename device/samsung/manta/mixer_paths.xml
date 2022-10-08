@@ -1,0 +1,261 @@
+<mixer>
+  <!-- These are the initial mixer settings -->
+  <ctl name="DAC1R Mixer AIF1.1 Switch" value="0" />
+  <ctl name="DAC1L Mixer AIF1.1 Switch" value="0" />
+  <ctl name="DAC1 Switch" value="0" />
+  <ctl name="DAC2 Switch" value="0" />
+  <ctl name="AIF1DRC1 Mode" value="Default" />
+  <ctl name="AIF1DAC1 DRC Switch" value="0" />
+
+  <ctl name="Speaker Switch" value="0" />
+  <ctl name="SPKR DAC1 Switch" value="0" />
+  <ctl name="SPKL DAC1 Switch" value="0" />
+  <ctl name="Speaker Mixer Volume" value="0" />
+
+  <ctl name="Headphone Switch" value="0" />
+  <ctl name="Right Headphone Mux" value="DAC" />
+  <ctl name="Left Headphone Mux" value="DAC" />
+  <ctl name="Left Output Mixer DAC Switch" value="0" />
+  <ctl name="Right Output Mixer DAC Switch" value="0" />
+
+  <ctl name="MIXINL IN1L Switch" value="0" />
+  <ctl name="IN1L Switch" value="0" />
+  <ctl name="IN1L PGA IN1LP Switch" value="0" />
+  <ctl name="IN1L PGA IN1LN Switch" value="1" />
+
+  <ctl name="MIXINL IN2L Switch" value="0" />
+  <ctl name="IN2L Switch" value="0" />
+  <ctl name="IN2L PGA IN2LP Switch" value="0" />
+  <ctl name="IN2L PGA IN2LN Switch" value="1" />
+
+  <ctl name="MIXINR IN1R Switch" value="0" />
+  <ctl name="IN1R Switch" value="0" />
+  <ctl name="IN1R PGA IN1RP Switch" value="0" />
+  <ctl name="IN1R PGA IN1RN Switch" value="1" />
+
+  <ctl name="MIXINR IN2R Switch" value="0" />
+  <ctl name="IN2R Switch" value="0" />
+  <ctl name="IN2R PGA IN2RP Switch" value="0" />
+  <ctl name="IN2R PGA IN2RN Switch" value="1" />
+
+  <ctl name="AIF2DACL Mux" value="AIF3" />
+  <ctl name="AIF2DACR Mux" value="AIF3" />
+  <ctl name="AIF2DAC Mux" value="AIF3DACDAT" />
+  <ctl name="AIF3ADC Mux" value="AIF2ADCDAT" />
+
+  <ctl name="AIF1ADC1L Mixer AIF2 Switch" value="0" />
+  <ctl name="AIF1ADC1R Mixer AIF2 Switch" value="0" />
+  <ctl name="AIF1ADC2L Mixer AIF2 Switch" value="0" />
+  <ctl name="AIF1ADC2R Mixer AIF2 Switch" value="0" />
+  <ctl name="AIF1ADC1L Mixer ADC/DMIC Switch" value="0" />
+  <ctl name="AIF1ADC1R Mixer ADC/DMIC Switch" value="0" />
+
+  <!-- These are commonly used control sequences -->
+  <path name="dac1">
+    <ctl name="DAC1R Mixer AIF1.1 Switch" value="1" />
+    <ctl name="DAC1L Mixer AIF1.1 Switch" value="1" />
+    <ctl name="DAC1 Switch" value="1" />
+  </path>
+
+  <path name="dac2">
+    <ctl name="AIF2DAC2L Mixer AIF1.1 Switch" value="1" />
+    <ctl name="AIF2DAC2R Mixer AIF1.1 Switch" value="1" />
+    <ctl name="DAC2 Switch" value="1" />
+  </path>
+
+  <path name="eq-speaker">
+    <ctl name="AIF1DAC1 EQ Switch" value="1" />
+    <ctl name="AIF1DAC1 EQ1 Volume" value="3" />
+    <ctl name="AIF1DAC1 EQ2 Volume" value="8" />
+    <ctl name="AIF1DAC1 EQ3 Volume" value="16" />
+    <ctl name="AIF1DAC1 EQ4 Volume" value="10" />
+    <ctl name="AIF1DAC1 EQ5 Volume" value="11" />
+  </path>
+
+  <path name="eq-headphone">
+    <ctl name="AIF1DAC1 EQ Switch" value="0" />
+  </path>
+
+  <path name="headphones">
+    <path name="dac1" />
+    <ctl name="Headphone Switch" value="1" />
+    <path name="eq-headphone" />
+  </path>
+
+  <path name="speaker">
+    <path name="dac1" />
+    <ctl name="Speaker Switch" value="1" />
+    <ctl name="SPKR DAC1 Switch" value="1" />
+    <ctl name="SPKL DAC1 Switch" value="1" />
+    <ctl name="Speaker Mixer Volume" value="3" />
+    <ctl name="Speaker Boost Volume" value="5" />
+    <ctl name="AIF1DRC1 Mode" value="Speakers Media" />
+    <ctl name="AIF1DAC1 DRC Switch" value="1" />
+    <path name="eq-speaker" />
+  </path>
+
+  <path name="adc-to-aif1adc">
+    <ctl name="AIF1ADC1L Mixer ADC/DMIC Switch" value="1" />
+    <ctl name="AIF1ADC1R Mixer ADC/DMIC Switch" value="1" />
+  </path>
+
+  <path name="aif2-to-aif1adc">
+    <ctl name="AIF1ADC1L Mixer AIF2 Switch" value="1" />
+    <ctl name="AIF1ADC1R Mixer AIF2 Switch" value="1" />
+    <ctl name="AIF2DACL Mux" value="AIF2" />
+    <ctl name="AIF2DACR Mux" value="AIF2" />
+  </path>
+
+  <path name="main-mic">
+    <ctl name="MIXINR IN2R Switch" value="1" />
+    <ctl name="MIXINR IN2R Volume" value="1" />
+    <ctl name="IN2R Switch" value="1" />
+    <ctl name="AIF1ADCL Source" value="Right" />
+    <path name="adc-to-aif1adc" />
+  </path>
+
+  <path name="second-mic-left">
+    <ctl name="MIXINL IN2L Switch" value="1" />
+    <ctl name="MIXINL IN2L Volume" value="1" />
+    <ctl name="IN2L Switch" value="1" />
+    <ctl name="AIF1ADCL Source" value="Left" />
+    <path name="adc-to-aif1adc" />
+  </path>
+
+  <path name="second-mic-right">
+    <ctl name="MIXINL IN2L Switch" value="1" />
+    <ctl name="MIXINL IN2L Volume" value="1" />
+    <ctl name="IN2L Switch" value="1" />
+    <ctl name="AIF1ADCR Source" value="Left" />
+    <path name="adc-to-aif1adc" />
+  </path>
+
+  <path name="third-mic">
+    <ctl name="MIXINL IN1L Switch" value="1" />
+    <ctl name="MIXINL IN1L Volume" value="1" />
+    <ctl name="IN1L Switch" value="1" />
+    <ctl name="AIF1ADCR Source" value="Left" />
+    <path name="adc-to-aif1adc" />
+  </path>
+
+  <path name="headset-mic">
+    <ctl name="MIXINR IN1R Switch" value="1" />
+    <ctl name="MIXINR IN1R Volume" value="1" />
+    <ctl name="IN1R Switch" value="1" />
+    <ctl name="AIF1ADCL Source" value="Right" />
+    <path name="adc-to-aif1adc" />
+  </path>
+
+  <!-- These are useful named paths -->
+
+  <!-- Playback paths -->
+
+  <path name="media-speaker">
+    <path name="speaker" />
+    <ctl name="Speaker Volume" id="0" value="61" />
+    <ctl name="Speaker Volume" id="1" value="62" />
+  </path>
+
+  <path name="media-headphones">
+    <path name="headphones" />
+    <ctl name="Headphone Volume" value="55" />
+  </path>
+
+  <path name="voice-rec-speaker">
+    <path name="speaker" />
+    <ctl name="Speaker Volume" id="0" value="61" />
+    <ctl name="Speaker Volume" id="1" value="62" />
+  </path>
+
+  <path name="voice-rec-headphones">
+    <path name="headphones" />
+    <ctl name="Headphone Volume" value="55" />
+  </path>
+
+  <path name="communication-speaker">
+    <path name="speaker" />
+    <ctl name="Speaker Volume" id="0" value="61" />
+    <ctl name="Speaker Volume" id="1" value="62" />
+  </path>
+
+  <path name="communication-headphones">
+    <path name="headphones" />
+    <ctl name="Headphone Volume" value="55" />
+  </path>
+
+  <path name="speaker-and-headphones">
+    <path name="dac1" />
+    <ctl name="Headphone Switch" value="1" />
+    <ctl name="Speaker Switch" value="1" />
+    <ctl name="SPKR DAC1 Switch" value="1" />
+    <ctl name="SPKL DAC1 Switch" value="1" />
+    <ctl name="Speaker Mixer Volume" value="3" />
+    <ctl name="Speaker Boost Volume" value="5" />
+    <ctl name="Speaker Volume" id="0" value="61" />
+    <ctl name="Speaker Volume" id="1" value="62" />
+    <ctl name="AIF1DRC1 Mode" value="Speakers Media" />
+    <ctl name="AIF1DAC1 DRC Switch" value="1" />
+    <path name="eq-speaker" />
+  </path>
+
+  <path name="bt-sco-headset">
+    <path name="dac2" />
+  </path>
+
+  <!-- Capture paths -->
+
+  <path name="media-main-mic">
+    <path name="main-mic" />
+    <ctl name="IN2R Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Switch" value="1" />
+    <ctl name="AIF1ADC1 HPF Mode" value="HiFi" />
+  </path>
+
+  <path name="voice-rec-main-mic">
+    <path name="main-mic" />
+    <path name="second-mic-right" />
+    <ctl name="IN2R Volume" value="16" />
+    <ctl name="IN2L Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Switch" value="1" />
+    <ctl name="AIF1ADC1 HPF Mode" value="HiFi" />
+  </path>
+
+  <path name="communication-main-mic">
+    <path name="main-mic" />
+    <path name="second-mic-right" />
+    <ctl name="IN2R Volume" value="16" />
+    <ctl name="IN2L Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Switch" value="1" />
+    <ctl name="AIF1ADC1 HPF Mode" value="HiFi" />
+  </path>
+
+  <path name="media-second-mic">
+    <path name="second-mic-left" />
+    <ctl name="IN2L Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Switch" value="1" />
+    <ctl name="AIF1ADC1 HPF Mode" value="HiFi" />
+  </path>
+
+  <path name="media-headset-mic">
+    <path name="headset-mic" />
+    <ctl name="IN1R Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Mode" value="HiFi" />
+  </path>
+
+  <path name="bt-sco-mic">
+    <path name="aif2-to-aif1adc" />
+  </path>
+
+  <path name="voice-rec-headset-mic">
+    <path name="headset-mic" />
+    <ctl name="IN1R Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Mode" value="HiFi" />
+  </path>
+
+  <path name="communication-headset-mic">
+    <path name="headset-mic" />
+    <ctl name="IN1R Volume" value="16" />
+    <ctl name="AIF1ADC1 HPF Mode" value="Voice 1" />
+  </path>
+
+</mixer>

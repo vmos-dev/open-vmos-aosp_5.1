@@ -1,0 +1,124 @@
+page.title=The Hardware Abstraction Layer
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>
+  The hardware abstraction layer (HAL) defines a standard interface for hardware vendors to
+  implement and allows Android to be agnostic about lower-level driver
+  implementations. The HAL allows you to implement functionality
+  without affecting or modifying the higher level system. HAL implementations
+  are packaged into modules (<code>.so</code>) file and loaded by the Android
+  system at the appropriate time.
+<h2 id="structure">
+  Standard HAL structure
+</h2>
+<p>
+  Each hardware-specific HAL interface has properties that are common to all HAL interfaces. These
+  properties are defined in <code>hardware/libhardware/include/hardware/hardware.h</code> and
+  guarantees that HALs have a predictable structure.
+  This interface allows the Android system to load the correct versions of your
+  HAL modules in a consistent way. There are two general components
+  that a HAL interface consists of: a module and a device.
+</p>
+<p>
+  A module represents your packaged HAL implementation, which is stored as a shared library (<code>.so file</code>). It contains
+  metadata such as the version, name, and author of the module, which helps Android find and load it correctly. The
+  <code>hardware/libhardware/include/hardware/hardware.h</code> header file defines a
+  struct, <code>hw_module_t</code>, that represents a module and contains information such as
+  the module version, author, and name.</p>
+
+  <p>In addition, the <code>hw_module_t</code> struct contains
+  a pointer to another struct, <code>hw_module_methods_t</code>, that contains a pointer to
+  an "open" function for the module. This open function is used to initate communication with
+  the hardware that the HAL is serving as an abstraction for. Each hardware-specific HAL usually 
+  extends the generic <code>hw_module_t</code> struct with additional information
+  for that specific piece of hardware. For example in the camera HAL, the <code>camera_module_t</code> struct
+  contains a <code>hw_module_t</code> struct along with other camera-specific function pointers:
+</p>
+
+<pre>
+typedef struct camera_module {
+    hw_module_t common;
+    int (*get_number_of_cameras)(void);
+    int (*get_camera_info)(int camera_id, struct camera_info *info);
+} camera_module_t;
+</pre>
+
+<p>When you implement a HAL and create the module struct, you must name it
+  <code>HAL_MODULE_INFO_SYM</code>. For instance, here is an example from the Galaxy Nexus audio HAL:</p>
+<pre>
+struct audio_module HAL_MODULE_INFO_SYM = {
+    .common = {
+        .tag = HARDWARE_MODULE_TAG,
+        .module_api_version = AUDIO_MODULE_API_VERSION_0_1,
+        .hal_api_version = HARDWARE_HAL_API_VERSION,
+        .id = AUDIO_HARDWARE_MODULE_ID,
+        .name = "Tuna audio HW HAL",
+        .author = "The Android Open Source Project",
+        .methods = &hal_module_methods,
+    },
+};
+</pre>
+<p>
+  A device abstracts the actual hardware of your product. For example, an audio module can contain
+  a primary audio device, a USB audio device, or a Bluetooth A2DP audio device. A device
+  is represented by the <code>hw_device_t</code> struct. Like a module, each type of device
+  defines a more-detailed version of the generic <code>hw_device_t</code> that contains
+  function pointers for specific features of the hardware. For example, the
+  <code>audio_hw_device_t</code> struct type contains function pointers to audio device operations:
+</p>
+
+<pre>
+struct audio_hw_device {
+    struct hw_device_t common;
+
+    /**
+     * used by audio flinger to enumerate what devices are supported by
+     * each audio_hw_device implementation.
+     *
+     * Return value is a bitmask of 1 or more values of audio_devices_t
+     */
+    uint32_t (*get_supported_devices)(const struct audio_hw_device *dev);
+  ...
+};
+typedef struct audio_hw_device audio_hw_device_t;
+</pre>
+
+<p>
+  In addition to these standard properties, each hardware-specific HAL interface can define more of its
+  own features and requirements. See the <a href="{@docRoot}guide/reference/files.html">HAL reference documentation</a>
+  as well as the individual instructions for each HAL for more information on how to implement a specific interface.
+</p>
+
+<h2 id="modules">HAL modules</h2>
+<p>HAL implementations are built into modules (<code>.so</code>) files and are dynamically linked by Android when appropriate.
+  You can build your modules by creating <code>Android.mk</code> files for each of your HAL implementations
+  and pointing to your source files. In general, your shared libraries must be named in a certain format, so that
+  they can be found and loaded properly. The naming scheme varies slightly from module to module, but they follow
+  the general pattern of: <code>&lt;module_type&gt;.&lt;device_name&gt;</code>.</p>
+
+  <p>For more information about setting up the build for each HAL, see its respective documentation.</p>
+
+</p>

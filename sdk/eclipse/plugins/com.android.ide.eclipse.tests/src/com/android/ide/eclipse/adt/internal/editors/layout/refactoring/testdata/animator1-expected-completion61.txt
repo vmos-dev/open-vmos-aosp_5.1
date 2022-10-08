@@ -1,0 +1,19 @@
+Code completion in animator1.xml for android:interpolator="^@android:anim/bounce_interpolator":
+@android:anim/accelerate_decelerate_interpolator
+@android:anim/accelerate_interpolator
+@android:anim/decelerate_interpolator
+@android:anim/anticipate_interpolator
+@android:anim/overshoot_interpolator
+@android:anim/anticipate_overshoot_interpolator
+@android:anim/bounce_interpolator
+@android:anim/linear_interpolator
+@android:anim/cycle_interpolator
+@android:
+@+id/
+@anim/
+@color/
+@drawable/
+@id/
+@layout/
+@string/
+@style/

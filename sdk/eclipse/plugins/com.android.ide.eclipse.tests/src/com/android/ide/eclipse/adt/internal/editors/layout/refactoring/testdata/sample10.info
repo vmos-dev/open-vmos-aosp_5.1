@@ -1,0 +1,5 @@
+android.widget.GridLayout [0,73,320,480] <GridLayout>
+    android.widget.Button [0,0,79,48] <Button>
+    android.widget.RadioButton [0,48,150,86] <RadioButton>
+    android.widget.RadioButton [150,48,273,86] <RadioButton>
+    android.widget.CheckBox [0,86,107,124] <CheckBox>

@@ -1,0 +1,11 @@
+# touch_fusion
+type touch_fusion, domain;
+type touch_fusion_exec, exec_type, file_type;
+
+# Why net_admin?
+allow touch_fusion self:capability { net_admin sys_nice };
+
+allow touch_fusion graphics_device:dir r_dir_perms;
+allow touch_fusion graphics_device:chr_file r_file_perms;
+allow touch_fusion kmsg_device:chr_file { w_file_perms getattr };
+allow touch_fusion self:netlink_socket create_socket_perms;

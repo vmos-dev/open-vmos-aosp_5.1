@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_height="wrap_content" android:orientation="vertical"
+	android:layout_width="wrap_content" android:layout_marginTop="-10dip">
+	<TextView android:text="@string/relay1Label" style="@style/DemoKitControlLabel"
+		android:layout_width="match_parent" android:gravity="left"
+		android:layout_height="wrap_content"></TextView>
+	<ToggleButton style="@style/DemoKitRelayButton"
+		android:textOff="@string/off" android:textOn="@string/on"
+		android:layout_height="wrap_content" android:layout_width="match_parent"></ToggleButton>
+</LinearLayout>
+

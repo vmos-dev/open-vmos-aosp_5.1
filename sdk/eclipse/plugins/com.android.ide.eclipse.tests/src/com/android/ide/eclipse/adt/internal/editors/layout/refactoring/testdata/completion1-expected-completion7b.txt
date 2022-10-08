@@ -1,0 +1,2 @@
+Code completion in completion1.xml for android:gravity="left|b^ottom":
+bottom

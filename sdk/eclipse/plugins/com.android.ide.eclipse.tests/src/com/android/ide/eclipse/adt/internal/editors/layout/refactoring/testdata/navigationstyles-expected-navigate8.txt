@@ -1,0 +1,7 @@
+Go To Declaration in navigationstyles.xml for colorBackground"> @color/cust^om_theme_color </item>:
+Open Declaration in values/navigationstyles.xml :  [@color/custom_theme_color]
+    L/PROJECTNAME/res/values/navigationstyles.xml
+
+
+After open, the selected text is:
+    [^<color name="custom_theme_color">#b0b0ff</color>]

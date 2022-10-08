@@ -1,0 +1,194 @@
+page.title=Life of a Bug
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+<p>The Android Open Source Project maintains a public issue tracker where you
+can report bugs and request features for the core Android software stack.
+(For details on this issue tracker, please see the
+<a href="report-bugs.html">Reporting Bugs</a> page).
+Reporting bugs is great (thank you!), but what happens to a bug report once
+you file it? This page describes the Life of a Bug.</p>
+
+<p>*Please note: the Android Open Source Project (AOSP) issue tracker is
+intended only for bugs and feature requests related to the core Android
+software stack, and is a technical tool for the Open Source community.</p>
+
+<p>This is not a customer support forum.
+You can find support for Nexus devices on
+<a href="http://support.google.com/nexus">Google's Nexus support site</a>.
+Support for other devices is provided by the device manufacturers or by the
+carriers selling those devices.</p>
+
+<p>Support for Google applications is through
+<a href="http://support.google.com/">Google's support site</a>. Support
+for 3rd-party applications is with each application's developer, e.g.
+through the contact information provided on Google Play.</p>
+
+<p>Here's the life of a bug, in a nutshell:</p>
+<ol>
+<li>
+<p>A bug is filed, and has the state "New".</p>
+</li>
+<li>
+<p>An AOSP maintainer periodically reviews and triages bugs. Bugs are
+triaged into one of four "buckets": New, Open, No-Action, or Resolved.</p>
+</li>
+<li>
+<p>Each bucket includes a number of states that provide more detail on the
+fate of the issue.</p>
+</li>
+<li>
+<p>Bugs in the "Resolved" bucket will eventually be included in a future
+release of the Android software.</p>
+</li>
+</ol>
+<h1 id="bucket-details">Bucket Details</h1>
+<p>Here is some additional information on each bucket, what it means, and how
+it's handled.</p>
+<h2 id="new-issues">New Issues</h2>
+<p>New issues include bug reports that are not yet being acted upon. The two
+states are:</p>
+<ul>
+<li>
+<p><em>New:</em>
+    The bug report has not yet been triaged (that is, reviewed by an AOSP maintainer.)</p>
+</li>
+<li>
+<p><em>NeedsInfo:</em>
+    The bug report has insufficient information to act
+upon. The person who reported the bug needs to provide additional detail
+before it can be triaged. If enough time passes and no new information is
+provided, the bug may be closed by default, as one of the No-Action
+states.</p>
+</li>
+</ul>
+<h2 id="open-issues">Open Issues</h2>
+<p>This bucket contains bugs that need action, but which are still
+unresolved, pending a change to the source code.</p>
+<ul>
+<li>
+<p><em>Unassigned:</em>
+    The bug report has been recognized as an adequately
+detailed report of a legitimate issue, but has not yet been assigned to an
+AOSP contributor to be fixed.</p>
+</li>
+<li>
+<p><em>Assigned:</em>
+    Like <em>Unassigned</em>, but the bug has been
+actually assigned to a specific contributor to fix.</p>
+</li>
+</ul>
+<p>Typically, a given bug will start in <em>Unassigned</em>, where it
+will remain until someone intends to resolve it, at which
+point it will enter <em>Assigned</em>. However,
+note that this isn't a guarantee, and it's not uncommon for bugs to go from
+<em>Unassigned</em> to one of the Resolved states.</p>
+<p>In general, if a bug is in one of these Open states, the AOSP team has
+recognized it as a legitimate issue, and a high-quality contribution fixing
+that bug is likely to get accepted. However, it's impossible to guarantee a
+fix in time for any particular release.</p>
+
+<h2 id="no-action-issues">No-Action Issues</h2>
+<p>This bucket contains bugs that have for one reason or another been
+determined to not require any action.</p>
+<ul>
+<li>
+<p><em>Spam:</em> 
+    A kind soul sent us some delicious pork products, that we,
+regrettably, do not want.</p>
+</li>
+<li>
+<p><em>Duplicate:</em>
+    There was already an identical report in the issue tracker. Any actual
+action will be reported on that report.</p>
+</li>
+<li>
+<p><em>Unreproducible:</em>
+    An AOSP contributor attempted to reproduce the
+behavior described, and was unable to do so. This sometimes means that the bug
+is legitimate but simply rare or difficult to reproduce, and sometimes means
+that the bug was fixed in a later release.</p>
+</li>
+<li>
+<p><em>Obsolete:</em>
+    Similar to <em>Unreproducible,</em> but with a reasonable certainty
+that the bug did exist in the reported version but was already fixed in
+a later release.</p>
+</li>
+<li>
+<p><em>WorkingAsIntended:</em>
+    An AOSP maintainer has determined that the
+behavior described isn't a bug, but is the intended behavior. This state is
+also commonly referred to as "WAI".</p>
+</li>
+<li>
+<p><em>Declined:</em>
+    This is like <em>WorkingAsIntended</em>, except
+typically used for feature requests instead of bugs. That is, an AOSP
+maintainer has determined that the request is not going to be implemented in
+Android.</p>
+</li>
+<li>
+<p><em>NotEnoughInformation:</em>
+    The report didn't have enough information to be able to take any action.</p>
+</li>
+<li>
+<p><em>UserError:</em>
+    The report was the result of a user making a mistake while using Android,
+e.g. typing a wrong password and therefore not being able to connect to a
+server.</p>
+</li>
+<li>
+<p><em>WrongForum:</em>
+    The report cannot be handled in AOSP, typically because it is related
+to a customized device or to an external application.</p>
+</li>
+<li>
+<p><em>Question:</em>
+    Someone mistook the issue tracker for a help forum.</p>
+</li>
+</ul>
+<h2 id="resolved-issues">Resolved Issues</h2>
+<p>This bucket contains bugs that have had action taken, and are now
+considered resolved.</p>
+<ul>
+<li>
+<p><em>Released:</em>
+    This bug has been fixed, and is included in a formal release.
+When this state is set, we try to also set a
+property indicating which release it was fixed in.</p>
+</li>
+<li>
+<p><em>FutureRelease:</em>
+    This bug has been fixed (or feature implemented) in
+a source tree, but has not yet been included in a formal release.</p>
+</li>
+</ul>
+<h1 id="other-stuff">Other Stuff</h1>
+<p>The states and lifecycle above are how we generally try to track software.
+However, Android contains a lot of software and gets a correspondingly large
+number of bugs. As a result, sometimes bugs don't make it through all the
+states in a formal progression. We do try to keep the system up to date, but
+we tend to do so in periodic "bug sweeps" where we review the database and
+make updates.</p>

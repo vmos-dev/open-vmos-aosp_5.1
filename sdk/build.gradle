@@ -1,0 +1,150 @@
+apply plugin: 'sdk-files'
+
+sdk {
+    common {
+        item('files/tools_source.properties') {
+            name 'source.properties'
+            notice null
+        }
+        item('files/plugin.prop') {
+            into 'lib'
+            notice null
+        }
+
+        item('emulator/snapshot/snapshots.img') {
+            into 'lib/emulator'
+            notice 'emulator/NOTICE'
+        }
+        item('emulator/skins/dynamic') {
+            into 'lib/emulator/skins/dynamic'
+            notice 'emulator/NOTICE'
+        }
+
+        item('templates/build.template') {
+            into 'lib'
+            notice 'templates/NOTICE'
+        }
+        item('templates/uibuild.template') {
+            into 'lib'
+            notice 'templates/NOTICE'
+        }
+        item('templates/build_gradle.template') {
+            into 'lib'
+            notice 'templates/NOTICE'
+        }
+
+        item('files/ant') {
+            into 'ant'
+            notice 'files/ant/NOTICE'
+        }
+        item('files/proguard-project.txt') {
+            into 'lib'
+            notice null
+        }
+        item('files/proguard-project.txt') {
+            into 'proguard'
+            notice null
+        }
+        item('files/proguard-android.txt') {
+            into 'proguard'
+            notice null
+        }
+        item('files/proguard-android-optimize.txt') {
+            into 'proguard'
+            notice null
+        }
+
+        item('files/devices.xml') {
+            into 'lib'
+            notice 'files/NOTICE'
+        }
+        item('files/android.el') {
+            into 'lib'
+            notice 'files/NOTICE'
+        }
+
+        item('apps/SdkController') {
+            into 'apps/SdkController'
+            notice 'apps/SdkController/NOTICE'
+        }
+
+        item('files/typos') {
+            into 'support'
+            notice 'files/NOTICE'
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/qemu-kernel/x86/pc-bios/bios.bin") {
+            into 'lib/pc-bios'
+            notice null
+        }
+        item("$rootProject.projectDir.parentFile/prebuilts/qemu-kernel/x86/pc-bios/vgabios-cirrus.bin") {
+            into 'lib/pc-bios'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/license.html") {
+            into 'proguard'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/README") {
+            into 'proguard'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/docs") {
+            into 'proguard/docs'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/examples") {
+            into 'proguard/examples'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/lib") {
+            into 'proguard/lib'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/src/proguard/ant/task.properties") {
+            into 'proguard/ant'
+            notice null
+        }
+    }
+
+    common(mac, linux) {
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/bin/proguard.sh") {
+            into 'proguard/bin'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/bin/proguardgui.sh") {
+            into 'proguard/bin'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/bin/retrace.sh") {
+            into 'proguard/bin'
+            notice null
+        }
+    }
+
+    windows {
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/bin/proguard.bat") {
+            into 'proguard/bin'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/bin/proguardgui.bat") {
+            into 'proguard/bin'
+            notice null
+        }
+
+        item("$rootProject.projectDir.parentFile/prebuilts/tools/common/proguard/proguard4.7/bin/retrace.bat") {
+            into 'proguard/bin'
+            notice null
+        }
+    }
+
+}

@@ -1,0 +1,36 @@
+# CPU governor (root process)
+type mpdecision, domain;
+type mpdecision_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(mpdecision)
+
+allow mpdecision sysfs_mpdecision:file rw_file_perms;
+allow mpdecision sysfs_devices_system_cpu:file rw_file_perms;
+allow mpdecision sysfs_rqstats:file rw_file_perms;
+allow mpdecision sysfs_rqstats:dir r_dir_perms;
+allow mpdecision sysfs_cpu_online:file rw_file_perms;
+allow mpdecision cpuctl_device:file rw_file_perms;
+allow mpdecision sysfs_cpuboost:dir r_dir_perms;
+allow mpdecision sysfs_cpuboost:file rw_file_perms;
+
+#Allow mpdecision set cpu affinity
+allow mpdecision kernel:process setsched;
+
+allow mpdecision self:capability { dac_override net_admin fsetid chown };
+allow mpdecision self:netlink_kobject_uevent_socket { create read setopt bind };
+allow mpdecision self:socket create_socket_perms;
+allow mpdecision power_control_device:chr_file w_file_perms;
+allow mpdecision mpdecision_socket:dir rw_dir_perms;
+allow mpdecision mpdecision_socket:sock_file { create_file_perms unlink };
+# Without the following line, the following denial occurs:
+# <12>[ 39.917299] type=1400 audit(1409704476.019:90): avc: denied { write } for pid=328 comm="mpdecision" name="scaling_min_freq" dev="sysfs" ino=13165 scontext=u:r:mpdecision:s0 tcontext=u:object_r:sysfs:s0 tclass=file permissive=1
+# even though the file is properly labeled:
+# root@shamu:/sys/devices/system/cpu/cpu0/cpufreq # ls -Z scaling_min_freq
+# -rw-rw-r-- system   system            u:object_r:sysfs_devices_system_cpu:s0 scaling_min_freq
+# TODO: figure out why this is occurring.
+allow mpdecision sysfs:file write;
+r_dir_file(mpdecision, system_server)
+r_dir_file(mpdecision, mediaserver)
+
+allow mpdecision self:capability sys_nice;

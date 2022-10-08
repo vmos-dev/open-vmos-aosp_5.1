@@ -1,0 +1,2 @@
+Code completion in completion9.xml for android:layout_wi^dth=:
+android:layout_width : Specifies the basic width of the view.  [dimension, enum]

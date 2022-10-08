@@ -1,0 +1,55 @@
+page.title=Development Environment
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<p>The Trade Federation source is stored in git along with the rest of the Android platform, and
+uses the Android platform build system to create its binary.  First and foremost, 
+<a href="/source/initializing.html">follow these instructions</a> to set up your machine to be
+able to compile and run things from the Android tree.</p>
+
+<h2>Getting the Source</h2>
+<p>The TF source lives in the Android codebase, but you need to specify an extra option to get at it.
+<a href="/source/downloading.html">Follow these instructions</a> to download the source, but use
+the branch <code>tradefed</code> to actually pull down the Trade Federation source.  The actual
+command you run should look something like</p>
+<pre><code>$ repo init -u https://…/manifest -b tradefed</code></pre>
+
+<h3>Building</h3>
+<p>Trade Federation is set up in a lightweight "unbundled" branch that uses slightly different build
+commands from the platform source.  In particular, unbundled branches use the <code>tapas</code>
+command to set up the build environment, rather than the <code>lunch</code> command.  So starting
+from the root directory of the source tree you checked out, try:</p>
+<pre><code>$ . build/envsetup.sh
+$ tapas tradefed-all
+$ m -j8
+</pre></code>
+
+Note that once the <code>$ . build/envsetup.sh</code> step is done, the other two commands will run
+equally well from anywhere in the tree.
+
+<h2>Running from Command Line</h2>
+<p>First and foremost, tradefed requires the <code>adb</code> utility to be in your current
+<code>$PATH</code>.</p>
+<pre><code>$ export PATH=$PATH:&lt;path to adb&gt;</pre></code>
+
+<p>Building TF using the steps mentioned above will add the <code>tradefed.sh</code> launcher script
+to your path.  So to launch the TF console, run</p>
+<pre><code>$ tradefed.sh</pre></code>
+
+<p>At this point, your environment is set up for Trade Federation.</p>
+

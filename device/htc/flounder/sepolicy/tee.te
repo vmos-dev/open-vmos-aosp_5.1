@@ -1,0 +1,14 @@
+# secure-os storage-daemon
+
+allow tee self:capability { setuid setgid sys_rawio };
+
+# secure os communication
+# in global tee.te
+
+# rpmb operations
+allow tee block_device:dir { search };
+allow tee mmc_rpmb_block_device:blk_file rw_file_perms;
+
+# data
+allow tee tee_data_file:dir create_dir_perms;
+# create files -- in global tee.te

@@ -1,0 +1,2 @@
+allow ueventd sysfs_devices_tegradc:dir r_dir_perms;
+allow ueventd sysfs_devices_tegradc:file rw_file_perms;

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2014 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+    <dimen name="horiz_rule_top_margin">10dp</dimen>
+    <dimen name="horiz_rule_btm_margin">10dp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="log_pane_height">10dp</dimen>
+
+    <dimen name="section_title_text">22sp</dimen>
+    <dimen name="pane_category_title_text">20sp</dimen>
+    <dimen name="pane_title_text">18sp</dimen>
+
+    <dimen name="main_section_divider_thickness">4dp</dimen>
+
+    <item name="output_view_list_weight" format="float" type="dimen">5</item>
+    <item name="control_list_weight" format="float" type="dimen">4</item>
+</resources>

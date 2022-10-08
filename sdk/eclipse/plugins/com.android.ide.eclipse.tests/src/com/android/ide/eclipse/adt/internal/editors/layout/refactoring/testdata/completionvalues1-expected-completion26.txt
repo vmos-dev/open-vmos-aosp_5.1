@@ -1,0 +1,2 @@
+Code completion in completionvalues1.xml for <item name="android:shadowColor">@an^</item>:
+@android:

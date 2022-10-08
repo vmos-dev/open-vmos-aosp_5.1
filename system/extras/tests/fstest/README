@@ -1,0 +1,68 @@
+All files and directories will be matched against entries taken from 
+/data/local/perm_checker.conf, and any file/directory which fails the ruleset 
+will cause an error message along with a corresponding explicit (fully 
+specified and minimal) rule for that file/directory to be printed on 
+stdout. If only the message "Passed." is printed on stdout, all files are 
+correctly matched by perm_checker.conf.
+
+A file or directory will always fail the ruleset unless there is AT LEAST 
+one matching rule. If there is an explicit (fully specified) <spec> 
+matching the file or directory name, it will fail if and only if that 
+explicit <spec> rule fails (i.e., other matching <spec> rules will be 
+ignored). Otherwise, it will fail if _any_ matching wildcard or recursive 
+<spec> rule fails to hold.
+
+Entries in the perm_checker.conf file are of the following form:
+
+<spec> <min_mode> <max_mode> <min_uid> <max_uid> <min_gid> <max_gid>
+
+Where <spec> is one of the following:
+
+A fully specified path name, which must end in /         ex: /dev/
+A fully specified filename, symlink, device node, etc.   ex: /dev/tty0
+
+A recursive path specification, which ends in /...       ex: /dev/...
+A wildcard file specification, which ends in *           ex: /dev/tty*
+
+By convention /dev/* will include all files directly in /dev/, but not files 
+that are in subdirectories of /dev/, such as /dev/input/, unlike a 
+recursive path specification. The wildcard notation * will never result in 
+a match to a directory name.
+
+NOTE: Symbolic links are treated specially to prevent infinite recursion
+and simplify the ruleset. Symbolic links are ignored unless an explicit
+rule with the same name as the symlink exists, in which case the permissions
+on the rule must match the permissions on the symlink itself, not the target.
+
+<min_mode> is a numeric mode mask, and a mode will match it if and only if 
+(min_mode & mode) == min_mode.
+
+<max_mode> is a numeric mode mask, and a mode will match it if and only if 
+(max_mode | mode) == max_mode.
+
+<min_uid> may be either a numeric user id, or a user name (which must not 
+start with a number). If it is a user name, getpwnam() will be used to 
+translate it to a numeric user id.
+
+<max_uid>, <min_gid>, and <max_gid> have similar syntax to <min_uid>.
+
+
+-- Tips --
+
+I recommend to use 19999 as the maximum uid/gid whenever any valid
+application uid/gid is acceptable.
+
+Once the test is installed, it can be executed via:
+
+adb shell perm_checker
+
+To get a list of all failing rules:
+
+adb shell perm_checker | grep "^# INFO #" | sort | uniq
+
+To get a fully specified set of rules for all failing files:
+
+adb shell perm_checker | grep -v "^#"
+
+NOTE: There may be failing files even if no rules have failed, since a 
+file that does not match any rule is a failure.

@@ -1,0 +1,103 @@
+/dev/knvmap     0660    system  system
+/dev/nvmap      0666    system  system
+/dev/tegra_avp  0660    media   media
+/dev/tegra_avpchannel   0660    media   media
+/dev/tegra_audio_avpchannel    0660    media   media
+/dev/tegra_rpc  0660    media   media
+/dev/tegra_sema        0660    media   media
+/dev/tegra_mediaserver  0660    media   media
+/dev/imx135     0660    media   camera
+/dev/imx219     0660    media   camera
+/dev/ov9760     0660    media   camera
+/dev/mipi*      0660    media   camera
+/dev/tegra_camera 0660  media   camera
+/dev/camera*    0660    media   camera
+/dev/focuser*   0660    media   camera
+/dev/torch*     0660    media   camera
+/dev/video0     0660    media   camera
+/dev/video1     0660    media   camera
+/dev/spdif*     0660    system  audio
+/dev/rt5506     0660    system  audio
+/dev/tfa9895    0660    system  audio
+/dev/tfa9895l   0660    system  audio
+/dev/tegra_dc*  0660    system  system
+/dev/constraint_gpu_freq 0660 system system
+/dev/ttyACM*    0660    radio   system
+/dev/ttyACM2    0660    radio   log
+/dev/nvhdcp0    0666    system  system
+/dev/nvhdcp1    0666    system  system
+/dev/nvhost*    0666    root    root
+/dev/ttyTHS1    0660    gps     system
+/dev/gps_onoff  0660    gps     system
+/dev/ttyHS2     0660    bluetooth    net_bt_stack
+/dev/ttyTHS2    0660    bluetooth    net_bt_stack
+#for FM V4L2 Radio
+/dev/radio      0666    system  radio
+/dev/mpu        0640    system  system
+/dev/mpuirq     0640    system  system
+/dev/accelirq   0640    system  system
+/dev/timerirq   0640    system  system
+/dev/raydium_ts 0777    system  system
+/dev/ion        0666    system  system
+/dev/timerinfo  0444    system  system
+/dev/bcm2079x   0660    nfc     nfc
+/dev/adf*       0660    media   graphics
+/dev/tlk_device 0660    system  drmrpc
+#for mdm9x25
+/dev/mdm        0660    radio  system
+/dev/ks_hsic_bridge       0660   system     system
+/dev/efs_hsic_bridge      0660   system     system
+/dev/block/mmcblk0rpmb    0600   system     system
+/dev/block/mmcblk0p8     0660   system     system
+/dev/block/mmcblk0p21     0660   system     system
+/dev/block/mmcblk0p22     0660   system     system
+/dev/block/mmcblk0p23     0660   system     system
+/dev/hsicctl0             0660   system     system
+/dev/hsicctl1             0660   system     system
+/dev/hsicctl2             0660   system     system
+/dev/hsicctl3             0660   system     system
+/dev/diag_mdm             0660   radio      radio
+
+/sys/devices/platform/bluedroid_pm.0/rfkill/rfkill0  state  0660    bluetooth    net_bt_stack
+/sys/devices/platform/bluedroid_pm.0/rfkill/rfkill0  type   0660    bluetooth    net_bt_stack
+/sys/devices/platform/tegra-dsi-backlight.0/backlight/tegra-dsi-backlight.0    brightness    0660   system   system
+
+/sys/devices/platform/tegra12-i2c.1/i2c-1/1-0032/leds/indicator  ModeRGB 0660 system system
+
+/sys/devices/virtual/htc_sensorhub/sensor_hub  ap_calibrator_data_acc_rl 0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_data_acc       0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_data_acc_rl    0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_data_barometer 0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_data_gyro      0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_data_light     0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_data_mag       0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_en             0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_status_acc     0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_status_gyro    0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  calibrator_status_mag     0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  data_barometer            0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  data_light_kadc           0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  data_light_polling        0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  delay_ms                  0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  enable                    0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  batch_enable              0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  flush                     0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  firmware_version          0664 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  hall_sensor               0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  sensor_hub_rdata          0660 system system
+/sys/devices/virtual/htc_sensorhub/sensor_hub  facedown_enabled          0660 system system
+
+/dev/iio:device* 0660 system system
+/sys/devices/platform/tegra12-i2c.0/i2c-0/0-0072/iio:device*  buffer/length           0660 system system
+/sys/devices/platform/tegra12-i2c.0/i2c-0/0-0072/iio:device*  buffer/enable           0660 system system
+/sys/devices/platform/tegra12-i2c.0/i2c-0/0-0072/iio:device*  trigger/current_trigger 0660 system system
+
+/sys/devices/virtual/gps/bcm47521 gps_onoff/value 0660  gps  system
+
+/dev/block/platform/sdhci-tegra.3/by-name/PST 0600 system system
+
+# didim
+/sys/devices/platform/host1x/tegradc.0	smartdimmer/aggressiveness	0660 root graphics
+/sys/devices/platform/host1x/tegradc.0	smartdimmer/enable		0660 root graphics
+/sys/devices/platform/host1x/tegradc.0	smartdimmer/sd_window		0660 root graphics
+/sys/devices/platform/host1x/tegradc.0	smartdimmer/sd_window_enable	0660 root graphics

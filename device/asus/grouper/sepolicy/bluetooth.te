@@ -1,0 +1,3 @@
+# Kernel bug for Linux < 3.3: sysfs inodes can lose their security context
+# and revert to the base sysfs type.
+allow bluetooth sysfs:file write;

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="clock_text_size">36sp</dimen>
+    <dimen name="clock_width">106dp</dimen>
+    <dimen name="connectivity_status_size">32dp</dimen>
+    <dimen name="widget_top_margin">1dp</dimen>
+</resources>

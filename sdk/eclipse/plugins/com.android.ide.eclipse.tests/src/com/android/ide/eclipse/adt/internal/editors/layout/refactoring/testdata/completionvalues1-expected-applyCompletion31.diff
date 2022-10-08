@@ -1,0 +1,4 @@
+Code completion in completionvalues1.xml for <item ^></item> selecting name:
+@@ -10 +10
+-         <item ^></item>
++         <item name="^"></item>

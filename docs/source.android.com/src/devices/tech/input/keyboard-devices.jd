@@ -1,0 +1,6436 @@
+page.title=Keyboard Devices
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Android supports a variety of keyboard devices including special function
+keypads (volume and power controls), compact embedded QWERTY keyboards,
+and fully featured PC-style external keyboards.</p>
+<p>This document decribes physical keyboards only.  Refer to the Android SDK
+for information about soft keyboards (Input Method Editors).</p>
+<h2 id="keyboard-classification">Keyboard Classification</h2>
+<p>An input device is classified as a keyboard if either of the following
+conditions hold:</p>
+<ul>
+<li>
+<p>The input device reports the presence of any Linux key codes used on keyboards
+    including <code>0</code> through <code>0xff</code> or <code>KEY_OK</code> through <code>KEY_MAX</code>.</p>
+</li>
+<li>
+<p>The input device reports the presence of any Linux key codes used on joysticks
+    and gamepads including <code>BTN_0</code> through <code>BTN_9</code>, <code>BTN_TRIGGER</code> through <code>BTN_DEAD</code>,
+    or <code>BTN_A</code> through <code>BTN_THUMBR</code>.</p>
+</li>
+</ul>
+<p>Joysticks are currently classified as keyboards because joystick and gamepad buttons
+are reported by <code>EV_KEY</code> events in the same way keyboard keys are reported.  Thus
+joysticks and gamepads also make use of key map files for configuration.</p>
+<p>Once an input device has been classified as a keyboard, the system loads the
+input device configuration file and keyboard layout for the keyboard.</p>
+<p>The system then tries to determine additional characteristics of the device.</p>
+<ul>
+<li>
+<p>If the input device has any keys that are mapped to <code>KEYCODE_Q</code>, then the
+    device is considered to have an alphabetic keypad (as opposed to numeric).
+    The alphabetic keypad capability is reported in the resource <code>Configuration</code>
+    object as <code>KEYBOARD_QWERTY</code>.</p>
+</li>
+<li>
+<p>If the input device has any keys that are mapped to <code>KEYCODE_DPAD_UP</code>,
+    <code>KEYCODE_DPAD_DOWN</code>, <code>KEYCODE_DPAD_LEFT</code>, <code>KEYCODE_DPAD_RIGHT</code>, and
+    <code>KEYCODE_DPAD_CENTER</code> (all must be present), then the device is considered
+    to have a directional keypad.
+    The directional keypad capability is reported in the resource <code>Configuration</code>
+    object as <code>NAVIGATION_DPAD</code>.</p>
+</li>
+<li>
+<p>If the input device has any keys that are mapped to <code>KEYCODE_BUTTON_A</code>
+    or other gamepad related keys, then the device is considered to have a gamepad.</p>
+</li>
+</ul>
+<h2 id="keyboard-driver-requirements">Keyboard Driver Requirements</h2>
+<ol>
+<li>
+<p>Keyboard drivers should only register key codes for the keys that they
+    actually support.  Registering excess key codes may confuse the device
+    classification algorithm or cause the system to incorrectly detect
+    the supported keyboard capabilities of the device.</p>
+</li>
+<li>
+<p>Keyboard drivers should use <code>EV_KEY</code> to report key presses, using a value
+    of <code>0</code> to indicate that a key is released, a value of <code>1</code> to indicate that
+    a key is pressed, and a value greater than or equal to <code>2</code> to indicate that
+    the key is being repeated automatically.</p>
+</li>
+<li>
+<p>Android performs its own keyboard repeating.  Auto-repeat functionality
+    should be disabled in the driver.</p>
+</li>
+<li>
+<p>Keyboard drivers may optionally indicate the HID usage or low-level scan
+    code by sending <code>EV_MSC</code> with <code>MSC_SCANCODE</code> and a valud indicating the usage
+    or scan code when the key is pressed.  This information is not currently
+    used by Android.</p>
+</li>
+<li>
+<p>Keyboard drivers should support setting LED states when <code>EV_LED</code> is written
+    to the device.  The <code>hid-input</code> driver handles this automatically.
+    At the time of this writing, Android uses <code>LED_CAPSLOCK</code>, <code>LED_SCROLLLOCK</code>,
+    and <code>LED_NUMLOCK</code>.  These LEDs only need to be supported when the
+    keyboard actually has the associated indicator lights.</p>
+</li>
+<li>
+<p>Keyboard drivers for embedded keypads (for example, using a GPIO matrix)
+    should make sure to send <code>EV_KEY</code> events with a value of <code>0</code> for any keys that
+    are still pressed when the device is going to sleep.  Otherwise keys might
+    get stuck down and will auto-repeat forever.</p>
+</li>
+</ol>
+<h2 id="keyboard-operation">Keyboard Operation</h2>
+<p>The following is a brief summary of the keyboard operation on Android.</p>
+<ol>
+<li>
+<p>The <code>EventHub</code> reads raw events from the <code>evdev</code> driver and maps Linux key codes
+    (sometimes referred to as scan codes) into Android key codes using the
+    keyboard's key layout map.</p>
+</li>
+<li>
+<p>The <code>InputReader</code> consumes the raw events and updates the meta key state.
+    For example, if the left shift key is pressed or released, the reader will
+    set or reset the <code>META_SHIFT_LEFT_ON</code> and <code>META_SHIFT_ON</code> bits accordingly.</p>
+</li>
+<li>
+<p>The <code>InputReader</code> notifies the <code>InputDispatcher</code> about the key event.</p>
+</li>
+<li>
+<p>The <code>InputDispatcher</code> asks the <code>WindowManagerPolicy</code> what to do with the key
+    event by calling <code>WindowManagerPolicy.interceptKeyBeforeQueueing</code>.  This method
+    is part of a critical path that is responsible for waking the device when
+    certain keys are pressed.  The <code>EventHub</code> effectively holds a wake lock
+    along this critical path to ensure that it will run to completion.</p>
+</li>
+<li>
+<p>If an <code>InputFilter</code> is currently in use, the <code>InputDispatcher</code> gives it a
+    chance to consume or transform the key.  The <code>InputFilter</code> may be used to implement
+    low-level system-wide accessibility policies.</p>
+</li>
+<li>
+<p>The <code>InputDispatcher</code> enqueues the key for processing on the dispatch thread.</p>
+</li>
+<li>
+<p>When the <code>InputDispatcher</code> dequeues the key, it gives the <code>WindowManagerPolicy</code>
+    a second chance to intercept the key event by calling
+    <code>WindowManagerPolicy.interceptKeyBeforeDispatching</code>.  This method handles system
+    shortcuts and other functions.</p>
+</li>
+<li>
+<p>The <code>InputDispatcher</code> then identifies the key event target (the focused window)
+    and waits for them to become ready.  Then, the <code>InputDispatcher</code> delivers the
+    key event to the application.</p>
+</li>
+<li>
+<p>Inside the application, the key event propagates down the view hierarchy to
+    the focused view for pre-IME key dispatch.</p>
+</li>
+<li>
+<p>If the key event is not handled in the pre-IME dispatch and an IME is in use, the
+    key event is delivered to the IME.</p>
+</li>
+<li>
+<p>If the key event was not consumed by the IME, then the key event propagates
+    down the view hierarchy to the focused view for standard key dispatch.</p>
+</li>
+<li>
+<p>The application reports back to the <code>InputDispatcher</code> as to whether the key
+    event was consumed.  If the event was not consumed, the <code>InputDispatcher</code>
+    calls <code>WindowManagerPolicy.dispatchUnhandledKey</code> to apply "fallback" behavior.
+    Depending on the fallback action, the key event dispatch cycle may be restarted
+    using a different key code.  For example, if an application does not handle
+    <code>KEYCODE_ESCAPE</code>, the system may redispatch the key event as <code>KEYCODE_BACK</code> instead.</p>
+</li>
+</ol>
+<h2 id="keyboard-configuration">Keyboard Configuration</h2>
+<p>Keyboard behavior is determined by the keyboard's key layout, key character
+map and input device configuration.</p>
+<p>Refer to the following sections for more details about the files that
+participate in keyboard configuration:</p>
+<ul>
+<li><a href="key-layout-files.html">Key Layout Files</a></li>
+<li><a href="key-character-map-files.html">Key Character Map Files</a></li>
+<li><a href="input-device-configuration-files.html">Input Device Configuration Files</a></li>
+</ul>
+<h3 id="properties">Properties</h3>
+<p>The following input device configuration properties are used for keyboards.</p>
+<h4 id="keyboardlayout"><code>keyboard.layout</code></h4>
+<p><em>Definition:</em> <code>keyboard.layout</code> = &lt;name&gt;</p>
+<p>Specifies the name of the key layout file associated with the input device,
+excluding the <code>.kl</code> extension.  If this file is not found, the input system
+will use the default key layout instead.</p>
+<p>Spaces in the name are converted to underscores during lookup.</p>
+<p>Refer to the key layout file documentation for more details.</p>
+<h4 id="keyboardcharactermap"><code>keyboard.characterMap</code></h4>
+<p><em>Definition:</em> <code>keyboard.characterMap</code> = &lt;name&gt;</p>
+<p>Specifies the name of the key character map file associated with the input device,
+excluding the <code>.kcm</code> extension.  If this file is not found, the input system
+will use the default key character map instead.</p>
+<p>Spaces in the name are converted to underscores during lookup.</p>
+<p>Refer to the key character map file documentation for more details.</p>
+<h4 id="keyboardorientationaware"><code>keyboard.orientationAware</code></h4>
+<p><em>Definition:</em> <code>keyboard.orientationAware</code> = <code>0</code> | <code>1</code></p>
+<p>Specifies whether the keyboard should react to display orientation changes.</p>
+<ul>
+<li>
+<p>If the value is <code>1</code>, the directional keypad keys are rotated when the
+    associated display orientation changes.</p>
+</li>
+<li>
+<p>If the value is <code>0</code>, the keyboard is immune to display orientation changes.</p>
+</li>
+</ul>
+<p>The default value is <code>0</code>.</p>
+<p>Orientation awareness is used to support rotation of directional keypad keys,
+such as on the Motorola Droid.  For example, when the device is rotated
+clockwise 90 degrees from its natural orientation, <code>KEYCODE_DPAD_UP</code> is
+remapped to produce <code>KEYCODE_DPAD_RIGHT</code> since the 'up' key ends up pointing
+'right' when the device is held in that orientation.</p>
+<h4 id="keyboardbuiltin"><code>keyboard.builtIn</code></h4>
+<p><em>Definition:</em> <code>keyboard.builtIn</code> = <code>0</code> | <code>1</code></p>
+<p>Specifies whether the keyboard is the built-in (physically attached)
+keyboard.</p>
+<p>The default value is <code>1</code> if the device name ends with <code>-keypad</code>, <code>0</code> otherwise.</p>
+<p>The built-in keyboard is always assigned a device id of <code>0</code>.  Other keyboards
+that are not built-in are assigned unique non-zero device ids.</p>
+<p>Using an id of <code>0</code> for the built-in keyboard is important for maintaining
+compatibility with the <code>KeyCharacterMap.BUILT_IN_KEYBOARD</code> field, which specifies
+the id of the built-in keyboard and has a value of <code>0</code>.  This field has been
+deprecated in the API but older applications might still be using it.</p>
+<p>A special-function keyboard (one whose key character map specifies a
+type of <code>SPECIAL_FUNCTION</code>) will never be registered as the built-in keyboard,
+regardless of the setting of this property.  This is because a special-function
+keyboard is by definition not intended to be used for general purpose typing.</p>
+<h3 id="example-configurations">Example Configurations</h3>
+<pre><code># This is an example input device configuration file for a built-in
+# keyboard that has a DPad.
+
+# The keyboard is internal because it is part of the device.
+device.internal = 1
+
+# The keyboard is the default built-in keyboard so it should be assigned
+# an id of 0.
+keyboard.builtIn = 1
+
+# The keyboard includes a DPad which is mounted on the device.  As the device
+# is rotated the orientation of the DPad rotates along with it, so the DPad must
+# be aware of the display orientation.  This ensures that pressing 'up' on the
+# DPad always means 'up' from the perspective of the user, even when the entire
+# device has been rotated.
+keyboard.orientationAware = 1
+</code></pre>
+<h3 id="compatibility-notes">Compatibility Notes</h3>
+<p>Prior to Honeycomb, the keyboard input mapper did not use any configuration properties.
+All keyboards were assumed to be physically attached and orientation aware.  The default
+key layout and key character map was named <code>qwerty</code> instead of <code>Generic</code>.  The key
+character map format was also very different and the framework did not support
+PC-style full keyboards or external keyboards.</p>
+<p>When upgrading devices to Honeycomb, make sure to create or update the necessary
+configuration and key map files.</p>
+<h2 id="hid-usages-linux-key-codes-and-android-key-codes">HID Usages, Linux Key Codes and Android Key Codes</h2>
+<p>The system refers to keys using several different identifiers, depending on the
+layer of abstraction.</p>
+<p>For HID devices, each key has an associated HID usage.  The Linux <code>hid-input</code>
+driver and related vendor and device-specific HID drivers are responsible
+for parsing HID reports and mapping HID usages to Linux key codes.</p>
+<p>As Android reads <code>EV_KEY</code> events from the Linux kernel, it translates each
+Linux key code into its corresponding Android key code according to the
+key layout file of the device.</p>
+<p>When the key event is dispatched to an application, the <code>android.view.KeyEvent</code>
+instance reports the Linux key code as the value of <code>getScanCode()</code> and the
+Android key code as the value of <code>getKeyCode()</code>.  For the purposes of the
+framework, only the value of <code>getKeyCode()</code> is important.</p>
+<p>Note that the HID usage information is not used by Android itself or
+passed to applications.</p>
+<h2 id="code-tables">Code Tables</h2>
+<p>The following tables show how HID usages, Linux key codes and Android
+key codes are related to one another.</p>
+<p>The LKC column specifies the Linux key code in hexadecimal.</p>
+<p>The AKC column specifies the Android key code in hexadecimal.</p>
+<p>The Notes column refers to notes that are posted after the table.</p>
+<p>The Version column specifies the first version of the Android platform
+to have included this key in its default key map.  Multiple rows are
+shown in cases where the default key map has changed between versions.
+The oldest version indicated is 1.6.</p>
+<ul>
+<li>
+<p>In Gingerbread (2.3) and earlier releases, the default key map was
+    <code>qwerty.kl</code>. This key map was only intended for use with the Android
+    Emulator and was not intended to be used to support arbitrary
+    external keyboards.  Nevertheless, a few OEMs added Bluetooth
+    keyboard support to the platform and relied on <code>qwerty.kl</code> to
+    provide the necessary keyboard mappings.  Consequently these
+    older mappings may be of interest to OEMs who are building
+    peripherals for these particular devices.  Note that the mappings
+    are substantially different from the current ones, particularly
+    with respect to the treatment of the <code>HOME</code> key.  It is recommended
+    that all new peripherals be developed according to the Honeycomb or more
+    recent key maps (ie. standard HID).</p>
+</li>
+<li>
+<p>As of Honeycomb (3.0), the default key map is <code>Generic.kl</code>.
+    This key map was designed to support full PC style keyboards.
+    Most functionality of standard HID keyboards should just work out
+    of the box.</p>
+</li>
+</ul>
+<p>The key code mapping may vary across versions of the Linux kernel and Android.
+When changes are known to have occurred in the Android default key maps,
+they are indicated in the version column.</p>
+<p>Device-specific HID drivers and key maps may apply different mappings
+than are indicated here.</p>
+<h3 id="hid-keyboard-and-keypad-page-0x07">HID Keyboard and Keypad Page (0x07)</h3>
+<table>
+<thead>
+<tr>
+<th>HID Usage</th>
+<th>HID Usage Name</th>
+<th>LKC</th>
+<th>Linux Key Code Name</th>
+<th>Version</th>
+<th>AKC</th>
+<th>Android Key Code Name</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x07 0x0001</td>
+<td>Keyboard Error Roll Over</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0002</td>
+<td>Keyboard POST Fail</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0003</td>
+<td>Keyboard Error Undefined</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0004</td>
+<td>Keyboard a and A</td>
+<td>0x001e</td>
+<td>KEY_A</td>
+<td>1.6</td>
+<td>0x001d</td>
+<td>KEYCODE_A</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0005</td>
+<td>Keyboard b and B</td>
+<td>0x0030</td>
+<td>KEY_B</td>
+<td>1.6</td>
+<td>0x001e</td>
+<td>KEYCODE_B</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0006</td>
+<td>Keyboard c and C</td>
+<td>0x002e</td>
+<td>KEY_C</td>
+<td>1.6</td>
+<td>0x001f</td>
+<td>KEYCODE_C</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0007</td>
+<td>Keyboard d and D</td>
+<td>0x0020</td>
+<td>KEY_D</td>
+<td>1.6</td>
+<td>0x0020</td>
+<td>KEYCODE_D</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0008</td>
+<td>Keyboard e and E</td>
+<td>0x0012</td>
+<td>KEY_E</td>
+<td>1.6</td>
+<td>0x0021</td>
+<td>KEYCODE_E</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0009</td>
+<td>Keyboard f and F</td>
+<td>0x0021</td>
+<td>KEY_F</td>
+<td>1.6</td>
+<td>0x0022</td>
+<td>KEYCODE_F</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x000a</td>
+<td>Keyboard g and G</td>
+<td>0x0022</td>
+<td>KEY_G</td>
+<td>1.6</td>
+<td>0x0023</td>
+<td>KEYCODE_G</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x000b</td>
+<td>Keyboard h and H</td>
+<td>0x0023</td>
+<td>KEY_H</td>
+<td>1.6</td>
+<td>0x0024</td>
+<td>KEYCODE_H</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x000c</td>
+<td>Keyboard i and I</td>
+<td>0x0017</td>
+<td>KEY_I</td>
+<td>1.6</td>
+<td>0x0025</td>
+<td>KEYCODE_I</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x000d</td>
+<td>Keyboard j and J</td>
+<td>0x0024</td>
+<td>KEY_J</td>
+<td>1.6</td>
+<td>0x0026</td>
+<td>KEYCODE_J</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x000e</td>
+<td>Keyboard k and K</td>
+<td>0x0025</td>
+<td>KEY_K</td>
+<td>1.6</td>
+<td>0x0027</td>
+<td>KEYCODE_K</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x000f</td>
+<td>Keyboard l and L</td>
+<td>0x0026</td>
+<td>KEY_L</td>
+<td>1.6</td>
+<td>0x0028</td>
+<td>KEYCODE_L</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0010</td>
+<td>Keyboard m and M</td>
+<td>0x0032</td>
+<td>KEY_M</td>
+<td>1.6</td>
+<td>0x0029</td>
+<td>KEYCODE_M</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0011</td>
+<td>Keyboard n and N</td>
+<td>0x0031</td>
+<td>KEY_N</td>
+<td>1.6</td>
+<td>0x002a</td>
+<td>KEYCODE_N</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0012</td>
+<td>Keyboard o and O</td>
+<td>0x0018</td>
+<td>KEY_O</td>
+<td>1.6</td>
+<td>0x002b</td>
+<td>KEYCODE_O</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0013</td>
+<td>Keyboard p and P</td>
+<td>0x0019</td>
+<td>KEY_P</td>
+<td>1.6</td>
+<td>0x002c</td>
+<td>KEYCODE_P</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0014</td>
+<td>Keyboard q and Q</td>
+<td>0x0010</td>
+<td>KEY_Q</td>
+<td>1.6</td>
+<td>0x002d</td>
+<td>KEYCODE_Q</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0015</td>
+<td>Keyboard r and R</td>
+<td>0x0013</td>
+<td>KEY_R</td>
+<td>1.6</td>
+<td>0x002e</td>
+<td>KEYCODE_R</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0016</td>
+<td>Keyboard s and S</td>
+<td>0x001f</td>
+<td>KEY_S</td>
+<td>1.6</td>
+<td>0x002f</td>
+<td>KEYCODE_S</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0017</td>
+<td>Keyboard t and T</td>
+<td>0x0014</td>
+<td>KEY_T</td>
+<td>1.6</td>
+<td>0x0030</td>
+<td>KEYCODE_T</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0018</td>
+<td>Keyboard u and U</td>
+<td>0x0016</td>
+<td>KEY_U</td>
+<td>1.6</td>
+<td>0x0031</td>
+<td>KEYCODE_U</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0019</td>
+<td>Keyboard v and V</td>
+<td>0x002f</td>
+<td>KEY_V</td>
+<td>1.6</td>
+<td>0x0032</td>
+<td>KEYCODE_V</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x001a</td>
+<td>Keyboard w and W</td>
+<td>0x0011</td>
+<td>KEY_W</td>
+<td>1.6</td>
+<td>0x0033</td>
+<td>KEYCODE_W</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x001b</td>
+<td>Keyboard x and X</td>
+<td>0x002d</td>
+<td>KEY_X</td>
+<td>1.6</td>
+<td>0x0034</td>
+<td>KEYCODE_X</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x001c</td>
+<td>Keyboard y and Y</td>
+<td>0x0015</td>
+<td>KEY_Y</td>
+<td>1.6</td>
+<td>0x0035</td>
+<td>KEYCODE_Y</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x001d</td>
+<td>Keyboard z and Z</td>
+<td>0x002c</td>
+<td>KEY_Z</td>
+<td>1.6</td>
+<td>0x0036</td>
+<td>KEYCODE_Z</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x001e</td>
+<td>Keyboard 1 and !</td>
+<td>0x0002</td>
+<td>KEY_1</td>
+<td>1.6</td>
+<td>0x0008</td>
+<td>KEYCODE_1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x001f</td>
+<td>Keyboard 2 and @</td>
+<td>0x0003</td>
+<td>KEY_2</td>
+<td>1.6</td>
+<td>0x0009</td>
+<td>KEYCODE_2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0020</td>
+<td>Keyboard 3 and #</td>
+<td>0x0004</td>
+<td>KEY_3</td>
+<td>1.6</td>
+<td>0x000a</td>
+<td>KEYCODE_3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0021</td>
+<td>Keyboard 4 and $</td>
+<td>0x0005</td>
+<td>KEY_4</td>
+<td>1.6</td>
+<td>0x000b</td>
+<td>KEYCODE_4</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0022</td>
+<td>Keyboard 5 and %</td>
+<td>0x0006</td>
+<td>KEY_5</td>
+<td>1.6</td>
+<td>0x000c</td>
+<td>KEYCODE_5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0023</td>
+<td>Keyboard 6 and ^</td>
+<td>0x0007</td>
+<td>KEY_6</td>
+<td>1.6</td>
+<td>0x000d</td>
+<td>KEYCODE_6</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0024</td>
+<td>Keyboard 7 and &amp;</td>
+<td>0x0008</td>
+<td>KEY_7</td>
+<td>1.6</td>
+<td>0x000e</td>
+<td>KEYCODE_7</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0025</td>
+<td>Keyboard 8 and *</td>
+<td>0x0009</td>
+<td>KEY_8</td>
+<td>1.6</td>
+<td>0x000f</td>
+<td>KEYCODE_8</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0026</td>
+<td>Keyboard 9 and (</td>
+<td>0x000a</td>
+<td>KEY_9</td>
+<td>1.6</td>
+<td>0x0010</td>
+<td>KEYCODE_9</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0027</td>
+<td>Keyboard 0 and )</td>
+<td>0x000b</td>
+<td>KEY_0</td>
+<td>1.6</td>
+<td>0x0007</td>
+<td>KEYCODE_0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0028</td>
+<td>Keyboard Return (ENTER)</td>
+<td>0x001c</td>
+<td>KEY_ENTER</td>
+<td>1.6</td>
+<td>0x0042</td>
+<td>KEYCODE_ENTER</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0029</td>
+<td>Keyboard ESCAPE</td>
+<td>0x0001</td>
+<td>KEY_ESC</td>
+<td>3.0</td>
+<td>0x006f</td>
+<td>KEYCODE_ESCAPE</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>2.3</td>
+<td>0x0004</td>
+<td>KEYCODE_BACK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x002a</td>
+<td>Keyboard DELETE (Backspace)</td>
+<td>0x000e</td>
+<td>KEY_BACKSPACE</td>
+<td>1.6</td>
+<td>0x0043</td>
+<td>KEYCODE_DEL</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x002b</td>
+<td>Keyboard Tab</td>
+<td>0x000f</td>
+<td>KEY_TAB</td>
+<td>1.6</td>
+<td>0x003d</td>
+<td>KEYCODE_TAB</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x002c</td>
+<td>Keyboard Spacebar</td>
+<td>0x0039</td>
+<td>KEY_SPACE</td>
+<td>1.6</td>
+<td>0x003e</td>
+<td>KEYCODE_SPACE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x002d</td>
+<td>Keyboard - and _</td>
+<td>0x000c</td>
+<td>KEY_MINUS</td>
+<td>1.6</td>
+<td>0x0045</td>
+<td>KEYCODE_MINUS</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x002e</td>
+<td>Keyboard = and +</td>
+<td>0x000d</td>
+<td>KEY_EQUAL</td>
+<td>1.6</td>
+<td>0x0046</td>
+<td>KEYCODE_EQUALS</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x002f</td>
+<td>Keyboard [ and {</td>
+<td>0x001a</td>
+<td>KEY_LEFTBRACE</td>
+<td>1.6</td>
+<td>0x0047</td>
+<td>KEYCODE_LEFT_BRACKET</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0030</td>
+<td>Keyboard ] and }</td>
+<td>0x001b</td>
+<td>KEY_RIGHTBRACE</td>
+<td>1.6</td>
+<td>0x0048</td>
+<td>KEYCODE_RIGHT_BRACKET</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0031</td>
+<td>Keyboard \ and &#124;</td>
+<td>0x002b</td>
+<td>KEY_BACKSLASH</td>
+<td>1.6</td>
+<td>0x0049</td>
+<td>KEYCODE_BACKSLASH</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0032</td>
+<td>Keyboard Non-US # and ~</td>
+<td>0x002b</td>
+<td>KEY_BACKSLASH</td>
+<td>1.6</td>
+<td>0x0049</td>
+<td>KEYCODE_BACKSLASH</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0033</td>
+<td>Keyboard ; and :</td>
+<td>0x0027</td>
+<td>KEY_SEMICOLON</td>
+<td>1.6</td>
+<td>0x004a</td>
+<td>KEYCODE_SEMICOLON</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0034</td>
+<td>Keyboard ' and "</td>
+<td>0x0028</td>
+<td>KEY_APOSTROPHE</td>
+<td>1.6</td>
+<td>0x004b</td>
+<td>KEYCODE_APOSTROPHE</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0035</td>
+<td>Keyboard ` and ~</td>
+<td>0x0029</td>
+<td>KEY_GRAVE</td>
+<td>3.0</td>
+<td>0x0044</td>
+<td>KEYCODE_GRAVE</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0036</td>
+<td>Keyboard , and &lt;</td>
+<td>0x0033</td>
+<td>KEY_COMMA</td>
+<td>1.6</td>
+<td>0x0037</td>
+<td>KEYCODE_COMMA</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0037</td>
+<td>Keyboard . and &gt;</td>
+<td>0x0034</td>
+<td>KEY_DOT</td>
+<td>1.6</td>
+<td>0x0038</td>
+<td>KEYCODE_PERIOD</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0038</td>
+<td>Keyboard / and ?</td>
+<td>0x0035</td>
+<td>KEY_SLASH</td>
+<td>1.6</td>
+<td>0x004c</td>
+<td>KEYCODE_SLASH</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0039</td>
+<td>Keyboard Caps Lock</td>
+<td>0x003a</td>
+<td>KEY_CAPSLOCK</td>
+<td>3.0</td>
+<td>0x0073</td>
+<td>KEYCODE_CAPS_LOCK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x003a</td>
+<td>Keyboard F1</td>
+<td>0x003b</td>
+<td>KEY_F1</td>
+<td>3.0</td>
+<td>0x0083</td>
+<td>KEYCODE_F1</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0052</td>
+<td>KEYCODE_MENU</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x003b</td>
+<td>Keyboard F2</td>
+<td>0x003c</td>
+<td>KEY_F2</td>
+<td>3.0</td>
+<td>0x0084</td>
+<td>KEYCODE_F2</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0002</td>
+<td>KEYCODE_SOFT_RIGHT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x003c</td>
+<td>Keyboard F3</td>
+<td>0x003d</td>
+<td>KEY_F3</td>
+<td>3.0</td>
+<td>0x0085</td>
+<td>KEYCODE_F3</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0005</td>
+<td>KEYCODE_CALL</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x003d</td>
+<td>Keyboard F4</td>
+<td>0x003e</td>
+<td>KEY_F4</td>
+<td>3.0</td>
+<td>0x0086</td>
+<td>KEYCODE_F4</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0006</td>
+<td>KEYCODE_ENDCALL</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x003e</td>
+<td>Keyboard F5</td>
+<td>0x003f</td>
+<td>KEY_F5</td>
+<td>3.0</td>
+<td>0x0087</td>
+<td>KEYCODE_F5</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x003f</td>
+<td>Keyboard F6</td>
+<td>0x0040</td>
+<td>KEY_F6</td>
+<td>3.0</td>
+<td>0x0088</td>
+<td>KEYCODE_F6</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0040</td>
+<td>Keyboard F7</td>
+<td>0x0041</td>
+<td>KEY_F7</td>
+<td>3.0</td>
+<td>0x0089</td>
+<td>KEYCODE_F7</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0041</td>
+<td>Keyboard F8</td>
+<td>0x0042</td>
+<td>KEY_F8</td>
+<td>3.0</td>
+<td>0x008a</td>
+<td>KEYCODE_F8</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0042</td>
+<td>Keyboard F9</td>
+<td>0x0043</td>
+<td>KEY_F9</td>
+<td>3.0</td>
+<td>0x008b</td>
+<td>KEYCODE_F9</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0043</td>
+<td>Keyboard F10</td>
+<td>0x0044</td>
+<td>KEY_F10</td>
+<td>3.0</td>
+<td>0x008c</td>
+<td>KEYCODE_F10</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>2.3</td>
+<td>0x0052</td>
+<td>KEYCODE_MENU</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0044</td>
+<td>Keyboard F11</td>
+<td>0x0057</td>
+<td>KEY_F11</td>
+<td>3.0</td>
+<td>0x008d</td>
+<td>KEYCODE_F11</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0045</td>
+<td>Keyboard F12</td>
+<td>0x0058</td>
+<td>KEY_F12</td>
+<td>3.0</td>
+<td>0x008e</td>
+<td>KEYCODE_F12</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0046</td>
+<td>Keyboard Print Screen</td>
+<td>0x0063</td>
+<td>KEY_SYSRQ</td>
+<td>3.0</td>
+<td>0x0078</td>
+<td>KEYCODE_SYSRQ</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0047</td>
+<td>Keyboard Scroll Lock</td>
+<td>0x0046</td>
+<td>KEY_SCROLLLOCK</td>
+<td>3.0</td>
+<td>0x0074</td>
+<td>KEYCODE_SCROLL_LOCK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0048</td>
+<td>Keyboard Pause</td>
+<td>0x0077</td>
+<td>KEY_PAUSE</td>
+<td>3.0</td>
+<td>0x0079</td>
+<td>KEYCODE_BREAK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0049</td>
+<td>Keyboard Insert</td>
+<td>0x006e</td>
+<td>KEY_INSERT</td>
+<td>3.0</td>
+<td>0x007c</td>
+<td>KEYCODE_INSERT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x004a</td>
+<td>Keyboard Home</td>
+<td>0x0066</td>
+<td>KEY_HOME</td>
+<td>3.0</td>
+<td>0x007a</td>
+<td>KEYCODE_MOVE_HOME</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0003</td>
+<td>KEYCODE_HOME</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x004b</td>
+<td>Keyboard Page Up</td>
+<td>0x0068</td>
+<td>KEY_PAGEUP</td>
+<td>3.0</td>
+<td>0x005c</td>
+<td>KEYCODE_PAGE_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x004c</td>
+<td>Keyboard Delete Forward</td>
+<td>0x006f</td>
+<td>KEY_DELETE</td>
+<td>3.0</td>
+<td>0x0070</td>
+<td>KEYCODE_FORWARD_DEL</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x004d</td>
+<td>Keyboard End</td>
+<td>0x006b</td>
+<td>KEY_END</td>
+<td>3.0</td>
+<td>0x007b</td>
+<td>KEYCODE_MOVE_END</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0006</td>
+<td>KEYCODE_ENDCALL</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x004e</td>
+<td>Keyboard Page Down</td>
+<td>0x006d</td>
+<td>KEY_PAGEDOWN</td>
+<td>3.0</td>
+<td>0x005d</td>
+<td>KEYCODE_PAGE_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x004f</td>
+<td>Keyboard Right Arrow</td>
+<td>0x006a</td>
+<td>KEY_RIGHT</td>
+<td>1.6</td>
+<td>0x0016</td>
+<td>KEYCODE_DPAD_RIGHT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0050</td>
+<td>Keyboard Left Arrow</td>
+<td>0x0069</td>
+<td>KEY_LEFT</td>
+<td>1.6</td>
+<td>0x0015</td>
+<td>KEYCODE_DPAD_LEFT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0051</td>
+<td>Keyboard Down Arrow</td>
+<td>0x006c</td>
+<td>KEY_DOWN</td>
+<td>1.6</td>
+<td>0x0014</td>
+<td>KEYCODE_DPAD_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0052</td>
+<td>Keyboard Up Arrow</td>
+<td>0x0067</td>
+<td>KEY_UP</td>
+<td>1.6</td>
+<td>0x0013</td>
+<td>KEYCODE_DPAD_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0053</td>
+<td>Keyboard Num Lock and Clear</td>
+<td>0x0045</td>
+<td>KEY_NUMLOCK</td>
+<td>3.0</td>
+<td>0x008f</td>
+<td>KEYCODE_NUM_LOCK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0054</td>
+<td>Keypad /</td>
+<td>0x0062</td>
+<td>KEY_KPSLASH</td>
+<td>3.0</td>
+<td>0x009a</td>
+<td>KEYCODE_NUMPAD_DIVIDE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0055</td>
+<td>Keypad *</td>
+<td>0x0037</td>
+<td>KEY_KPASTERISK</td>
+<td>3.0</td>
+<td>0x009b</td>
+<td>KEYCODE_NUMPAD_MULTIPLY</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0056</td>
+<td>Keypad -</td>
+<td>0x004a</td>
+<td>KEY_KPMINUS</td>
+<td>3.0</td>
+<td>0x009c</td>
+<td>KEYCODE_NUMPAD_SUBTRACT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0057</td>
+<td>Keypad +</td>
+<td>0x004e</td>
+<td>KEY_KPPLUS</td>
+<td>3.0</td>
+<td>0x009d</td>
+<td>KEYCODE_NUMPAD_ADD</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0058</td>
+<td>Keypad ENTER</td>
+<td>0x0060</td>
+<td>KEY_KPENTER</td>
+<td>3.0</td>
+<td>0x00a0</td>
+<td>KEYCODE_NUMPAD_ENTER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0059</td>
+<td>Keypad 1 and End</td>
+<td>0x004f</td>
+<td>KEY_KP1</td>
+<td>3.0</td>
+<td>0x0091</td>
+<td>KEYCODE_NUMPAD_1</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x005a</td>
+<td>Keypad 2 and Down Arrow</td>
+<td>0x0050</td>
+<td>KEY_KP2</td>
+<td>3.0</td>
+<td>0x0092</td>
+<td>KEYCODE_NUMPAD_2</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x005b</td>
+<td>Keypad 3 and PageDn</td>
+<td>0x0051</td>
+<td>KEY_KP3</td>
+<td>3.0</td>
+<td>0x0093</td>
+<td>KEYCODE_NUMPAD_3</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x005c</td>
+<td>Keypad 4 and Left Arrow</td>
+<td>0x004b</td>
+<td>KEY_KP4</td>
+<td>3.0</td>
+<td>0x0094</td>
+<td>KEYCODE_NUMPAD_4</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x005d</td>
+<td>Keypad 5</td>
+<td>0x004c</td>
+<td>KEY_KP5</td>
+<td>3.0</td>
+<td>0x0095</td>
+<td>KEYCODE_NUMPAD_5</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x005e</td>
+<td>Keypad 6 and Right Arrow</td>
+<td>0x004d</td>
+<td>KEY_KP6</td>
+<td>3.0</td>
+<td>0x0096</td>
+<td>KEYCODE_NUMPAD_6</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x005f</td>
+<td>Keypad 7 and Home</td>
+<td>0x0047</td>
+<td>KEY_KP7</td>
+<td>3.0</td>
+<td>0x0097</td>
+<td>KEYCODE_NUMPAD_7</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0060</td>
+<td>Keypad 8 and Up Arrow</td>
+<td>0x0048</td>
+<td>KEY_KP8</td>
+<td>3.0</td>
+<td>0x0098</td>
+<td>KEYCODE_NUMPAD_8</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0061</td>
+<td>Keypad 9 and Page Up</td>
+<td>0x0049</td>
+<td>KEY_KP9</td>
+<td>3.0</td>
+<td>0x0099</td>
+<td>KEYCODE_NUMPAD_9</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0062</td>
+<td>Keypad 0 and Insert</td>
+<td>0x0052</td>
+<td>KEY_KP0</td>
+<td>3.0</td>
+<td>0x0090</td>
+<td>KEYCODE_NUMPAD_0</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0063</td>
+<td>Keypad . and Delete</td>
+<td>0x0053</td>
+<td>KEY_KPDOT</td>
+<td>3.0</td>
+<td>0x009e</td>
+<td>KEYCODE_NUMPAD_DOT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0064</td>
+<td>Keyboard Non-US \ and &#124;</td>
+<td>0x0056</td>
+<td>KEY_102ND</td>
+<td>4.0</td>
+<td>0x0049</td>
+<td>KEYCODE_BACKSLASH</td>
+<td>1</td>
+</tr>
+<tr>
+<td>0x07 0x0065</td>
+<td>Keyboard Application</td>
+<td>0x007f</td>
+<td>KEY_COMPOSE</td>
+<td>3.0</td>
+<td>0x0052</td>
+<td>KEYCODE_MENU</td>
+<td></td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>""</td>
+<td>1.6</td>
+<td>0x0054</td>
+<td>KEYCODE_SEARCH</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0066</td>
+<td>Keyboard Power</td>
+<td>0x0074</td>
+<td>KEY_POWER</td>
+<td>1.6</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0067</td>
+<td>Keypad =</td>
+<td>0x0075</td>
+<td>KEY_KPEQUAL</td>
+<td>3.0</td>
+<td>0x00a1</td>
+<td>KEYCODE_NUMPAD_EQUALS</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0068</td>
+<td>Keyboard F13</td>
+<td>0x00b7</td>
+<td>KEY_F13</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0069</td>
+<td>Keyboard F14</td>
+<td>0x00b8</td>
+<td>KEY_F14</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x006a</td>
+<td>Keyboard F15</td>
+<td>0x00b9</td>
+<td>KEY_F15</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x006b</td>
+<td>Keyboard F16</td>
+<td>0x00ba</td>
+<td>KEY_F16</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x006c</td>
+<td>Keyboard F17</td>
+<td>0x00bb</td>
+<td>KEY_F17</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x006d</td>
+<td>Keyboard F18</td>
+<td>0x00bc</td>
+<td>KEY_F18</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x006e</td>
+<td>Keyboard F19</td>
+<td>0x00bd</td>
+<td>KEY_F19</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x006f</td>
+<td>Keyboard F20</td>
+<td>0x00be</td>
+<td>KEY_F20</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0070</td>
+<td>Keyboard F21</td>
+<td>0x00bf</td>
+<td>KEY_F21</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0071</td>
+<td>Keyboard F22</td>
+<td>0x00c0</td>
+<td>KEY_F22</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0072</td>
+<td>Keyboard F23</td>
+<td>0x00c1</td>
+<td>KEY_F23</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0073</td>
+<td>Keyboard F24</td>
+<td>0x00c2</td>
+<td>KEY_F24</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0074</td>
+<td>Keyboard Execute</td>
+<td>0x0086</td>
+<td>KEY_OPEN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0075</td>
+<td>Keyboard Help</td>
+<td>0x008a</td>
+<td>KEY_HELP</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0076</td>
+<td>Keyboard Menu</td>
+<td>0x0082</td>
+<td>KEY_PROPS</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0077</td>
+<td>Keyboard Select</td>
+<td>0x0084</td>
+<td>KEY_FRONT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0078</td>
+<td>Keyboard Stop</td>
+<td>0x0080</td>
+<td>KEY_STOP</td>
+<td>3.0</td>
+<td>0x0056</td>
+<td>KEYCODE_MEDIA_STOP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0079</td>
+<td>Keyboard Again</td>
+<td>0x0081</td>
+<td>KEY_AGAIN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x007a</td>
+<td>Keyboard Undo</td>
+<td>0x0083</td>
+<td>KEY_UNDO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x007b</td>
+<td>Keyboard Cut</td>
+<td>0x0089</td>
+<td>KEY_CUT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x007c</td>
+<td>Keyboard Copy</td>
+<td>0x0085</td>
+<td>KEY_COPY</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x007d</td>
+<td>Keyboard Paste</td>
+<td>0x0087</td>
+<td>KEY_PASTE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x007e</td>
+<td>Keyboard Find</td>
+<td>0x0088</td>
+<td>KEY_FIND</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x007f</td>
+<td>Keyboard Mute</td>
+<td>0x0071</td>
+<td>KEY_MUTE</td>
+<td>3.0</td>
+<td>0x00a4</td>
+<td>KEYCODE_VOLUME_MUTE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0080</td>
+<td>Keyboard Volume Up</td>
+<td>0x0073</td>
+<td>KEY_VOLUMEUP</td>
+<td>1.6</td>
+<td>0x0018</td>
+<td>KEYCODE_VOLUME_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0081</td>
+<td>Keyboard Volume Down</td>
+<td>0x0072</td>
+<td>KEY_VOLUMEDOWN</td>
+<td>1.6</td>
+<td>0x0019</td>
+<td>KEYCODE_VOLUME_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0082</td>
+<td>Keyboard Locking Caps Lock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0083</td>
+<td>Keyboard Locking Num Lock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0084</td>
+<td>Keyboard Locking Scroll Lock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0085</td>
+<td>Keypad Comma</td>
+<td>0x0079</td>
+<td>KEY_KPCOMMA</td>
+<td>3.0</td>
+<td>0x009f</td>
+<td>KEYCODE_NUMPAD_COMMA</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0086</td>
+<td>Keypad Equal Sign</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0087</td>
+<td>Keyboard International1</td>
+<td>0x0059</td>
+<td>KEY_RO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0088</td>
+<td>Keyboard International2</td>
+<td>0x005d</td>
+<td>KEY_KATAKANAHIRAGANA</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0089</td>
+<td>Keyboard International3</td>
+<td>0x007c</td>
+<td>KEY_YEN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x008a</td>
+<td>Keyboard International4</td>
+<td>0x005c</td>
+<td>KEY_HENKAN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x008b</td>
+<td>Keyboard International5</td>
+<td>0x005e</td>
+<td>KEY_MUHENKAN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x008c</td>
+<td>Keyboard International6</td>
+<td>0x005f</td>
+<td>KEY_KPJPCOMMA</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x008d</td>
+<td>Keyboard International7</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x008e</td>
+<td>Keyboard International8</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x008f</td>
+<td>Keyboard International9</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0090</td>
+<td>Keyboard LANG1</td>
+<td>0x007a</td>
+<td>KEY_HANGEUL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0091</td>
+<td>Keyboard LANG2</td>
+<td>0x007b</td>
+<td>KEY_HANJA</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0092</td>
+<td>Keyboard LANG3</td>
+<td>0x005a</td>
+<td>KEY_KATAKANA</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0093</td>
+<td>Keyboard LANG4</td>
+<td>0x005b</td>
+<td>KEY_HIRAGANA</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0094</td>
+<td>Keyboard LANG5</td>
+<td>0x0055</td>
+<td>KEY_ZENKAKUHANKAKU</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0095</td>
+<td>Keyboard LANG6</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0096</td>
+<td>Keyboard LANG7</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0097</td>
+<td>Keyboard LANG8</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0098</td>
+<td>Keyboard LANG9</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x0099</td>
+<td>Keyboard Alternate Erase</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x009a</td>
+<td>Keyboard SysReq/Attention</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x009b</td>
+<td>Keyboard Cancel</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x009c</td>
+<td>Keyboard Clear</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x009d</td>
+<td>Keyboard Prior</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x009e</td>
+<td>Keyboard Return</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x009f</td>
+<td>Keyboard Separator</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00a0</td>
+<td>Keyboard Out</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00a1</td>
+<td>Keyboard Oper</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00a2</td>
+<td>Keyboard Clear/Again</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00a3</td>
+<td>Keyboard CrSel/Props</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00a4</td>
+<td>Keyboard ExSel</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b0</td>
+<td>Keypad 00</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b1</td>
+<td>Keypad 000</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b2</td>
+<td>Thousands Separator</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b3</td>
+<td>Decimal Separator</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b4</td>
+<td>Currency Unit</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b5</td>
+<td>Currency Sub-unit</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b6</td>
+<td>Keypad (</td>
+<td>0x00b3</td>
+<td>KEY_KPLEFTPAREN</td>
+<td>3.0</td>
+<td>0x00a2</td>
+<td>KEYCODE_NUMPAD_LEFT_PAREN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b7</td>
+<td>Keypad )</td>
+<td>0x00b4</td>
+<td>KEY_KPRIGHTPAREN</td>
+<td>3.0</td>
+<td>0x00a3</td>
+<td>KEYCODE_NUMPAD_RIGHT_PAREN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b8</td>
+<td>Keypad {</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00b9</td>
+<td>Keypad }</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ba</td>
+<td>Keypad Tab</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00bb</td>
+<td>Keypad Backspace</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00bc</td>
+<td>Keypad A</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00bd</td>
+<td>Keypad B</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00be</td>
+<td>Keypad C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00bf</td>
+<td>Keypad D</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c0</td>
+<td>Keypad E</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c1</td>
+<td>Keypad F</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c2</td>
+<td>Keypad XOR</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c3</td>
+<td>Keypad ^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c4</td>
+<td>Keypad %</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c5</td>
+<td>Keypad &lt;</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c6</td>
+<td>Keypad &gt;</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c7</td>
+<td>Keypad &amp;</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c8</td>
+<td>Keypad &amp;&amp;</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00c9</td>
+<td>Keypad &#124;</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ca</td>
+<td>Keypad &#124;&#124;</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00cb</td>
+<td>Keypad :</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00cc</td>
+<td>Keypad #</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00cd</td>
+<td>Keypad Space</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ce</td>
+<td>Keypad @</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00cf</td>
+<td>Keypad !</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d0</td>
+<td>Keypad Memory Store</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d1</td>
+<td>Keypad Memory Recall</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d2</td>
+<td>Keypad Memory Clear</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d3</td>
+<td>Keypad Memory Add</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d4</td>
+<td>Keypad Memory Subtract</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d5</td>
+<td>Keypad Memory Multiply</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d6</td>
+<td>Keypad Memory Divide</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d7</td>
+<td>Keypad +/-</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d8</td>
+<td>Keypad Clear</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00d9</td>
+<td>Keypad Clear Entry</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00da</td>
+<td>Keypad Binary</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00db</td>
+<td>Keypad Octal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00dc</td>
+<td>Keypad Decimal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00dd</td>
+<td>Keypad Hexadecimal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e0</td>
+<td>Keyboard Left Control</td>
+<td>0x001d</td>
+<td>KEY_LEFTCTRL</td>
+<td>3.0</td>
+<td>0x0071</td>
+<td>KEYCODE_CTRL_LEFT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e1</td>
+<td>Keyboard Left Shift</td>
+<td>0x002a</td>
+<td>KEY_LEFTSHIFT</td>
+<td>1.6</td>
+<td>0x003b</td>
+<td>KEYCODE_SHIFT_LEFT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e2</td>
+<td>Keyboard Left Alt</td>
+<td>0x0038</td>
+<td>KEY_LEFTALT</td>
+<td>1.6</td>
+<td>0x0039</td>
+<td>KEYCODE_ALT_LEFT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e3</td>
+<td>Keyboard Left GUI</td>
+<td>0x007d</td>
+<td>KEY_LEFTMETA</td>
+<td>3.0</td>
+<td>0x0075</td>
+<td>KEYCODE_META_LEFT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e4</td>
+<td>Keyboard Right Control</td>
+<td>0x0061</td>
+<td>KEY_RIGHTCTRL</td>
+<td>3.0</td>
+<td>0x0072</td>
+<td>KEYCODE_CTRL_RIGHT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e5</td>
+<td>Keyboard Right Shift</td>
+<td>0x0036</td>
+<td>KEY_RIGHTSHIFT</td>
+<td>1.6</td>
+<td>0x003c</td>
+<td>KEYCODE_SHIFT_RIGHT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e6</td>
+<td>Keyboard Right Alt</td>
+<td>0x0064</td>
+<td>KEY_RIGHTALT</td>
+<td>1.6</td>
+<td>0x003a</td>
+<td>KEYCODE_ALT_RIGHT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e7</td>
+<td>Keyboard Right GUI</td>
+<td>0x007e</td>
+<td>KEY_RIGHTMETA</td>
+<td>3.0</td>
+<td>0x0076</td>
+<td>KEYCODE_META_RIGHT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e8</td>
+<td></td>
+<td>0x00a4</td>
+<td>KEY_PLAYPAUSE</td>
+<td>3.0</td>
+<td>0x0055</td>
+<td>KEYCODE_MEDIA_PLAY_PAUSE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00e9</td>
+<td></td>
+<td>0x00a6</td>
+<td>KEY_STOPCD</td>
+<td>3.0</td>
+<td>0x0056</td>
+<td>KEYCODE_MEDIA_STOP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ea</td>
+<td></td>
+<td>0x00a5</td>
+<td>KEY_PREVIOUSSONG</td>
+<td>3.0</td>
+<td>0x0058</td>
+<td>KEYCODE_MEDIA_PREVIOUS</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00eb</td>
+<td></td>
+<td>0x00a3</td>
+<td>KEY_NEXTSONG</td>
+<td>3.0</td>
+<td>0x0057</td>
+<td>KEYCODE_MEDIA_NEXT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ec</td>
+<td></td>
+<td>0x00a1</td>
+<td>KEY_EJECTCD</td>
+<td>3.0</td>
+<td>0x0081</td>
+<td>KEYCODE_MEDIA_EJECT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ed</td>
+<td></td>
+<td>0x0073</td>
+<td>KEY_VOLUMEUP</td>
+<td>1.6</td>
+<td>0x0018</td>
+<td>KEYCODE_VOLUME_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ee</td>
+<td></td>
+<td>0x0072</td>
+<td>KEY_VOLUMEDOWN</td>
+<td>1.6</td>
+<td>0x0019</td>
+<td>KEYCODE_VOLUME_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00ef</td>
+<td></td>
+<td>0x0071</td>
+<td>KEY_MUTE</td>
+<td>3.0</td>
+<td>0x00a4</td>
+<td>KEYCODE_VOLUME_MUTE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f0</td>
+<td></td>
+<td>0x0096</td>
+<td>KEY_WWW</td>
+<td>1.6</td>
+<td>0x0040</td>
+<td>KEYCODE_EXPLORER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f1</td>
+<td></td>
+<td>0x009e</td>
+<td>KEY_BACK</td>
+<td>1.6</td>
+<td>0x0004</td>
+<td>KEYCODE_BACK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f2</td>
+<td></td>
+<td>0x009f</td>
+<td>KEY_FORWARD</td>
+<td>3.0</td>
+<td>0x007d</td>
+<td>KEYCODE_FORWARD</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f3</td>
+<td></td>
+<td>0x0080</td>
+<td>KEY_STOP</td>
+<td>3.0</td>
+<td>0x0056</td>
+<td>KEYCODE_MEDIA_STOP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f4</td>
+<td></td>
+<td>0x0088</td>
+<td>KEY_FIND</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f5</td>
+<td></td>
+<td>0x00b1</td>
+<td>KEY_SCROLLUP</td>
+<td>3.0</td>
+<td>0x005c</td>
+<td>KEYCODE_PAGE_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f6</td>
+<td></td>
+<td>0x00b2</td>
+<td>KEY_SCROLLDOWN</td>
+<td>3.0</td>
+<td>0x005d</td>
+<td>KEYCODE_PAGE_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f7</td>
+<td></td>
+<td>0x00b0</td>
+<td>KEY_EDIT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f8</td>
+<td></td>
+<td>0x008e</td>
+<td>KEY_SLEEP</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00f9</td>
+<td></td>
+<td>0x0098</td>
+<td>KEY_COFFEE</td>
+<td>4.0</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00fa</td>
+<td></td>
+<td>0x00ad</td>
+<td>KEY_REFRESH</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x07 0x00fb</td>
+<td></td>
+<td>0x008c</td>
+<td>KEY_CALC</td>
+<td>4.0.3</td>
+<td>0x00d2</td>
+<td>KEYCODE_CALCULATOR</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="hid-generic-desktop-page-0x01">HID Generic Desktop Page (0x01)</h3>
+<table>
+<thead>
+<tr>
+<th>HID Usage</th>
+<th>HID Usage Name</th>
+<th>LKC</th>
+<th>Linux Key Code Name</th>
+<th>Version</th>
+<th>AKC</th>
+<th>Android Key Code Name</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x01 0x0081</td>
+<td>System Power Down</td>
+<td>0x0074</td>
+<td>KEY_POWER</td>
+<td>1.6</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0082</td>
+<td>System Sleep</td>
+<td>0x008e</td>
+<td>KEY_SLEEP</td>
+<td>4.0</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0083</td>
+<td>System Wake Up</td>
+<td>0x008f</td>
+<td>KEY_WAKEUP</td>
+<td>4.0</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0084</td>
+<td>System Context Menu</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0085</td>
+<td>System Main Menu</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0086</td>
+<td>System App Menu</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0087</td>
+<td>System Menu Help</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0088</td>
+<td>System Menu Exit</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x0089</td>
+<td>System Menu Select</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x008a</td>
+<td>System Menu Right</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x008b</td>
+<td>System Menu Left</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x008c</td>
+<td>System Menu Up</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x008d</td>
+<td>System Menu Down</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x008e</td>
+<td>System Cold Restart</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x008f</td>
+<td>System Warm Restart</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a0</td>
+<td>System Dock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a1</td>
+<td>System Undock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a2</td>
+<td>System Setup</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a3</td>
+<td>System Break</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a4</td>
+<td>System Debugger Break</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a5</td>
+<td>Application Break</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a6</td>
+<td>Application Debugger Break</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a7</td>
+<td>System Speaker Mute</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00a8</td>
+<td>System Hibernate</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b0</td>
+<td>System Display Invert</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b1</td>
+<td>System Display Internal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b2</td>
+<td>System Display External</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b3</td>
+<td>System Display Both</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b4</td>
+<td>System Display Dual</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b5</td>
+<td>System Display Toggle Int/Ext</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b6</td>
+<td>System Display Swap Prim./Sec.</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x01 0x00b7</td>
+<td>System Display LCD Autoscale</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="hid-consumer-page-0x0c">HID Consumer Page (0x0c)</h3>
+<table>
+<thead>
+<tr>
+<th>HID Usage</th>
+<th>HID Usage Name</th>
+<th>LKC</th>
+<th>Linux Key Code Name</th>
+<th>Version</th>
+<th>AKC</th>
+<th>Android Key Code Name</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0c 0x0030</td>
+<td>Power</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0031</td>
+<td>Reset</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0032</td>
+<td>Sleep</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0033</td>
+<td>Sleep After</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0034</td>
+<td>Sleep Mode</td>
+<td>0x008e</td>
+<td>KEY_SLEEP</td>
+<td>4.0</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0040</td>
+<td>Menu</td>
+<td>0x008b</td>
+<td>KEY_MENU</td>
+<td>1.6</td>
+<td>0x0052</td>
+<td>KEYCODE_MENU</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0041</td>
+<td>Menu Pick</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0042</td>
+<td>Menu Up</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0043</td>
+<td>Menu Down</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0044</td>
+<td>Menu Left</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0045</td>
+<td>Menu Right</td>
+<td>0x0181</td>
+<td>KEY_RADIO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0046</td>
+<td>Menu Escape</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0047</td>
+<td>Menu Value Increase</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0048</td>
+<td>Menu Value Decrease</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0081</td>
+<td>Assign Selection</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0082</td>
+<td>Mode Step</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0083</td>
+<td>Recall Last</td>
+<td>0x0195</td>
+<td>KEY_LAST</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0084</td>
+<td>Enter Channel</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0085</td>
+<td>Order Movie</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0088</td>
+<td>Media Select Computer</td>
+<td>0x0178</td>
+<td>KEY_PC</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0089</td>
+<td>Media Select TV</td>
+<td>0x0179</td>
+<td>KEY_TV</td>
+<td>3.0</td>
+<td>0x00aa</td>
+<td>KEYCODE_TV</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x008a</td>
+<td>Media Select WWW</td>
+<td>0x0096</td>
+<td>KEY_WWW</td>
+<td>1.6</td>
+<td>0x0040</td>
+<td>KEYCODE_EXPLORER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x008b</td>
+<td>Media Select DVD</td>
+<td>0x0185</td>
+<td>KEY_DVD</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x008c</td>
+<td>Media Select Telephone</td>
+<td>0x00a9</td>
+<td>KEY_PHONE</td>
+<td>3.0</td>
+<td>0x0005</td>
+<td>KEYCODE_CALL</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x008d</td>
+<td>Media Select Program Guide</td>
+<td>0x016a</td>
+<td>KEY_PROGRAM</td>
+<td>3.0</td>
+<td>0x00ac</td>
+<td>KEYCODE_GUIDE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x008e</td>
+<td>Media Select Video Phone</td>
+<td>0x01a0</td>
+<td>KEY_VIDEOPHONE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x008f</td>
+<td>Media Select Games</td>
+<td>0x01a1</td>
+<td>KEY_GAMES</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0090</td>
+<td>Media Select Messages</td>
+<td>0x018c</td>
+<td>KEY_MEMO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0091</td>
+<td>Media Select CD</td>
+<td>0x017f</td>
+<td>KEY_CD</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0092</td>
+<td>Media Select VCR</td>
+<td>0x017b</td>
+<td>KEY_VCR</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0093</td>
+<td>Media Select Tuner</td>
+<td>0x0182</td>
+<td>KEY_TUNER</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0094</td>
+<td>Quit</td>
+<td>0x00ae</td>
+<td>KEY_EXIT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0095</td>
+<td>Help</td>
+<td>0x008a</td>
+<td>KEY_HELP</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0096</td>
+<td>Media Select Tape</td>
+<td>0x0180</td>
+<td>KEY_TAPE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0097</td>
+<td>Media Select Cable</td>
+<td>0x017a</td>
+<td>KEY_TV2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0098</td>
+<td>Media Select Satellite</td>
+<td>0x017d</td>
+<td>KEY_SAT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0099</td>
+<td>Media Select Security</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x009a</td>
+<td>Media Select Home</td>
+<td>0x016e</td>
+<td>KEY_PVR</td>
+<td>3.0</td>
+<td>0x00ad</td>
+<td>KEYCODE_DVR</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x009c</td>
+<td>Channel Increment</td>
+<td>0x0192</td>
+<td>KEY_CHANNELUP</td>
+<td>3.0</td>
+<td>0x00a6</td>
+<td>KEYCODE_CHANNEL_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x009d</td>
+<td>Channel Decrement</td>
+<td>0x0193</td>
+<td>KEY_CHANNELDOWN</td>
+<td>3.0</td>
+<td>0x00a7</td>
+<td>KEYCODE_CHANNEL_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x009e</td>
+<td>Media Select SAP</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00a0</td>
+<td>VCR Plus</td>
+<td>0x017c</td>
+<td>KEY_VCR2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00a1</td>
+<td>Once</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00a2</td>
+<td>Daily</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00a3</td>
+<td>Weekly</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00a4</td>
+<td>Monthly</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b0</td>
+<td>Play</td>
+<td>0x00cf</td>
+<td>KEY_PLAY</td>
+<td>3.0</td>
+<td>0x007e</td>
+<td>KEYCODE_MEDIA_PLAY</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b1</td>
+<td>Pause</td>
+<td>0x0077</td>
+<td>KEY_PAUSE</td>
+<td>3.0</td>
+<td>0x0079</td>
+<td>KEYCODE_BREAK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b2</td>
+<td>Record</td>
+<td>0x00a7</td>
+<td>KEY_RECORD</td>
+<td>3.0</td>
+<td>0x0082</td>
+<td>KEYCODE_MEDIA_RECORD</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b3</td>
+<td>Fast Forward</td>
+<td>0x00d0</td>
+<td>KEY_FASTFORWARD</td>
+<td>3.0</td>
+<td>0x005a</td>
+<td>KEYCODE_MEDIA_FAST_FORWARD</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b4</td>
+<td>Rewind</td>
+<td>0x00a8</td>
+<td>KEY_REWIND</td>
+<td>3.0</td>
+<td>0x0059</td>
+<td>KEYCODE_MEDIA_REWIND</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b5</td>
+<td>Scan Next Track</td>
+<td>0x00a3</td>
+<td>KEY_NEXTSONG</td>
+<td>3.0</td>
+<td>0x0057</td>
+<td>KEYCODE_MEDIA_NEXT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b6</td>
+<td>Scan Previous Track</td>
+<td>0x00a5</td>
+<td>KEY_PREVIOUSSONG</td>
+<td>3.0</td>
+<td>0x0058</td>
+<td>KEYCODE_MEDIA_PREVIOUS</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b7</td>
+<td>Stop</td>
+<td>0x00a6</td>
+<td>KEY_STOPCD</td>
+<td>3.0</td>
+<td>0x0056</td>
+<td>KEYCODE_MEDIA_STOP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b8</td>
+<td>Eject</td>
+<td>0x00a1</td>
+<td>KEY_EJECTCD</td>
+<td>3.0</td>
+<td>0x0081</td>
+<td>KEYCODE_MEDIA_EJECT</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00b9</td>
+<td>Random Play</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00ba</td>
+<td>Select Disc</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00bb</td>
+<td>Enter Disc</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00bc</td>
+<td>Repeat</td>
+<td>0x01b7</td>
+<td>KEY_MEDIA_REPEAT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00be</td>
+<td>Track Normal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c0</td>
+<td>Frame Forward</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c1</td>
+<td>Frame Back</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c2</td>
+<td>Mark</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c3</td>
+<td>Clear Mark</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c4</td>
+<td>Repeat From Mark</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c5</td>
+<td>Return To Mark</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c6</td>
+<td>Search Mark Forward</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c7</td>
+<td>Search Mark Backwards</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c8</td>
+<td>Counter Reset</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00c9</td>
+<td>Show Counter</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00ca</td>
+<td>Tracking Increment</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00cb</td>
+<td>Tracking Decrement</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00cc</td>
+<td>Stop / Eject</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00cd</td>
+<td>Play / Pause</td>
+<td>0x00a4</td>
+<td>KEY_PLAYPAUSE</td>
+<td>3.0</td>
+<td>0x0055</td>
+<td>KEYCODE_MEDIA_PLAY_PAUSE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00ce</td>
+<td>Play / Skip</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00e2</td>
+<td>Mute</td>
+<td>0x0071</td>
+<td>KEY_MUTE</td>
+<td>3.0</td>
+<td>0x00a4</td>
+<td>KEYCODE_VOLUME_MUTE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00e5</td>
+<td>Bass Boost</td>
+<td>0x00d1</td>
+<td>KEY_BASSBOOST</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00e6</td>
+<td>Surround Mode</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00e7</td>
+<td>Loudness</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00e8</td>
+<td>MPX</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00e9</td>
+<td>Volume Increment</td>
+<td>0x0073</td>
+<td>KEY_VOLUMEUP</td>
+<td>1.6</td>
+<td>0x0018</td>
+<td>KEYCODE_VOLUME_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x00ea</td>
+<td>Volume Decrement</td>
+<td>0x0072</td>
+<td>KEY_VOLUMEDOWN</td>
+<td>1.6</td>
+<td>0x0019</td>
+<td>KEYCODE_VOLUME_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0181</td>
+<td>AL Launch Button Config. Tool</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0182</td>
+<td>AL Programmable Button Config.</td>
+<td>0x009c</td>
+<td>KEY_BOOKMARKS</td>
+<td>3.0</td>
+<td>0x00ae</td>
+<td>KEYCODE_BOOKMARK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0183</td>
+<td>AL Consumer Control Config.</td>
+<td>0x00ab</td>
+<td>KEY_CONFIG</td>
+<td>4.0.3</td>
+<td>0x00d1</td>
+<td>KEYCODE_MUSIC</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0184</td>
+<td>AL Word Processor</td>
+<td>0x01a5</td>
+<td>KEY_WORDPROCESSOR</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0185</td>
+<td>AL Text Editor</td>
+<td>0x01a6</td>
+<td>KEY_EDITOR</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0186</td>
+<td>AL Spreadsheet</td>
+<td>0x01a7</td>
+<td>KEY_SPREADSHEET</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0187</td>
+<td>AL Graphics Editor</td>
+<td>0x01a8</td>
+<td>KEY_GRAPHICSEDITOR</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0188</td>
+<td>AL Presentation App</td>
+<td>0x01a9</td>
+<td>KEY_PRESENTATION</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0189</td>
+<td>AL Database App</td>
+<td>0x01aa</td>
+<td>KEY_DATABASE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x018a</td>
+<td>AL Email Reader</td>
+<td>0x009b</td>
+<td>KEY_MAIL</td>
+<td>1.6</td>
+<td>0x0041</td>
+<td>KEYCODE_ENVELOPE</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x018b</td>
+<td>AL Newsreader</td>
+<td>0x01ab</td>
+<td>KEY_NEWS</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x018c</td>
+<td>AL Voicemail</td>
+<td>0x01ac</td>
+<td>KEY_VOICEMAIL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x018d</td>
+<td>AL Contacts / Address Book</td>
+<td>0x01ad</td>
+<td>KEY_ADDRESSBOOK</td>
+<td>4.0.3</td>
+<td>0x00cf</td>
+<td>KEYCODE_CONTACTS</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x018e</td>
+<td>AL Calendar / Schedule</td>
+<td>0x018d</td>
+<td>KEY_CALENDAR</td>
+<td>4.0.3</td>
+<td>0x00d0</td>
+<td>KEYCODE_CALENDAR</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x018f</td>
+<td>AL Task / Project Manager</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0190</td>
+<td>AL Log / Journal / Timecard</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0191</td>
+<td>AL Checkbook / Finance</td>
+<td>0x00db</td>
+<td>KEY_FINANCE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0192</td>
+<td>AL Calculator</td>
+<td>0x008c</td>
+<td>KEY_CALC</td>
+<td>4.0.3</td>
+<td>0x00d2</td>
+<td>KEYCODE_CALCULATOR</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0193</td>
+<td>AL A/V Capture / Playback</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0194</td>
+<td>AL Local Machine Browser</td>
+<td>0x0090</td>
+<td>KEY_FILE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0195</td>
+<td>AL LAN/WAN Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0196</td>
+<td>AL Internet Browser</td>
+<td>0x0096</td>
+<td>KEY_WWW</td>
+<td>1.6</td>
+<td>0x0040</td>
+<td>KEYCODE_EXPLORER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0197</td>
+<td>AL Remote Networking/ISP Connect</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0198</td>
+<td>AL Network Conference</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0199</td>
+<td>AL Network Chat</td>
+<td>0x00d8</td>
+<td>KEY_CHAT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x019a</td>
+<td>AL Telephony / Dialer</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x019b</td>
+<td>AL Logon</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x019c</td>
+<td>AL Logoff</td>
+<td>0x01b1</td>
+<td>KEY_LOGOFF</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x019d</td>
+<td>AL Logon / Logoff</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x019e</td>
+<td>AL Terminal Lock / Screensaver</td>
+<td>0x0098</td>
+<td>KEY_COFFEE</td>
+<td>4.0</td>
+<td>0x001a</td>
+<td>KEYCODE_POWER</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x019f</td>
+<td>AL Control Panel</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a0</td>
+<td>AL Command Line Processor / Run</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a1</td>
+<td>AL Process / Task Manager</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a2</td>
+<td>AL Select Task / Application</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a3</td>
+<td>AL Next Task / Application</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a4</td>
+<td>AL Previous Task / Application</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a5</td>
+<td>AL Preemptive Halt Task / App.</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a6</td>
+<td>AL Integrated Help Center</td>
+<td>0x008a</td>
+<td>KEY_HELP</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a7</td>
+<td>AL Documents</td>
+<td>0x00eb</td>
+<td>KEY_DOCUMENTS</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a8</td>
+<td>AL Thesaurus</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01a9</td>
+<td>AL Dictionary</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01aa</td>
+<td>AL Desktop</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01ab</td>
+<td>AL Spell Check</td>
+<td>0x01b0</td>
+<td>KEY_SPELLCHECK</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01ac</td>
+<td>AL Grammar Check</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01ad</td>
+<td>AL Wireless Status</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01ae</td>
+<td>AL Keyboard Layout</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01af</td>
+<td>AL Virus Protection</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b0</td>
+<td>AL Encryption</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b1</td>
+<td>AL Screen Saver</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b2</td>
+<td>AL Alarms</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b3</td>
+<td>AL Clock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b4</td>
+<td>AL File Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b5</td>
+<td>AL Power Status</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b6</td>
+<td>AL Image Browser</td>
+<td>0x00e2</td>
+<td>KEY_MEDIA</td>
+<td>3.0</td>
+<td>0x004f</td>
+<td>KEYCODE_HEADSETHOOK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b7</td>
+<td>AL Audio Browser</td>
+<td>0x00d5</td>
+<td>KEY_SOUND</td>
+<td>4.0.3</td>
+<td>0x00d1</td>
+<td>KEYCODE_MUSIC</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b8</td>
+<td>AL Movie Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01b9</td>
+<td>AL Digital Rights Manager</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01ba</td>
+<td>AL Digital Wallet</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01bc</td>
+<td>AL Instant Messaging</td>
+<td>0x01ae</td>
+<td>KEY_MESSENGER</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01bd</td>
+<td>AL OEM Features / Tips Browser</td>
+<td>0x0166</td>
+<td>KEY_INFO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01be</td>
+<td>AL OEM Help</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01bf</td>
+<td>AL Online Community</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c0</td>
+<td>AL Entertainment Content Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c1</td>
+<td>AL Online Shopping Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c2</td>
+<td>AL SmartCard Information / Help</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c3</td>
+<td>AL Market / Finance Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c4</td>
+<td>AL Customized Corp. News Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c5</td>
+<td>AL Online Activity Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c6</td>
+<td>AL Research / Search Browser</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x01c7</td>
+<td>AL Audio Player</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0201</td>
+<td>AC New</td>
+<td>0x00b5</td>
+<td>KEY_NEW</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0202</td>
+<td>AC Open</td>
+<td>0x0086</td>
+<td>KEY_OPEN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0203</td>
+<td>AC Close</td>
+<td>0x00ce</td>
+<td>KEY_CLOSE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0204</td>
+<td>AC Exit</td>
+<td>0x00ae</td>
+<td>KEY_EXIT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0205</td>
+<td>AC Maximize</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0206</td>
+<td>AC Minimize</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0207</td>
+<td>AC Save</td>
+<td>0x00ea</td>
+<td>KEY_SAVE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0208</td>
+<td>AC Print</td>
+<td>0x00d2</td>
+<td>KEY_PRINT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0209</td>
+<td>AC Properties</td>
+<td>0x0082</td>
+<td>KEY_PROPS</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x021a</td>
+<td>AC Undo</td>
+<td>0x0083</td>
+<td>KEY_UNDO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x021b</td>
+<td>AC Copy</td>
+<td>0x0085</td>
+<td>KEY_COPY</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x021c</td>
+<td>AC Cut</td>
+<td>0x0089</td>
+<td>KEY_CUT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x021d</td>
+<td>AC Paste</td>
+<td>0x0087</td>
+<td>KEY_PASTE</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x021e</td>
+<td>AC Select All</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x021f</td>
+<td>AC Find</td>
+<td>0x0088</td>
+<td>KEY_FIND</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0220</td>
+<td>AC Find and Replace</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0221</td>
+<td>AC Search</td>
+<td>0x00d9</td>
+<td>KEY_SEARCH</td>
+<td>1.6</td>
+<td>0x0054</td>
+<td>KEYCODE_SEARCH</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0222</td>
+<td>AC Go To</td>
+<td>0x0162</td>
+<td>KEY_GOTO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0223</td>
+<td>AC Home</td>
+<td>0x00ac</td>
+<td>KEY_HOMEPAGE</td>
+<td>3.0</td>
+<td>0x0003</td>
+<td>KEYCODE_HOME</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0224</td>
+<td>AC Back</td>
+<td>0x009e</td>
+<td>KEY_BACK</td>
+<td>1.6</td>
+<td>0x0004</td>
+<td>KEYCODE_BACK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0225</td>
+<td>AC Forward</td>
+<td>0x009f</td>
+<td>KEY_FORWARD</td>
+<td>3.0</td>
+<td>0x007d</td>
+<td>KEYCODE_FORWARD</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0226</td>
+<td>AC Stop</td>
+<td>0x0080</td>
+<td>KEY_STOP</td>
+<td>3.0</td>
+<td>0x0056</td>
+<td>KEYCODE_MEDIA_STOP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0227</td>
+<td>AC Refresh</td>
+<td>0x00ad</td>
+<td>KEY_REFRESH</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0228</td>
+<td>AC Previous Link</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0229</td>
+<td>AC Next Link</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x022a</td>
+<td>AC Bookmarks</td>
+<td>0x009c</td>
+<td>KEY_BOOKMARKS</td>
+<td>3.0</td>
+<td>0x00ae</td>
+<td>KEYCODE_BOOKMARK</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x022b</td>
+<td>AC History</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x022c</td>
+<td>AC Subscriptions</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x022d</td>
+<td>AC Zoom In</td>
+<td>0x01a2</td>
+<td>KEY_ZOOMIN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x022e</td>
+<td>AC Zoom Out</td>
+<td>0x01a3</td>
+<td>KEY_ZOOMOUT</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x022f</td>
+<td>AC Zoom</td>
+<td>0x01a4</td>
+<td>KEY_ZOOMRESET</td>
+<td></td>
+<td></td>
+<td></td>
+<td>2</td>
+</tr>
+<tr>
+<td>0x0c 0x0230</td>
+<td>AC Full Screen View</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0231</td>
+<td>AC Normal View</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0232</td>
+<td>AC View Toggle</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0233</td>
+<td>AC Scroll Up</td>
+<td>0x00b1</td>
+<td>KEY_SCROLLUP</td>
+<td>3.0</td>
+<td>0x005c</td>
+<td>KEYCODE_PAGE_UP</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0234</td>
+<td>AC Scroll Down</td>
+<td>0x00b2</td>
+<td>KEY_SCROLLDOWN</td>
+<td>3.0</td>
+<td>0x005d</td>
+<td>KEYCODE_PAGE_DOWN</td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0236</td>
+<td>AC Pan Left</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0237</td>
+<td>AC Pan Right</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0239</td>
+<td>AC New Window</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x023a</td>
+<td>AC Tile Horizontally</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x023b</td>
+<td>AC Tile Vertically</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x023c</td>
+<td>AC Format</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x023d</td>
+<td>AC Edit</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x023e</td>
+<td>AC Bold</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x023f</td>
+<td>AC Italics</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0240</td>
+<td>AC Underline</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0241</td>
+<td>AC Strikethrough</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0242</td>
+<td>AC Subscript</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0243</td>
+<td>AC Superscript</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0244</td>
+<td>AC All Caps</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0245</td>
+<td>AC Rotate</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0246</td>
+<td>AC Resize</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0247</td>
+<td>AC Flip horizontal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0248</td>
+<td>AC Flip Vertical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0249</td>
+<td>AC Mirror Horizontal</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x024a</td>
+<td>AC Mirror Vertical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x024b</td>
+<td>AC Font Select</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x024c</td>
+<td>AC Font Color</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x024d</td>
+<td>AC Font Size</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x024e</td>
+<td>AC Justify Left</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x024f</td>
+<td>AC Justify Center H</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0250</td>
+<td>AC Justify Right</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0251</td>
+<td>AC Justify Block H</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0252</td>
+<td>AC Justify Top</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0253</td>
+<td>AC Justify Center V</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0254</td>
+<td>AC Justify Bottom</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0255</td>
+<td>AC Justify Block V</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0256</td>
+<td>AC Indent Decrease</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0257</td>
+<td>AC Indent Increase</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0258</td>
+<td>AC Numbered List</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0259</td>
+<td>AC Restart Numbering</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x025a</td>
+<td>AC Bulleted List</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x025b</td>
+<td>AC Promote</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x025c</td>
+<td>AC Demote</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x025d</td>
+<td>AC Yes</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x025e</td>
+<td>AC No</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x025f</td>
+<td>AC Cancel</td>
+<td>0x00df</td>
+<td>KEY_CANCEL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0260</td>
+<td>AC Catalog</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0261</td>
+<td>AC Buy / Checkout</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0262</td>
+<td>AC Add to Cart</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0263</td>
+<td>AC Expand</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0264</td>
+<td>AC Expand All</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0265</td>
+<td>AC Collapse</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0266</td>
+<td>AC Collapse All</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0267</td>
+<td>AC Print Preview</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0268</td>
+<td>AC Paste Special</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0269</td>
+<td>AC Insert Mode</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x026a</td>
+<td>AC Delete</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x026b</td>
+<td>AC Lock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x026c</td>
+<td>AC Unlock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x026d</td>
+<td>AC Protect</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x026e</td>
+<td>AC Unprotect</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x026f</td>
+<td>AC Attach Comment</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0270</td>
+<td>AC Delete Comment</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0271</td>
+<td>AC View Comment</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0272</td>
+<td>AC Select Word</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0273</td>
+<td>AC Select Sentence</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0274</td>
+<td>AC Select Paragraph</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0275</td>
+<td>AC Select Column</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0276</td>
+<td>AC Select Row</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0277</td>
+<td>AC Select Table</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0278</td>
+<td>AC Select Object</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0279</td>
+<td>AC Redo / Repeat</td>
+<td>0x00b6</td>
+<td>KEY_REDO</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x027a</td>
+<td>AC Sort</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x027b</td>
+<td>AC Sort Ascending</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x027c</td>
+<td>AC Sort Descending</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x027d</td>
+<td>AC Filter</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x027e</td>
+<td>AC Set Clock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x027f</td>
+<td>AC View Clock</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0280</td>
+<td>AC Select Time Zone</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0281</td>
+<td>AC Edit Time Zones</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0282</td>
+<td>AC Set Alarm</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0283</td>
+<td>AC Clear Alarm</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0284</td>
+<td>AC Snooze Alarm</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0285</td>
+<td>AC Reset Alarm</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0286</td>
+<td>AC Synchronize</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0287</td>
+<td>AC Send/Receive</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0288</td>
+<td>AC Send To</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0289</td>
+<td>AC Reply</td>
+<td>0x00e8</td>
+<td>KEY_REPLY</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x028a</td>
+<td>AC Reply All</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x028b</td>
+<td>AC Forward Msg</td>
+<td>0x00e9</td>
+<td>KEY_FORWARDMAIL</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x028c</td>
+<td>AC Send</td>
+<td>0x00e7</td>
+<td>KEY_SEND</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x028d</td>
+<td>AC Attach File</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x028e</td>
+<td>AC Upload</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x028f</td>
+<td>AC Download (Save Target As)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0290</td>
+<td>AC Set Borders</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0291</td>
+<td>AC Insert Row</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0292</td>
+<td>AC Insert Column</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0293</td>
+<td>AC Insert File</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0294</td>
+<td>AC Insert Picture</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0295</td>
+<td>AC Insert Object</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0296</td>
+<td>AC Insert Symbol</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0297</td>
+<td>AC Save and Close</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0298</td>
+<td>AC Rename</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x0299</td>
+<td>AC Merge</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x029a</td>
+<td>AC Split</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x029b</td>
+<td>AC Distribute Horizontally</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>0x0c 0x029c</td>
+<td>AC Distribute Vertically</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="additional-non-hid-mappings">Additional non-HID Mappings</h3>
+<p>These mappings describe functions that do not appear in HID but for which Linux
+key codes exist.</p>
+<table>
+<thead>
+<tr>
+<th>LKC</th>
+<th>Linux Key Code Name</th>
+<th>Version</th>
+<th>AKC</th>
+<th>Android Key Code Name</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x01d0</td>
+<td>KEY_FN</td>
+<td>3.0</td>
+<td>0x0077</td>
+<td>KEYCODE_FUNCTION</td>
+<td></td>
+</tr>
+<tr>
+<td>0x01d1</td>
+<td>KEY_FN_ESC</td>
+<td>3.0</td>
+<td>0x006f</td>
+<td>KEYCODE_ESCAPE</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d2</td>
+<td>KEY_FN_F1</td>
+<td>3.0</td>
+<td>0x0083</td>
+<td>KEYCODE_F1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d3</td>
+<td>KEY_FN_F2</td>
+<td>3.0</td>
+<td>0x0084</td>
+<td>KEYCODE_F2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d4</td>
+<td>KEY_FN_F3</td>
+<td>3.0</td>
+<td>0x0085</td>
+<td>KEYCODE_F3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d5</td>
+<td>KEY_FN_F4</td>
+<td>3.0</td>
+<td>0x0086</td>
+<td>KEYCODE_F4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d6</td>
+<td>KEY_FN_F5</td>
+<td>3.0</td>
+<td>0x0087</td>
+<td>KEYCODE_F5</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d7</td>
+<td>KEY_FN_F6</td>
+<td>3.0</td>
+<td>0x0088</td>
+<td>KEYCODE_F6</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d8</td>
+<td>KEY_FN_F7</td>
+<td>3.0</td>
+<td>0x0089</td>
+<td>KEYCODE_F7</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01d9</td>
+<td>KEY_FN_F8</td>
+<td>3.0</td>
+<td>0x008a</td>
+<td>KEYCODE_F8</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01da</td>
+<td>KEY_FN_F9</td>
+<td>3.0</td>
+<td>0x008b</td>
+<td>KEYCODE_F9</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01db</td>
+<td>KEY_FN_F10</td>
+<td>3.0</td>
+<td>0x008c</td>
+<td>KEYCODE_F10</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01dc</td>
+<td>KEY_FN_F11</td>
+<td>3.0</td>
+<td>0x008d</td>
+<td>KEYCODE_F11</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01dd</td>
+<td>KEY_FN_F12</td>
+<td>3.0</td>
+<td>0x008e</td>
+<td>KEYCODE_F12</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01de</td>
+<td>KEY_FN_1</td>
+<td>3.0</td>
+<td>0x0008</td>
+<td>KEYCODE_1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01df</td>
+<td>KEY_FN_2</td>
+<td>3.0</td>
+<td>0x0009</td>
+<td>KEYCODE_2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01e0</td>
+<td>KEY_FN_D</td>
+<td>3.0</td>
+<td>0x0020</td>
+<td>KEYCODE_D</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01e1</td>
+<td>KEY_FN_E</td>
+<td>3.0</td>
+<td>0x0021</td>
+<td>KEYCODE_E</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01e2</td>
+<td>KEY_FN_F</td>
+<td>3.0</td>
+<td>0x0022</td>
+<td>KEYCODE_F</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01e3</td>
+<td>KEY_FN_S</td>
+<td>3.0</td>
+<td>0x002f</td>
+<td>KEYCODE_S</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0x01e4</td>
+<td>KEY_FN_B</td>
+<td>3.0</td>
+<td>0x001e</td>
+<td>KEYCODE_B</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<h3 id="legacy-unsupported-keys">Legacy Unsupported Keys</h3>
+<p>These mappings appeared in previous versions of Android but were inconsistent with
+HID or used non-standard Linux key codes.  They are no longer supported.</p>
+<table>
+<thead>
+<tr>
+<th>LKC</th>
+<th>Linux Key Code Name</th>
+<th>Version</th>
+<th>AKC</th>
+<th>Android Key Code Name</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x00db</td>
+<td>KEY_EMAIL</td>
+<td>1.6</td>
+<td>0x004d</td>
+<td>KEYCODE_AT</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e3</td>
+<td>KEY_STAR</td>
+<td>1.6</td>
+<td>0x0011</td>
+<td>KEYCODE_STAR</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e4</td>
+<td>KEY_SHARP</td>
+<td>1.6</td>
+<td>0x0012</td>
+<td>KEYCODE_POUND</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e5</td>
+<td>KEY_SOFT1</td>
+<td>1.6</td>
+<td>0x0052</td>
+<td>KEYCODE_MENU</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e6</td>
+<td>KEY_SOFT2</td>
+<td>1.6</td>
+<td>0x0002</td>
+<td>KEYCODE_SOFT_RIGHT</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e7</td>
+<td>KEY_SEND</td>
+<td>1.6</td>
+<td>0x0005</td>
+<td>KEYCODE_CALL</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e8</td>
+<td>KEY_CENTER</td>
+<td>1.6</td>
+<td>0x0017</td>
+<td>KEYCODE_DPAD_CENTER</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00e9</td>
+<td>KEY_HEADSETHOOK</td>
+<td>1.6</td>
+<td>0x004f</td>
+<td>KEYCODE_HEADSETHOOK</td>
+<td>4</td>
+</tr>
+<tr>
+<td>""</td>
+<td>""</td>
+<td>4.0</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00ea</td>
+<td>KEY_0_5</td>
+<td>1.6</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+<tr>
+<td>0x00eb</td>
+<td>KEY_2_5</td>
+<td>1.6</td>
+<td></td>
+<td></td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="notes">Notes</h3>
+<ol>
+<li>
+<p>The Android key code associated with common alphanumeric and symbolic
+    keys may vary based on the keyboard layout and language.
+    For historical reasons, the physical scan codes and HID usages
+    associated with keys on a keyboard are often defined positionally
+    even though the labels printed on those keys may vary from one
+    language to another.</p>
+<p>On a US English (QWERTY) keyboard, the top-left alphabetic key is
+labeled Q.  On a French (AZERTY) keyboard, the key in the same
+position is labeled A.  Despite the label, on both keyboards the
+top-left alphabetic key is referred to using the HID usage
+0x07 0x0014 which is mapped to the Linux key code KEY_Q.</p>
+<p>When Android is configured with a US English keyboard layout, then
+the Linux key code KEY_Q will be mapped to the Android key code
+KEYCODE_Q and will produce the characters 'Q' and 'q'.
+However, when Android is configured with a French keyboard layout,
+then the Linux key code KEY_Q will be mapped to the Android key code
+KEYCODE_A and will produce the characters 'A' and 'a'.</p>
+<p>The Android key code typically reflects the language-specific
+interpretation of the key, so a different Android key code may
+be used for different languages.</p>
+</li>
+<li>
+<p><code>0x0c 0x022f AC Zoom</code> is defined in the HID as a linear control but
+    the kernel maps it as a key, which is probably incorrect.</p>
+</li>
+<li>
+<p>The Linux function keys <code>KEY_FN_*</code> are mapped to simpler
+    key codes but are dispatched with the <code>META_FUNCTION</code> meta state
+    bit set to true.</p>
+</li>
+<li>
+<p>Prior to Android Ice Cream Sandwich 4.0, the default key layout
+    contained mappings for some extra key codes that were not defined
+    in the mainline Linux kernel headers.  These mappings have since
+    been removed because these previously undefined key codes have
+    since been assigned different meanings in more recent versions
+    of the Linux kernel.</p>
+</li>
+</ol>
+<h3 id="sources">Sources</h3>
+<ol>
+<li><a href="http://www.usb.org/developers/hidpage/Hut1_12v2.pdf">USB HID Usage Tables v1.12</a></li>
+<li>Linux 2.6.39 kernel: include/linux/input.h, drivers/hid/hid-input.c</li>
+<li>Android ICS: qwerty.kl, Generic.kl, KeyEvent.java</li>
+</ol>

@@ -1,0 +1,166 @@
+page.title=Report Bugs
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+<p>Thanks for your interest in Android! One of the best ways you can help us
+improve Android is to let us know about any problems you find with it.</p>
+<p>First, though: if you think you've found a security vulnerability,
+<em>please don't use the forms below</em>. Using the public forms below may
+allow anyone to see your report, which may put users at risk until the bug is
+fixed. Please visit
+<a href="{@docRoot}source/faqs.html">our
+security faq</a> for more information on reporting security vulnerabilities
+to the Android security team.</p>
+<p>Here's how to report non-security bugs:</p>
+<ul>
+<li>
+<p><a href="https://code.google.com/p/android/issues/advsearch">Search for
+your bug</a> to see if anyone has already reported it. Don't forget to
+search for all issues, not just open ones, as your issue might already
+have been reported and closed. To help find the most popular results,
+sort the result by number of stars.</p>
+</li>
+<li>
+<p>If you find your issue and it's important to you, star it! That's how we know which bugs are most important to fix.</p>
+</li>
+<li>
+<p>If no one's reported your bug, file the bug. You can use one of these templates:</p>
+<ul>
+<li>
+<p><a href="https://code.google.com/p/android/issues/entry?template=User%20bug%20report">Bug in your Device</a> - use this if you are a user reporting a bug in a device you own</p>
+</li>
+<li>
+<p><a href="https://code.google.com/p/android/issues/entry?template=Developer%20bug%20report">Bug in the Software</a> - use this if you found a bug in the course of developing an app</p>
+</li>
+<li>
+<p><a href="https://code.google.com/p/android/issues/entry?template=Feature%20request">Feature Request</a> - use this for a feature you'd like to see in a future verison</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Keep in mind that an issue tracker is not a user support forum. It is a list
+of pending technical tasks, along with information relevant for those tasks,
+and information about progress on those tasks including which ones might
+get worked on in the short term.</p>
+<p>This issue tracker is narrowly focused on the Android Open Source Project.
+Issues with retail devices need to be reported through those devices' support
+channels, especially for devices other than Nexus. Issues with applications
+that aren't part of AOSP need to be reported with those applications'
+developers; that is also the case for Google applications.</p>
+<p>Please note that we can't guarantee that any particular bug can be fixed in
+any particular release. To see what happens to your bug once you report it,
+read <a href="life-of-a-bug.html">Life of a Bug</a>.</p>
+<p>In general, please put as much info in bugs as you can. Just a one liner
+telling us something isn't working is usually useless, and will probably be
+closed without any action. The more detail you provide, the more likely your
+issue is to be resolved. Below, there are some examples of a good bug report
+and a poor bug report.</p>
+
+<h2 id="a-poor-bug-report">A Poor Bug Report</h2>
+<blockquote>
+Title: Error message
+
+When running Eclipse I get an "Internal Error" that says "See the .log file for more details".
+
+Steps to reproduce:
+Happens when "Object o = null". Doesn't happen when changed to "Object o".
+
+Expected results:
+I wouldn't get the error message--would work with Object o = null.
+
+Observed results:
+See above.
+</blockquote>
+<p>This is a poor bug report because it doesn't provide any context for the
+issue; is it a problem in the ART runtime, the core framework, or
+something else? It also doesn't provide any code or hint on how to reproduce
+it. In other words, this bug report doesn't provide enough information for
+anyone to take action on, so it would be ignored.</p>
+<h2 id="a-good-bug-report">A Good Bug Report</h2>
+<blockquote>
+Title: Stepping over "Object o = null" causes Eclipse "Internal Error"
+
+Interesting bug, while using Eclipse 3.3.1.1 with m37a of android and the following code:
+<pre>
+package com.saville.android;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+
+public class TestObjectNull extends Activity {
+    /** Called when the activity is first created. */
+    &#64;Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        setContentView(R.layout.main);
+
+        Object o = null;
+
+        o = "hi";
+
+        Log.v(TAG, "o=" + o);
+    }
+
+    static final String TAG = "TestObjectNull";
+}
+</pre>
+Eclipse indicates an "Internal Error" with "See the .log file for more
+details" and then asks if I want to exit the workbench. This occurs when I
+place a break point on "setContentView(R.layout.main);" and then single
+step over "Object o = null;"
+
+If I change "Object o = null;" to "Object o" all is well.
+
+The last lines of the .log file are:
+<pre>
+!ENTRY org.eclipse.core.jobs 4 2 2008-01-01 13:04:15.825
+!MESSAGE An internal error occurred during: "has children update".
+!STACK 0
+java.lang.InternalError: Invalid signature: "&lt;null&gt;"
+        at
+org.eclipse.jdi.internal.TypeImpl.signatureToTag(TypeImpl.java:307)
+        at
+org.eclipse.jdi.internal.LocalVariableImpl.tag(LocalVariableImpl.java:185)
+        at
+org.eclipse.jdi.internal.StackFrameImpl.getValues(StackFrameImpl.java:128)
+        at
+org.eclipse.jdi.internal.StackFrameImpl.getValue(StackFrameImpl.java:73)
+        at
+org.eclipse.jdt.internal.debug.core.model.JDILocalVariable.retrieveValue(JDILocalVariable.java:57)
+        at
+org.eclipse.jdt.internal.debug.core.model.JDIVariable.getCurrentValue(JDIVariable.java:66)
+        at
+org.eclipse.jdt.internal.debug.core.model.JDIVariable.getValue(JDIVariable.java:88)
+        at
+org.eclipse.debug.internal.ui.model.elements.VariableContentProvider.hasChildren(VariableContentProvider.java:62)
+        at
+org.eclipse.jdt.internal.debug.ui.variables.JavaVariableContentProvider.hasChildren(JavaVariableContentProvider.java:73)
+        at
+org.eclipse.debug.internal.ui.model.elements.ElementContentProvider.updateHasChildren(ElementContentProvider.java:223)
+        at
+org.eclipse.debug.internal.ui.model.elements.ElementContentProvider$3.run(ElementContentProvider.java:200)
+        at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+</pre>
+</blockquote>

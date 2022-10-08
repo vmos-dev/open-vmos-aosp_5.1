@@ -1,0 +1,85 @@
+page.title=Validate Keymaps Tool
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>The Android framework has a small tool called <code>validatekeymaps</code> to validate the
+syntax of input device configuration files, key layout files, key character
+maps files and virtual key definition files.</p>
+<h2 id="compilation">Compilation</h2>
+<p>To compile <code>validatekeymaps</code>, set up the development environment, download
+the Android source tree, compile it, then run:</p>
+<pre><code>$ mmm frameworks/base/tools/validatekeymaps
+</code></pre>
+<p>This command should compile a host tool called validatekeymaps into the
+<code>out/host/&amp;lt;os&amp;gt;/bin</code> directory.</p>
+<h2 id="usage">Usage</h2>
+<p>If you ran <code>envsetup.sh</code> to set up your development environment, then the
+<code>validatekeymaps</code> tool should already be on your path.  You can verify
+this by running <code>validatekeymaps</code>.</p>
+<pre><code>$ validatekeymaps
+
+Keymap Validation Tool
+
+Usage:
+ validatekeymaps [*.kl] [*.kcm] [*.idc] [virtualkeys.*] [...]
+   Validates the specified key layouts, key character maps, 
+   input device configurations, or virtual key definitions.
+</code></pre>
+<p>Then all you need to do is run <code>validatekeymaps</code> an give it the path of
+one or more files to validate.</p>
+<pre><code>$ validatekeymaps frameworks/base/data/keyboards/Generic.kl
+
+Validating file 'frameworks/base/data/keyboards/Generic.kl'...
+No errors.
+
+Success.
+</code></pre>
+<p>And if there is an error...</p>
+<pre><code>$ validatekeymaps Bad.kl
+
+Validating file 'Bad.kl'...
+E/KeyLayoutMap(87688): Bad.kl:24: Expected keyword, got 'ke'.
+Error -22 parsing key layout file.
+
+Failed!
+</code></pre>
+<h2 id="automation">Automation</h2>
+<p>It is a <em>very</em> good idea to run <code>validatekeymaps</code> on all configuration files
+before installing them on a device.</p>
+<p>The process can easily be automated as part of the build system by using a
+script or a makefile.</p>
+<p>The following sample makefile is based on the contents of
+<code>frameworks/base/data/keyboards/Android.mk</code>.</p>
+<pre><code># This makefile performs build time validation of framework keymap files.
+
+LOCAL_PATH := $(call my-dir)
+
+# Validate all key maps.
+include $(CLEAR_VARS)
+
+validatekeymaps := $(HOST_OUT_EXECUTABLES)/validatekeymaps$(HOST_EXECUTABLE_SUFFIX)
+files := MyKeyboard.kl MyKeyboard.kcm MyTouchScreen.idc
+
+LOCAL_MODULE := validate_framework_keymaps
+LOCAL_MODULE_TAGS := optional
+LOCAL_REQUIRED_MODULES := validatekeymaps
+
+validate_framework_keymaps: $(files)
+    $(hide) $(validatekeymaps) $(files)
+
+include $(BUILD_PHONY_PACKAGE)
+</code></pre>

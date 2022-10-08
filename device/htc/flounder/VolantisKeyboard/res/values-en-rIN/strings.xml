@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_label" msgid="8309373558371161520">"Volantis Keyboard"</string>
+    <string name="keyboard_layouts_label" msgid="771692943642467584">"Nexus Compact Keyboard"</string>
+    <string name="keyboard_layout_volantis_english_uk_label" msgid="1425137404576186880">"English (UK)"</string>
+    <string name="keyboard_layout_volantis_english_us_label" msgid="953130059365065614">"English (US)"</string>
+    <string name="keyboard_layout_volantis_english_us_intl_label" msgid="8444053619141689693">"English (US International)"</string>
+    <string name="keyboard_layout_volantis_german_label" msgid="1115175249339065508">"German"</string>
+    <string name="keyboard_layout_volantis_french_label" msgid="7039437279465504539">"French"</string>
+    <string name="keyboard_layout_volantis_french_ca_label" msgid="773887798068625483">"French (Canada)"</string>
+    <string name="keyboard_layout_volantis_italian_label" msgid="2487824389457459330">"Italian"</string>
+    <string name="keyboard_layout_volantis_japanese_label" msgid="893728776095514102">"Japanese"</string>
+    <string name="keyboard_layout_volantis_spanish_label" msgid="7072256682329860171">"Spanish"</string>
+    <string name="keyboard_layout_volantis_belgian_label" msgid="8875281999639372179">"Belgian"</string>
+    <string name="keyboard_layout_volantis_swedish_label" msgid="7072561947207061024">"Swedish"</string>
+    <string name="keyboard_layout_volantis_korean_label" msgid="4119892422942692947">"Korean"</string>
+    <string name="keyboard_layout_volantis_zhuyin_label" msgid="1056309325803786283">"Chinese (Zhuyin)"</string>
+    <string name="keyboard_layout_volantis_cangjie_label" msgid="4711081327905634320">"Chinese (Cangjie)"</string>
+</resources>

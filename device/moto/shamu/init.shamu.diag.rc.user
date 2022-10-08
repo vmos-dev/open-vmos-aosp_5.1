@@ -1,0 +1,4 @@
+# This file gets copied as /init.shamu.diag.rc
+on property:ro.bootmode=normal
+    rm /dev/diag
+    write /sys/module/diag_bridge/parameters/default_auto_susp_enabled 1

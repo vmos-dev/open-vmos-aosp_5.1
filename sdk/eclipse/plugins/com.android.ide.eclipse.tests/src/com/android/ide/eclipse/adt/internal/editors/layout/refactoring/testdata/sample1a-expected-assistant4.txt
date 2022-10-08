@@ -1,0 +1,3 @@
+Quick assistant in sample1a.xml for android:id="@+id/Linea^rLayout2":
+Rename Android Resource : Initiates the "Rename Android Resource" refactoring
+Extract Style : Initiates the "Extract Style" refactoring

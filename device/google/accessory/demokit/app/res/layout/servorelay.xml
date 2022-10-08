@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/servoRelay" android:layout_width="match_parent"
+	android:orientation="horizontal" android:layout_height="wrap_content">
+	<LinearLayout android:layout_width="0dip"
+		android:layout_height="wrap_content" android:id="@+id/servos"
+		android:orientation="vertical" android:layout_weight="2">
+		<include layout="@layout/servo" android:id="@+id/servo1"
+			android:layout_width="match_parent" android:layout_height="wrap_content"
+			android:layout_weight="0.7" />
+		<include layout="@layout/servo" android:id="@+id/servo2"
+			android:layout_width="match_parent" android:layout_height="wrap_content" />
+		<include layout="@layout/servo" android:id="@+id/servo3"
+			android:layout_width="match_parent" android:layout_height="wrap_content" />
+	</LinearLayout>
+	<LinearLayout android:layout_height="wrap_content"
+		android:id="@+id/relays" android:orientation="vertical"
+		android:layout_width="0dip" android:layout_weight="1" android:padding="-10dip">
+		<include android:id="@+id/relay1" layout="@layout/relaybutton"
+			android:layout_width="wrap_content" android:layout_height="wrap_content" />
+		<include android:id="@+id/relay2" layout="@layout/relaybutton"
+			android:layout_width="wrap_content" android:layout_height="wrap_content" />
+	</LinearLayout>
+</LinearLayout>
+

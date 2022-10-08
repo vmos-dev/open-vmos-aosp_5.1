@@ -1,0 +1,127 @@
+page.title=Input Device Configuration Files
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>Input device configuration files (<code>.idc</code> files) contain device-specific
+configuration properties that affect the behavior of input devices.</p>
+<p>Input device configuration files are typically not necessary for standard
+peripherals such as HID keyboards and mice since the default system behavior
+usually ensures that they will work out of the box.  On the other hand,
+built-in embedded devices, particularly touch screens, almost always
+require input device configuration files to specify their behavior.</p>
+<h2 id="rationale">Rationale</h2>
+<p>Android automatically detects and configures most input device capabilities
+based on the event types and properties that are reported by the associated
+Linux kernel input device driver.</p>
+<p>For example, if an input device supports the <code>EV_REL</code> event type and codes
+<code>REL_X</code> and <code>REL_Y</code> as well as the <code>EV_KEY</code> event type and <code>BTN_MOUSE</code>,
+then Android will classify the input device as a mouse.  The default behavior
+for a mouse is to present an on-screen cursor which tracks the mouse's movements
+and simulates touches when the mouse is clicked.  Although the mouse can
+be configured differently, the default behavior is usually sufficient for
+standard mouse peripherals.</p>
+<p>Certain classes of input devices are more ambiguous.  For example, multi-touch
+touch screens and touch pads both support the <code>EV_ABS</code> event type and codes
+<code>ABS_MT_POSITION_X</code> and <code>ABS_MT_POSITION_Y</code> at a minimum.  However, the intended
+uses of these devices are quite different and cannot always be determined
+automatically.  Also, additional information is required to make sense of the
+pressure and size information reported by touch devices.  Hence touch devices,
+especially built-in touch screens, usually need IDC files.</p>
+<h2 id="location">Location</h2>
+<p>Input device configuration files are located by USB vendor, product (and
+optionally version) id or by input device name.</p>
+<p>The following paths are consulted in order.</p>
+<ul>
+<li><code>/system/usr/idc/Vendor_XXXX_Product_XXXX_Version_XXXX.idc</code></li>
+<li><code>/system/usr/idc/Vendor_XXXX_Product_XXXX.idc</code></li>
+<li><code>/system/usr/idc/DEVICE_NAME.idc</code></li>
+<li><code>/data/system/devices/idc/Vendor_XXXX_Product_XXXX_Version_XXXX.idc</code></li>
+<li><code>/data/system/devices/idc/Vendor_XXXX_Product_XXXX.idc</code></li>
+<li><code>/data/system/devices/idc/DEVICE_NAME.idc</code></li>
+</ul>
+<p>When constructing a file path that contains the device name, all characters
+in the device name other than '0'-'9', 'a'-'z', 'A'-'Z', '-' or '_' are replaced by '_'.</p>
+<h2 id="syntax">Syntax</h2>
+<p>An input device configuration file is a plain text file consisting of property
+assignments and comments.</p>
+<h3 id="properties">Properties</h3>
+<p>Property assignments each consist of a property name, an <code>=</code>, a property value,
+and a new line.  Like this:</p>
+<pre><code>property = value
+</code></pre>
+<p>Property names are non-empty literal text identifiers.  They must not contain
+whitespace.  Each components of the input system defines a set of properties
+that are used to configure its function.</p>
+<p>Property values are non-empty string literals, integers or floating point numbers.
+They must not contain whitespace or the reserved characters <code>\</code> or <code>"</code>.</p>
+<p>Property names and values are case-sensitive.</p>
+<h3 id="comments">Comments</h3>
+<p>Comment lines begin with '#' and continue to the end of the line.  Like this:</p>
+<pre><code># A comment!
+</code></pre>
+<p>Blank lines are ignored.</p>
+<h3 id="example">Example</h3>
+<pre><code># This is an example of an input device configuration file.
+# It might be used to describe the characteristics of a built-in touch screen.
+
+# This is an internal device, not an external peripheral attached to the USB
+# or Bluetooth bus.
+device.internal = 1
+
+# The device should behave as a touch screen, which uses the same orientation
+# as the built-in display.
+touch.deviceType = touchScreen
+touch.orientationAware = 1
+
+# Additional calibration properties...
+# etc...
+</code></pre>
+<h2 id="common-properties">Common Properties</h2>
+<p>The following properties are common to all input device classes.</p>
+<p>Refer to the documentation of each input device class for information about the
+special properties used by each class.</p>
+<h4 id="deviceinternal"><code>device.internal</code></h4>
+<p><em>Definition:</em> <code>device.internal</code> = <code>0</code> | <code>1</code></p>
+<p>Specifies whether the input device is an internal built-in component as opposed to an
+externally attached (most likely removable) peripheral.</p>
+<ul>
+<li>
+<p>If the value is <code>0</code>, the device is external.</p>
+</li>
+<li>
+<p>If the value is <code>1</code>, the device is internal.</p>
+</li>
+<li>
+<p>If the value is not specified, the default value is <code>0</code> for all devices on the
+    USB (BUS_USB) or Bluetooth (BUS_BLUETOOTH) bus, <code>1</code> otherwise.</p>
+</li>
+</ul>
+<p>This property determines default policy decisions regarding wake events.</p>
+<p>Internal input devices generally do not wake the display from sleep unless explicitly
+configured to do so in the key layout file or in a hardcoded policy rule.  This
+distinction prevents key presses and touches from spuriously waking up your phone
+when it is in your pocket.  Usually there are only a small handful of wake keys defined.</p>
+<p>Conversely, external input devices usually wake the device more aggressively because
+they are assumed to be turned off or not plugged in during transport.  For example,
+pressing any key on an external keyboard is a good indicator that the user wants the
+device to wake up and respond.</p>
+<p>It is important to ensure that the value of the <code>device.internal</code> property is set
+correctly for all internal input devices.</p>
+<h2 id="validation">Validation</h2>
+<p>Make sure to validate your input device configuration files using the
+<a href="validate-keymaps.html">Validate Keymaps</a> tool.</p>
+

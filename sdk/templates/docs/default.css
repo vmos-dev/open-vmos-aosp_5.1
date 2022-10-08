@@ -1,0 +1,268 @@
+/*
+ * Copyright 2012 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* Page stylesheet */
+
+html {
+  font-family: Roboto, sans-serif;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+}
+
+pre {
+  font-family: Inconsolata, monospace;
+  border: 0;
+  padding: 0;
+}
+
+code {
+  font-family: Inconsolata, monospace;
+  color: #060;
+}
+
+#page-content {
+  margin: 48px 64px 48px 320px;
+}
+
+a {
+  color: #33b5e5;
+  text-decoration: none;
+  border-bottom: 1px solid #33b5e5;
+}
+
+a:hover {
+  border-bottom: 2px solid #33b5e5;
+}
+
+a:visited {
+  color: #09c;
+}
+
+a:active, a:focus {
+  color: #fff;
+  background-color: #09c;
+  border-radius: 2px;
+  padding: 2px 0;
+  border: 0;
+}
+
+a:active *, a:focus * {
+  color: #fff;
+}
+
+nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  width: 256px;
+  bottom: 0;
+  margin: 32px 0;
+  padding: 16px 0 16px 32px;
+  overflow-y: scroll;
+  font-size: 14px;
+  line-height: 16px;
+  border-top: 2px solid #eee;
+  border-bottom: 2px solid #eee;
+  border-right: 2px solid #eee;
+}
+
+nav span {
+  cursor: pointer;
+  display: block;
+  padding-left: 16px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+nav span:hover {
+  color: #09c;
+}
+
+nav .selected > span {
+  background-color: #eee;
+  border-right: 2px solid #333;
+}
+
+nav > .item > span {
+  font-weight: 600;
+}
+
+nav .children {
+  margin-left: 16px;
+}
+
+h2, h3, h4.includetoc {
+  color: #000;
+  cursor: pointer;
+  position: relative;
+}
+
+h2:hover:before, h3:hover:before, h4.includetoc:hover:before {
+  content: '';
+  opacity: 0.3;
+  position: absolute;
+  left: -32px;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  /* "Link" symbol by David Waschbüsch, from The Noun Project (thenounproject.com) */
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjcwLjg2NnB4IiBoZWlnaHQ9IjcwLjg2NnB4IiB2aWV3Qm94PSItNTkuNDE4IDE0LjU2NyA3MC44NjYgNzAuODY2IiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IC01OS40MTggMTQuNTY3IDcwLjg2NiA3MC44NjYiIHhtbDpzcGFjZT0icHJlc2VydmUiPgo8Zz4KCTxnPgoJCTxwYXRoIGQ9Ik0tMjguNTUyLDYxLjQ4NWMtMC4wMTcsMC4wMTYtMC4wMjksMC4wMzUtMC4wNDYsMC4wNTNsLTUuODI1LDUuNzI1Yy0wLjk1MiwwLjkzOC0yLjIxNCwxLjQ0NS0zLjU0OSwxLjQzNCAgICBzLTIuNTg2LTAuNTQzLTMuNTIyLTEuNDk0Yy0xLjkzMS0xLjk2Ny0xLjkwMy01LjEzOSwwLjA2My03LjA3Mmw1LjgyNi01LjcyNWMwLjAxNy0wLjAxNywwLjAzOC0wLjAyOCwwLjA1Ny0wLjA0Nmw2LjkyNS02LjgwNiAgICBjLTEuMDc2LTAuMzYyLTIuMjExLTAuNTcxLTMuMzgyLTAuNTgyYy0yLjkzOC0wLjAyNi01LjcwOSwxLjA5NS03LjgwNCwzLjE1MmwtNS44MjcsNS43MjcgICAgYy00LjMyNiw0LjI0OC00LjM4OCwxMS4yMjctMC4xMzcsMTUuNTU1YzIuMDU4LDIuMDk2LDQuODEzLDMuMjY2LDcuNzUsMy4yOTFzNS43MTEtMS4wOTQsNy44MDYtMy4xNTJsNS44MjUtNS43MjcgICAgYzIuMDk2LTIuMDU5LDMuMjY1LTQuODEzLDMuMjkyLTcuNzQ4YzAuMDA5LTEuMTcyLTAuMTgxLTIuMzA3LTAuNTIzLTMuMzkzTC0yOC41NTIsNjEuNDg1eiIvPgoJCTxwYXRoIGQ9Ik0tMi4yMDIsMjguNTk0Yy0yLjA2Mi0yLjA5Ni00LjgxMy0zLjI2NC03Ljc1LTMuMjljLTIuOTQtMC4wMjYtNS43MSwxLjA5NC03LjgwNywzLjE1NGwtNS44MjUsNS43MjMgICAgYy0zLjA0NCwyLjk5MS0zLjk2Niw3LjMyNy0yLjc3MSwxMS4xNDVsNi45MjItNi44MDFjMC4wMi0wLjAyMSwwLjAzMy0wLjA0NSwwLjA1My0wLjA2NGw1LjgyNi01LjcyNCAgICBjMC45NTQtMC45MzYsMi4yMTItMS40NDUsMy41NDktMS40MzNjMS4zMzUsMC4wMTEsMi41ODUsMC41NDMsMy41MjIsMS40OTVjMC45MzYsMC45NTIsMS40NDUsMi4yMTIsMS40MzQsMy41NDggICAgYy0wLjAxMywxLjMzNS0wLjU0NCwyLjU4Ny0xLjQ5NSwzLjUyM2wtNS44MjYsNS43MjNjLTAuMDE2LDAuMDE2LTAuMDM0LDAuMDI1LTAuMDUsMC4wNDFsLTYuOTMxLDYuODEgICAgYzEuMDc3LDAuMzYxLDIuMjEsMC41NzEsMy4zOCwwLjU4MmMyLjkzOCwwLjAyNCw1LjcxLTEuMDk1LDcuODA1LTMuMTU0bDUuODI3LTUuNzIzYzIuMDk1LTIuMDU5LDMuMjY0LTQuODEyLDMuMjktNy43NDkgICAgQzAuOTc2LDMzLjQ2MS0wLjE0NCwzMC42ODgtMi4yMDIsMjguNTk0eiIvPgoJPC9nPgoJPHBhdGggZD0iTS0xMy40MSwzOS42MDRjMS4xODMsMS4yMDMsMS4wMDEsMy4yOTktMC40MDUsNC42OEwtMjkuODgsNjAuMDY5Yy0xLjQwNSwxLjM4MS0zLjUwNSwxLjUyNy00LjY4OCwwLjMyNGwwLDAgICBjLTEuMTgtMS4yMDMtMC45OTgtMy4yOTcsMC40MDgtNC42OGwxNi4wNjUtMTUuNzg0Qy0xNi42ODgsMzguNTQ4LTE0LjU5MiwzOC40MDItMTMuNDEsMzkuNjA0TC0xMy40MSwzOS42MDR6Ii8+CjwvZz4KPC9zdmc+);
+  background-size: 24px 24px;
+}
+
+strong {
+  font-weight: 600;
+}
+
+em {
+  font-style: italic;
+}
+
+h1 {
+  font-size: 48px;
+  line-height: 48px;
+  font-weight: 100;
+  margin-bottom: 6px;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 24px;
+  margin-top: 64px;
+  margin-bottom: 12px;
+  border-top: 2px solid #eee;
+  padding-top: 48px;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 24px;
+  font-weight: 300;
+  margin-bottom: 12px;
+  padding-top: 48px;
+  margin-top: -16px;
+}
+
+p, h4, ol, ul, dl {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+p, ol, ul, dl {
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
+ol ol, ul ul {
+  margin-bottom: 0;
+}
+
+.note {
+  border-left: 4px solid #09c;
+  padding-left: 16px;
+}
+
+.note + .note {
+  margin-top: -16px;
+}
+
+.dim {
+  opacity: 0.33;
+}
+
+ol li {
+  list-style-type: decimal;
+  list-style-position: outside;
+  margin-left: 32px;
+}
+
+ul li {
+  list-style: square;
+  list-style-position: outside;
+  margin-left: 32px;
+}
+
+dl {
+  margin-left: 16px;
+}
+
+dl dt {
+  float: left;
+  display: inline-block;
+  vertical-align: top;
+  width: 120px;
+  clear: both;
+}
+
+dl dd {
+  margin-left: 120px;
+  margin-bottom: 8px;
+}
+
+dl dt code {
+  color: inherit;
+}
+
+h4 {
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 0;
+  color: #000;
+}
+
+pre {
+  background-color: #fcfcfc;
+  border-radius: 4px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.deprecated,
+.deprecated h4,
+.deprecated pre,
+.deprecated code {
+  color: #a77 !important;
+}
+
+.deprecated h4 {
+}
+
+.deprecated h4:after {
+  border-radius: 2px;
+  text-decoration: none;
+  background-color: #a77;
+  padding: 4px 6px;
+  margin-left: 10px;
+  color: #fff;
+  font-size: 12px;
+  content: 'DEPRECATED';
+}
+
+/* print */
+
+@media print {
+  nav {
+    display: none;
+  }
+
+  #page-content {
+    margin-left: 64px;
+  }
+}

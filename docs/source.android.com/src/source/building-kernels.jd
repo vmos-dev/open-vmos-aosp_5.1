@@ -1,0 +1,213 @@
+page.title=Building Kernels
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>If you are only interested in the kernel, you may use this guide
+to download and build the appropriate kernel.</p>
+<p>The following instructions assume that you have not downloaded all
+of AOSP.  If you have downloaded all of AOSP, you may skip the git
+clone steps other than the step to download the actual kernel sources.</p>
+<p>We will use the Pandaboard kernel in all the following examples.</p>
+<h2 id="figuring-out-which-kernel-to-build">Figuring out which kernel to build</h2>
+<p>This table lists the name and locations of the kernel sources and binaries:
+<table>
+  <tr>
+    <th>Device</th>
+    <th>Binary location</th>
+    <th>Source location</th>
+    <th>Build configuration</th>
+  </tr>
+  <tr>
+    <td>hammerhead</td>
+    <td>device/lge/hammerhead-kernel</td>
+    <td>kernel/msm</td>
+    <td>hammerhead_defconfig</td>
+  </tr>
+  <tr>
+    <td>flo</td>
+    <td>device/asus/flo-kernel/kernel</td>
+    <td>kernel/msm</td>
+    <td>flo_defconfig</td>
+  </tr>
+  <tr>
+    <td>deb</td>
+    <td>device/asus/flo-kernel/kernel</td>
+    <td>kernel/msm</td>
+    <td>flo_defconfig</td>
+  </tr>
+  <tr>
+    <td>manta</td>
+    <td>device/samsung/manta/kernel</td>
+    <td>kernel/exynos</td>
+    <td>manta_defconfig</td>
+  </tr>
+  <tr>
+    <td>mako</td>
+    <td>device/lge/mako-kernel/kernel</td>
+    <td>kernel/msm</td>
+    <td>mako_defconfig</td>
+  </tr>
+  <tr>
+    <td>grouper</td>
+    <td>device/asus/grouper/kernel</td>
+    <td>kernel/tegra</td>
+    <td>tegra3_android_defconfig</td>
+  </tr>
+  <tr>
+    <td>tilapia</td>
+    <td>device/asus/grouper/kernel</td>
+    <td>kernel/tegra</td>
+    <td>tegra3_android_defconfig</td>
+  </tr>
+  <tr>
+    <td>maguro</td>
+    <td>device/samsung/tuna/kernel</td>
+    <td>kernel/omap</td>
+    <td>tuna_defconfig</td>
+  </tr>
+  <tr>
+    <td>toro</td>
+    <td>device/samsung/tuna/kernel</td>
+    <td>kernel/omap</td>
+    <td>tuna_defconfig</td>
+  </tr>
+  <tr>
+    <td>panda</td>
+    <td>device/ti/panda/kernel</td>
+    <td>kernel/omap</td>
+    <td>panda_defconfig</td>
+  </tr>
+  <tr>
+    <td>stingray</td>
+    <td>device/moto/wingray/kernel</td>
+    <td>kernel/tegra</td>
+    <td>stingray_defconfig</td>
+  </tr>
+  <tr>
+    <td>wingray</td>
+    <td>device/moto/wingray/kernel </td>
+    <td>kernel/tegra</td>
+    <td>stingray_defconfig</td>
+  </tr>
+  <tr>
+    <td>crespo</td>
+    <td>device/samsung/crespo/kernel</td>
+    <td>kernel/samsung</td>
+    <td>herring_defconfig</td>
+  </tr>
+  <tr>
+    <td>crespo4g</td>
+    <td>device/samsung/crespo/kernel</td>
+    <td>kernel/samsung</td>
+    <td>herring_defconfig</td>
+  </tr>
+</table>
+
+<p>You will want to look at the git log for the kernel binary in the device
+project that you are interested in.</p>
+
+<p>Device projects are of the form device/&lt;vendor&gt;/&lt;name&gt;.</p>
+<pre><code>$ git clone https://android.googlesource.com/device/ti/panda
+$ cd panda
+$ git log --max-count=1 kernel
+</code></pre>
+
+<p>The commit message for the kernel binary contains a partial git log
+of the kernel sources that were used to build the binary in question.
+The first entry in the log is the most recent, i.e. the one used to
+build that kernel. You will need it at a later step.</p>
+
+
+<h2 id="id-version">Identifying kernel version</h2>
+<p>To determine the kernel version used in a particular system image, run the
+following command against the kernel file:</p>
+<pre><code>
+$ dd if=kernel bs=1 skip=$(LC_ALL=C grep -a -b -o $'\x1f\x8b\x08\x00\x00\x00\x00\x00' kernel | cut -d ':' -f 1) | zgrep -a 'Linux version'
+</code></pre>
+<p>For Nexus 5 (hammerhead), this can be accomplished with:</p>
+<pre><code>
+$ bzgrep -a 'Linux version' vmlinux.bz2
+</code></pre>
+
+
+<h2 id="downloading-sources">Downloading sources</h2>
+<p>Depending on which kernel you want,</p>
+<pre><code>$ git clone https://android.googlesource.com/kernel/common.git
+$ git clone https://android.googlesource.com/kernel/exynos.git
+$ git clone https://android.googlesource.com/kernel/goldfish.git
+$ git clone https://android.googlesource.com/kernel/msm.git
+$ git clone https://android.googlesource.com/kernel/omap.git
+$ git clone https://android.googlesource.com/kernel/samsung.git
+$ git clone https://android.googlesource.com/kernel/tegra.git
+</code></pre>
+<ul>
+<li>The <code>goldfish</code> project contains the kernel sources for the emulated
+platforms.</li>
+<li>The <code>msm</code> project has the sources for ADP1, ADP2, Nexus One, Nexus 4,
+and can be used as a starting point for work on Qualcomm MSM chipsets.</li>
+<li>The <code>omap</code> project is used for PandaBoard and Galaxy Nexus,
+and can be used as a starting point for work on TI OMAP chipsets.</li>
+<li>The <code>samsung</code> project is used for Nexus S,
+and can be used as a starting point for work on Samsung Hummingbird chipsets.</li>
+<li>The <code>tegra</code> project is for Xoom and Nexus 7,
+and can be used as a starting point for work on NVIDIA Tegra chipsets.</li>
+<li>The <code>exynos</code> project has the kernel sources for Nexus 10,
+and can be used as a starting point for work on Samsung Exynos chipsets.</li>
+</ul>
+<h2 id="downloading-a-prebuilt-gcc">Downloading a prebuilt gcc</h2>
+<p>Ensure that the prebuilt toolchain is in your path.</p>
+<pre>$ export PATH=$(pwd)/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin:$PATH</pre>
+
+or
+<pre>$ export PATH=$(pwd)/prebuilts/gcc/darwin-x86/arm/arm-eabi-4.6/bin:$PATH</pre>
+
+<p>On a linux host, if you don't have an Android source tree, you can download
+the prebuilt toolchain from:
+<pre>$ git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6</pre>
+
+<h2 id="building">Building</h2>
+<p>As an example, we would build the panda kernel using the following commands:</p>
+<pre><code>$ export ARCH=arm
+$ export SUBARCH=arm
+$ export CROSS_COMPILE=arm-eabi-
+$ cd omap
+$ git checkout &lt;commit_from_first_step&gt;
+$ make panda_defconfig
+$ make
+</code></pre>
+<p>To build the tuna kernel, you may run the previous commands replacing all
+instances of "panda" with "tuna".</p>
+<p>
+The kernel binary is output as: `arch/arm/boot/zImage` It can be copied
+into the Android source tree in order to build the matching boot image.
+</p>
+<p>Or you can include the <code>TARGET_PREBUILT_KERNEL</code> variable while
+using <code>make bootimage</code> or any other make command line that builds a
+boot image.</p>
+<pre><code>
+$ export TARGET_PREBUILT_KERNEL=$your_kernel_path/arch/arm/boot/zImage
+</code></pre>
+<p>That variable is supported by all devices as it is set up via
+device/common/populate-new-device.sh</p>

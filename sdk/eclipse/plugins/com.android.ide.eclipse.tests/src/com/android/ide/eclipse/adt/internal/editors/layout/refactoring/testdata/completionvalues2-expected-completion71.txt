@@ -1,0 +1,2 @@
+Code completion in completionvalues2.xml for <item name="main_layout5" type="string">@string/^app_name</item>:
+@string/app_name

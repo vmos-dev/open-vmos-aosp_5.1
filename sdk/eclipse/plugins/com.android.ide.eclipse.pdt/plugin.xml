@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.android.ide.eclipse.pdt.internal.preferences.PrefPage"
+            id="com.android.ide.eclipse.preferences.main"
+            name="Android"/>
+   </extension>
+   <extension
+         point="com.android.ide.eclipse.ddms.toolsLocator">
+      <locator
+            class="com.android.ide.eclipse.pdt.internal.ToolsLocator">
+      </locator>
+   </extension>
+   <extension
+         point="com.android.ide.eclipse.ddms.debuggerConnector">
+      <connector
+            class="com.android.ide.eclipse.pdt.internal.DebuggerConnector">
+      </connector>
+   </extension>
+   <extension
+         point="com.android.ide.eclipse.ddms.sourceRevealer">
+      <revealer
+            class="com.android.ide.eclipse.pdt.internal.SourceRevealer">
+      </revealer>
+   </extension>
+
+</plugin>

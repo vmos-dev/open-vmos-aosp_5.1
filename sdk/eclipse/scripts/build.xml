@@ -1,0 +1,133 @@
+<!--
+ * Copyright (C) 2012 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+
+*Sample* build.xml for ADT plugin build. Do not use for actual releases.
+
+Note: this uses the target platform from eclipse-build-deps.
+All these are newer than Eclipse 3.6.2 which is our current baseline.
+
+Note: for actual releases, use build_server.sh instead of this.
+
+To build:
+$ cd sdk/eclipse/scripts
+$ ant
+This should create the plugins in $OUT/host/eclipse/adtplugins/build/v<timestamp>-aosp
+
+-->
+<project name="com.android.eclipse.rcp.build" default="build">
+    <!-- The timestamp for the context qualifier. -->
+    <tstamp>
+        <format property="adt.timestamp"
+                pattern="yyyyMMddHHmmss" />
+    </tstamp>
+
+    <!-- Root of Android Source Tree -->
+    <property name="ANDROID_SRC" location="../../../" />
+
+    <!-- Host Eclipse used for building the RCP -->
+    <property name="basebuilder" value="${ANDROID_SRC}/external/eclipse-basebuilder/basebuilder-3.6.2/org.eclipse.releng.basebuilder/" />
+
+    <!-- Source for target prebuilts -->
+    <property name="targetSrcDir1" value="${ANDROID_SRC}/prebuilts/eclipse/" />
+    <property name="targetSrcDir2" value="${ANDROID_SRC}/prebuilts/eclipse-build-deps/" />
+
+    <!-- Location where build happens and resulting binaries are generated -->
+    <property name="outDir" value="${ANDROID_SRC}/out/host/eclipse/adtplugins/" />
+
+    <!-- Location where the target platform is created -->
+    <property name="targetDir" value="${outDir}/target" />
+
+    <!-- Location where the target platform is created -->
+    <property name="buildDir" value="${outDir}/build" />
+
+    <!-- Location of the sources -->
+    <property name="srcDir" value="${ANDROID_SRC}/sdk/eclipse/" />
+
+    <!-- locate launcher plugin inside eclipse -->
+    <path id="equinox.launcher.path">
+        <fileset dir="${basebuilder}/plugins">
+            <include name="org.eclipse.equinox.launcher_*.jar" />
+        </fileset>
+    </path>
+    <property name="equinox.launcher" refid="equinox.launcher.path" />
+
+    <!-- locate pde build plugin inside eclipse -->
+    <path id="pde.build.dir.path">
+        <dirset dir="${basebuilder}/plugins">
+            <include name="org.eclipse.pde.build_*" />
+        </dirset>
+    </path>
+    <property name="pde.build.dir" refid="pde.build.dir.path" />
+
+    <!-- create the build directory, copy plugins and features into it -->
+    <target name="copy_srcs">
+        <mkdir dir="${buildDir}" />
+        <copy todir="${buildDir}" preservelastmodified="true">
+            <fileset dir="${srcDir}/">
+                <include name="plugins/**" />
+                <include name="features/**" />
+                <exclude name="plugins/*/bin/**" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- create target platform -->
+    <target name="create-target">
+        <mkdir dir="${targetDir}" />
+        <mkdir dir="${targetDir}/deltapack" />
+        <mkdir dir="${targetDir}/repos" />
+
+        <unzip src="${targetSrcDir1}/deltapack/eclipse-3.7.2-delta-pack.zip" dest="${targetDir}/deltapack" overwrite="false" />
+        <unzip src="${targetSrcDir1}/platform/org.eclipse.platform-3.7.2.zip" dest="${targetDir}/repos/platform" overwrite="false" />
+        <unzip src="${targetSrcDir2}/cdt/cdt-master-8.0.2.zip" dest="${targetDir}/repos/cdt" overwrite="false" />
+        <unzip src="${targetSrcDir2}/emf/emf-xsd-SDK-M201201231045.zip" dest="${targetDir}/repos/emf" overwrite="false" />
+        <unzip src="${targetSrcDir2}/jdt/org.eclipse.jdt.source-3.7.2.zip" dest="${targetDir}/repos/jdt" overwrite="false" />
+        <unzip src="${targetSrcDir2}/wtp/wtp-repo-R-3.3.2-20120210195245.zip" dest="${targetDir}/repos/wtp" overwrite="false" />
+        <unzip src="${targetSrcDir2}/gef/GEF-SDK-3.7.2.zip" dest="${targetDir}/repos/gef" overwrite="false" />
+    </target>
+
+    <!-- Launch pde build -->
+    <target name="pde-build" depends="copy_srcs, create-target">
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-buildfile" />
+            <arg value="${pde.build.dir}/scripts/build.xml" />
+            <arg value="-data" />
+            <arg value="${buildDir}/workspace" />
+            <arg value="-configuration" />
+            <arg value="${buildDir}/configuration" />
+            <arg value="-Dbuilder=${srcDir}/buildConfig" />
+            <arg value="-Dtimestamp=${timestamp}" />
+            <arg value="-DeclipseLocation=${baseBuilder}" />
+            <arg value="-DbuildDirectory=${buildDir}" />
+            <arg value="-DbaseLocation=${targetDir}/deltapack/eclipse" />
+            <arg value="-DrepoBaseLocation=${targetDir}/repos/" />
+            <arg value="-DtransformedRepoLocation=${targetDir}/transformedRepos/" />
+            <arg value="-DupdateSiteSource=${srcDir}/sites/external" />
+            <arg value="-DforceContextQualifier=v${adt.timestamp}-aosp" />
+            <classpath>
+                <pathelement location="${equinox.launcher}" />
+            </classpath>
+        </java>
+    </target>
+
+    <target name="clean">
+        <delete dir="${outDir}" />
+        <delete dir="${targetDir}" />
+    </target>
+
+    <target name="build" depends="pde-build" />
+</project>

@@ -1,0 +1,3 @@
+Code completion in completionvalues1.xml for <item name="android:alwaysDrawnWithCache">^  false  </item>:
+true
+false

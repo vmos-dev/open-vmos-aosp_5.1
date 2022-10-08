@@ -1,0 +1,11 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="match_parent">
+    <Button android:text="Button"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:textColor="#FF0000" android:textSize="20pt"
+        android:id="@+id/button1" android:layout_alignParentBottom="true"></Button>
+    <Button android:text="Button"
+        android:layout_width="wrap_content" android:layout_height="fill_parent"
+        android:textColor="#FF00FF" android:textSize="20pt"
+        android:id="@+id/button2" android:layout_alignParentBottom="true"></Button>
+</FrameLayout>

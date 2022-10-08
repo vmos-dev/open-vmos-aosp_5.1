@@ -1,0 +1,12 @@
+type ssr, domain;
+type ssr_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(ssr)
+
+userdebug_or_eng(`
+  allow ssr ramdump_device:chr_file r_file_perms;
+  allow ssr ramdump_data_file:dir rw_dir_perms;
+  allow ssr ramdump_data_file:file create_file_perms;
+  allow ssr tombstone_data_file:dir search;
+')

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="unittests"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+    <classpathentry kind="lib" path="libs/kxml2-2.3.0.jar"/>
+    <classpathentry kind="lib" path="libs/easymock.jar"/>
+    <classpathentry kind="lib" path="libs/testutils.jar"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/ninepatch.jar" sourcepath="/ninepatch"/>
+    <classpathentry kind="lib" path="/plugin-base/libs/sdklib.jar" sourcepath="/SdkLib"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/sdkuilib.jar" sourcepath="/SdkUiLib"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/rule-api.jar" sourcepath="/rule-api"/>
+    <classpathentry kind="lib" path="/plugin-base/libs/common.jar" sourcepath="/common"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/lint-api.jar" sourcepath="/lint-api"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/lint-checks.jar" sourcepath="/lint-checks"/>
+    <classpathentry kind="lib" path="/plugin-base/libs/sdk-common.jar"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/lombok-ast-0.2.2.jar"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/asm-4.0.jar"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/asm-analysis-4.0.jar"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/asm-tree-4.0.jar"/>
+    <classpathentry kind="lib" path="/plugin-adt/libs/manifest-merger.jar" sourcepath="/manifest-merger"/>
+</classpath>

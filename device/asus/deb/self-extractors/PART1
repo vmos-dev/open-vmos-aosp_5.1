@@ -1,0 +1,12 @@
+#
+# Usage is subject to the enclosed license agreement
+
+echo
+echo The license for this software will now be displayed.
+echo You must agree to this license before using this software.
+echo
+echo -n Press Enter to view the license
+read dummy
+echo
+
+more << __EOF__

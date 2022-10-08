@@ -1,0 +1,23 @@
+[CAM Processor Job]
+Description[de]="<b>Erzeugt Bohrdaten im Excellon-Format</b><p>\nDieser CAM-Job kann verwendet werden, um Bohrdaten im Excellon-Format für numerisch gesteuerte Bohrmaschinen zu erzeugen.<p><p>\nDer EXCELLON-Treiber erzeugt eine Bohrdatendatei, die bereits die\nBohrertabelle im Dateikopf enthält."
+Description[en]="<b>Generates Excellon Drill Data </b><p>\nThis CAM job can be used to generate data for drilling machines in Ecxellon format.<p><p>\nThe EXCELLON device generates a drill data file which contains the drill table in the header of the file.\n"
+Section=Sec_1
+
+[Sec_1]
+Name[de]="Bohrdaten erzeugen"
+Name[en]="Generate drill data"
+Prompt[en]=""
+Device="EXCELLON"
+Wheel=".whl"
+Rack=""
+Scale=1
+Output="ashield.drd"
+Flags="0 0 0 1 0 1 1"
+Emulate="0 0 0"
+Offset="0.0mil 0.0mil"
+Sheet=1
+Tolerance="0 0 0 0 0.025 0.025"
+Pen="0.0mil 0"
+Page="12000.0mil 8000.0mil"
+Layers=" 44 45"
+Colors=" 1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2 6 6 4 8 8 8 8 8 8 8 8 8 8 8 8 8 4 4 1 1 1 1 3 3 1 2 6 8 8 5 8 8 8 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 4 2 4 3 6 6 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0"

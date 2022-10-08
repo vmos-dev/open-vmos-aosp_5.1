@@ -1,0 +1,162 @@
+page.title=Compatibility Test Suite
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project     
+
+    Licensed under the Apache License, Version 2.0 (the "License");    
+    you may not use this file except in compliance with the License.   
+    You may obtain a copy of the License at    
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software    
+    distributed under the License is distributed on an "AS IS" BASIS,    
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   
+    See the License for the specific language governing permissions and    
+    limitations under the License.   
+-->
+
+<h2 id="how-does-the-cts-work">How does the CTS work?</h2>
+<div style="float: right">
+    <img src="{@docRoot}images/cts-0.png">
+</div>
+
+<p>The CTS is an automated testing harness that includes two major software components:</p>
+<ul>
+<li>
+<p>The CTS test harness runs on your desktop machine and manages test execution.</p>
+</li>
+<li>
+<p>Individual test cases are executed on attached mobile devices or on an
+emulator. The test cases are written in Java as JUnit tests and packaged as
+Android .apk files to run on the actual device target.</p>
+</li>
+</ul>
+<h2 id="workflow">Workflow</h2>
+<p>This section summarizes CTS setup. Please refer to the <a href="android-cts-manual.pdf">
+CTS User Manual</a> for detailed instructions.</p>
+<ol>
+<li>
+<p><a href="downloads.html">Download</a> the CTS and CTS media files.</p>
+</li>
+<li>
+<p>Attach at least one device (or emulator) to your machine.</p>
+</li>
+<li>
+<p>For CTS versions 2.1 R2 through 4.2 R4, set up your device (or emulator) to run the accessibility tests:</p>
+<ol>
+<li>
+<code>adb install -r android-cts/repository/testcases/CtsDelegatingAccessibilityService.apk</code>
+</li>
+<li>
+<p>On the device, enable Settings &gt; Accessibility &gt; Accessibility &gt; Delegating Accessibility Service</p>
+</li>
+</ol>
+</li>
+<li>
+<p>For CTS 2.3 R4 and beyond, set up your device to run the device administration tests:</p>
+<ol>
+<li>
+<code>adb install -r android-cts/repository/testcases/CtsDeviceAdmin.apk</code>
+</li>
+<li>
+<p>On the device, enable the two <code>android.deviceadmin.cts.CtsDeviceAdminReceiver*</code> device
+administrators under Settings &gt; Location &amp; security &gt; Select device administrators</p>
+<p><strong>Note</strong>: Make sure the <code>android.deviceadmin.cts.CtsDeviceAdminDeactivatedReceiver</code>
+stays disabled in the same menu.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>For CTS 2.3 R12 and beyond, the CTS media files must be copied to the device's external storage. Check section 4.2 of the latest CTS manual for further details on copying these files:</p>
+<ol>
+<li>
+<p>Unzip the CTS Media zip file.</p>
+</li>
+<li>
+<p>Run the following command. If no resolution is specified, the default maximum resolution of
+480x360 is assumed:</p>
+<code>copy_media.sh [720x480|1280x720|1920x1080|all] [-s serial]</code>
+</li>
+</ol>
+</li>
+<li>
+<p>Launch the CTS. The CTS test harness loads the test plan onto the attached devices. For each test in the test harness:</p>
+<ul>
+<li>
+<p>The test harness pushes an .apk file to each device, executes the test through instrumentation, and records test results.</p>
+</li>
+<li>
+<p>The test harness removes the .apk file from each device.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Once all the tests are executed, view the test results in your browser and
+use them to adjust your design. You can continue to run the CTS throughout your development process.</p>
+</li>
+</ol>
+<h2 id="types-of-test-cases">Types of test cases</h2>
+<p>The CTS includes the following types of test cases:</p>
+<ul>
+<li>
+<p><em>Unit tests</em> test atomic units of code within the Android platform; e.g. a single class, such as java.util.HashMap.</p>
+</li>
+<li>
+<p><em>Functional tests</em> test a combination of APIs together in a higher-level use-case.</p>
+</li>
+<li>
+<p><em>Reference application tests</em> instrument a complete sample application
+to exercise a full set of APIs and Android runtime services.</p>
+</li>
+</ul>
+<p>Future versions of the CTS will include the following types of test cases:</p>
+<ul>
+<li>
+<p><em>Robustness tests</em> test the durability of the system under stress.</p>
+</li>
+<li>
+<p><em>Performance tests</em> test the performance of the system against defined benchmarks, for example rendering frames per second.</p>
+</li>
+</ul>
+<h2 id="areas-covered">Areas Covered</h2>
+<p>The unit test cases cover the following areas to ensure compatibility:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Signature tests</td>
+<td>For each Android release, there are XML files describing the signatures of all public APIs contained in the release. The CTS contains a utility to check those API signatures against the APIs available on the device. The results from signature checking are recorded in the test result XML file.</td>
+</tr>
+<tr>
+<td>Platform API Tests</td>
+<td>Test the platform (core libraries and Android Application Framework) APIs as documented in the SDK <a href="https://developer.android.com/reference/classes.html">Class Index</a> to ensure API correctness, including correct class, attribute and method signatures, correct method behavior, and negative tests to ensure expected behavior for incorrect parameter handling.</td>
+</tr>
+<tr>
+<td>Dalvik VM Tests</td>
+<td>The tests focus on testing the Dalvik Executable Format.</td>
+</tr>
+<tr>
+<td>Platform Data Model</td>
+<td>The CTS tests the core platform data model as exposed to application developers through content providers, as documented in the SDK <a href="https://developer.android.com/reference/android/provider/package-summary.html">android.provider</a> package: contacts, browser, settings, etc.</td>
+</tr>
+<tr>
+<td>Platform Intents</td>
+<td>The CTS tests the core platform intents, as documented in the SDK <a href="https://developer.android.com/guide/appendix/g-app-intents.html">Available Intents</a>.</td>
+</tr>
+<tr>
+<td>Platform Permissions</td>
+<td>The CTS tests the core platform permissions, as documented in the SDK <a href="https://developer.android.com/reference/android/Manifest.permission.html">Available Permissions</a>.</td>
+</tr>
+<tr>
+<td>Platform Resources</td>
+<td>The CTS tests for correct handling of the core platform resource types, as documented in the SDK <a href="https://developer.android.com/guide/topics/resources/available-resources.html">Available Resource Types</a>. This includes tests for: simple values, drawables, nine-patch, animations, layouts, styles and themes, and loading alternate resources.</td>
+</tr>
+</tbody>
+</table>

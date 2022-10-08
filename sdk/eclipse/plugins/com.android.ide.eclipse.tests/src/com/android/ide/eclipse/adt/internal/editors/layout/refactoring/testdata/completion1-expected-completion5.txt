@@ -1,0 +1,2 @@
+Code completion in completion1.xml for layout_marginLeft="50d^p":
+50dp : <b>Density-independent Pixels</b> - an abstract unit that is based on the physical density of the screen.

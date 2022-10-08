@@ -1,0 +1,33 @@
+<!--
+  Copyright 2012 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<resources>
+
+    <dimen name="notification_panel_width">-1dp</dimen> <!-- MATCH_PARENT -->
+    <dimen name="editor_inset">8dp</dimen>
+    <dimen name="caption_padding_top">10dp</dimen>
+    <dimen name="caption_padding_bottom">0dp</dimen>
+    <dimen name="editor_text_size">12dp</dimen>
+    <dimen name="editor_caption_width">95dp</dimen>
+    <dimen name="editor_icon_size_small">40dp</dimen>
+    <dimen name="editor_icon_size_large">60dp</dimen>
+    <dimen name="editor_icon_outer_margin">5dp</dimen>
+    <dimen name="editor_icon_inner_margin">2dp</dimen>
+    <dimen name="editor_drop_down_padding">5dp</dimen>
+    <dimen name="editor_datetime_padding_v">0dp</dimen>
+    <dimen name="editor_datetime_padding_h">15dp</dimen>
+
+</resources>

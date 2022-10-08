@@ -1,0 +1,2 @@
+on init
+    mkdir /radio 0700 root root

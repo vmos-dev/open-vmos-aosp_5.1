@@ -1,0 +1,22 @@
+type ss_ramdump, domain;
+type ss_ramdump_exec, exec_type, file_type;
+
+# Started by init
+init_daemon_domain(ss_ramdump)
+
+# read the contents of the /dev directory
+allow ss_ramdump device:dir r_dir_perms;
+
+userdebug_or_eng(`
+  # Read /dev/ramdump_* character devices
+  allow ss_ramdump ramdump_device:chr_file r_file_perms;
+
+  # Create files in /data/tombstones, for example
+  # /data/tombstones/ramdump_venus.elf
+  allow ss_ramdump tombstone_data_file:dir rw_dir_perms;
+  allow ss_ramdump tombstone_data_file:file rw_file_perms;
+
+  # Needed to allow UID=root to access /data/tombstones,
+  # which is owned by UID=system
+  allow ss_ramdump self:capability dac_override;
+')

@@ -1,0 +1,72 @@
+page.title=Android Compatibility
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project     
+
+    Licensed under the Apache License, Version 2.0 (the "License");    
+    you may not use this file except in compliance with the License.   
+    You may obtain a copy of the License at    
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software    
+    distributed under the License is distributed on an "AS IS" BASIS,    
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   
+    See the License for the specific language governing permissions and    
+    limitations under the License.   
+-->
+
+<p>Android's purpose is to establish an open platform for developers to build innovative apps.
+The Android Compatibility program defines the technical details of the Android platform and provides
+tools used by OEMs to ensure that developers' apps run on a variety of devices. The Android SDK
+provides built-in tools that developers use to clearly state the device features their apps
+require. And Google Play shows apps only to those devices that can properly run them.
+</p>
+
+<h2 id="why-build-compatible-android-devices">Why build compatible Android devices?</h2>
+<h3 id="users-want-a-customizable-device">Users want a customizable device.</h3>
+<p>A mobile phone is a highly personal, always-on, always-present gateway to
+the Internet. We haven't met a user yet who didn't want to customize it by
+extending its functionality. That's why Android was designed as a robust
+platform for running aftermarket applications.</p>
+<h3 id="developers-outnumber-us-all">Developers outnumber us all.</h3>
+<p>No device manufacturer can hope to write all the software that a person could
+conceivably need. We need third-party developers to write the apps users want;
+so the Android Open Source Project aims to make it as easy and open as
+possible for developers to build apps.</p>
+<h3 id="everyone-needs-a-common-ecosystem">Everyone needs a common ecosystem.</h3>
+<p>Every line of code developers write to work around a particular phone's bug
+is a line of code that didn't add a new feature. The more compatible phones
+there are, the more apps there will be. By building a fully compatible Android
+device, you benefit from the huge pool of apps written for Android, while
+increasing the incentive for developers to build more of those apps.</p>
+<h2 id="android-compatibility-is-free-and-its-easy">Android compatibility is free, and it's easy.</h2>
+<p>If you are building a mobile device, you can follow these steps to make
+sure your device is compatible with Android. For more details about the
+Android compatibility program in general, see <a href="overview.html">the program overview</a>.</p>
+<p>Building a compatible device is a three-step process:</p>
+<ol>
+<li>
+<p><em>Obtain the <a href="{@docRoot}source/index.html">Android software source
+code</a></em>.
+    This is the source code for the Android platform that you port to your hardware.</p>
+</li>
+<li>
+<p><em>Comply with the <a href="{@docRoot}compatibility/android-cdd.pdf">Android
+Compatibility Definition Document (CDD)</a></em>.
+    The CDD enumerates the software and hardware requirements of a compatible Android device.</p>
+</li>
+<li>
+<p><em>Pass the <a href="{@docRoot}compatibility/cts-intro.html">Compatibility
+Test Suite (CTS)</a></em>.
+    Use the CTS as an ongoing aid to compatibility during the development process.</p>
+</li>
+</ol>
+
+<h2 id="joining-the-ecosystem">Joining the ecosystem</h2>
+<p>Once you've built a compatible device, you may wish to include Google
+Play to provide your users access to the third-party app ecosystem.
+Unfortunately, for a variety of legal and business reasons, we aren't able to
+automatically license Google Play to all compatible devices. To inquire
+about access to Google Play, you can <a href="contact-us.html">contact us</a>.</p>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+     Copyright (C) 2013 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+
+    <string name="app_name">TestingCam2.1</string>
+
+    <string name="action_add_camera">Add camera</string>
+    <string name="action_add_target">Add target</string>
+    <string name="action_add_request">Add request</string>
+    <string name="action_add_burst">Add burst</string>
+    <string name="action_add_utility">Add utility</string>
+
+    <string name="action_load_config">Load config</string>
+    <string name="action_save_config">Save config</string>
+
+    <string name="output_view_label">Outputs</string>
+    <string name="output_view_list_label">Output Views</string>
+    <string name="log_pane_label">Log</string>
+
+    <string name="control_list_label">Controls</string>
+    <string name="control_list_add_button">+</string>
+    <string name="control_pane_remove_button">-</string>
+    <string name="control_pane_collapse_button_off">v</string>
+    <string name="control_pane_collapse_button_on">^</string>
+
+    <string name="camera_list_label">Cameras</string>
+    <string name="target_list_label">Targets</string>
+    <string name="request_list_label">Requests</string>
+    <string name="burst_list_label">Bursts</string>
+    <string name="util_list_label">Utils</string>
+
+    <string name="camera_pane_title">Camera</string>
+    <string name="camera_pane_spinner_prompt">ID</string>
+    <string name="camera_pane_open_button_off">Open</string>
+    <string name="camera_pane_open_button_on">Close</string>
+    <string name="camera_pane_info_button">Info</string>
+    <string name="camera_pane_configure_button">Configure</string>
+    <string name="camera_pane_stop_button">Stop</string>
+    <string name="camera_pane_flush_button">Flush</string>
+
+    <string name="target_pane_title">Target</string>
+    <string name="target_pane_camera_prompt">Camera</string>
+    <string name="target_pane_output_prompt">Output</string>
+    <string name="target_pane_configure_button_off">Not configured</string>
+    <string name="target_pane_configure_button_on">Will be configured</string>
+
+    <string name="target_subpane_texture_view_size_prompt">Size</string>
+    <string name="target_subpane_surface_view_size_prompt">Size</string>
+    <string name="target_subpane_image_reader_format_prompt">Format</string>
+    <string name="target_subpane_image_reader_size_prompt">Size</string>
+    <string name="target_subpane_image_reader_count_prompt">Max buffers</string>
+    <string name="target_subpane_image_reader_prev_button">&lt;&lt;&lt;</string>
+    <string name="target_subpane_image_reader_next_button">&gt;&gt;&gt;</string>
+    <string name="target_subpane_image_reader_save_button">Save</string>
+
+    <string name="request_pane_title">Request</string>
+    <string name="request_pane_capture_button">Capture</string>
+    <string name="request_pane_repeat_button">Repeat</string>
+    <string name="request_pane_camera_prompt">Camera</string>
+    <string name="request_pane_template_prompt">Template</string>
+    <string name="request_pane_output_prompt">Targets</string>
+
+    <string name="burst_pane_title">Burst</string>
+
+    <string name="util_pane_title">Util</string>
+
+    <string name="camera_info_dialog_ok_button">OK</string>
+
+    <!-- V1 strings -->
+
+    <string name="v1_app_name">TestingCam2</string>
+    <string name="info_button_label">JPEG!</string>
+    <string name="flush_button_label">Flush device</string>
+    <string name="focus_lock_button_label">Focus Lock</string>
+    <string name="focus_unlock_button_label">Focus Unlock</string>
+    <string name="focus_mode_spinner_prompt">AF Mode</string>
+    <string name="recording_on_label">Recording On</string>
+    <string name="recording_off_label">Recording Off</string>
+    <string name="use_media_codec_label">Use MediaCodec</string>
+    <string name="auto_control_label">Auto</string>
+    <string name="manual_control_label">Manual Control</string>
+    <string name="sensitivity_value_prompt">Sensitivity(ISO): </string>
+    <string name="exposure_time_prompt">Exposure Time: </string>
+    <string name="frame_duration_value_prompt">Frame Duration: </string>
+    <string name="capture_result_prompt">Capture Result: </string>
+    <string name="manual_ctrl_prompt">Manual Control</string>
+    <string name="radio_mp4">mp4</string>
+    <string name="radio_webm">webm</string>
+
+    <string-array name="focus_mode_spinner_arrays">
+      <!-- must be in same order as CONTROL_AF_MODE_* enums -->
+        <item>OFF</item>
+        <item>AUTO</item>
+        <item>MACRO</item>
+        <item>CONTINUOUS_VIDEO</item>
+        <item>CONTINUOUS_PICTURE</item>
+        <item>EDOF</item>
+    </string-array>
+</resources>

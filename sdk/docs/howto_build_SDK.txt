@@ -1,0 +1,299 @@
+Copyright (C) 2009 The Android Open Source Project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+Subject: How to build an Android SDK & ADT Eclipse plugin.
+Date:    2009/03/27
+Updated: 2013/04/09
+
+
+Table of content:
+  0- License
+  1- Foreword
+  2- Building an SDK for MacOS and Linux
+  3- Building an SDK for Windows
+  4- Building an ADT plugin for Eclipse
+  5- Conclusion
+
+
+
+----------
+0- License
+----------
+
+ Copyright (C) 2009 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+
+
+-----------
+1- Foreword
+-----------
+
+This document explains how to build the Android SDK and the ADT Eclipse plugin.
+
+It is designed for advanced users which are proficient with command-line
+operations and know how to setup the pre-required software.
+
+Basically it's not trivial yet when done right it's not that complicated.
+
+
+
+--------------------------------------
+2- Building an SDK for MacOS and Linux
+--------------------------------------
+
+First, setup your development environment and get the Android source code from
+git as explained here:
+
+  http://source.android.com/source/download.html
+
+For example for the cupcake branch:
+
+  $ mkdir ~/my-android-git
+  $ cd ~/my-android-git
+  $ repo init -u https://android.googlesource.com/platform/manifest -b master -g all,-notdefault,tools
+  $ repo sync
+
+Then once you have all the source, simply build the SDK using:
+
+  $ cd ~/my-android-git
+  $ . build/envsetup.sh
+  $ lunch sdk-eng
+  $ make sdk
+
+This will take a while, maybe between 20 minutes and several hours depending on
+your machine. After a while you'll see this in the output:
+
+  Package SDK: out/host/darwin-x86/sdk/android-sdk_eng.<build-id>_mac-x86.zip
+
+Some options:
+
+- Depending on your machine you can tell 'make' to build more things in
+  parallel, e.g. if you have a dual core, use "make -j4 sdk" to build faster.
+
+- You can define "BUILD_NUMBER" to control the build identifier that gets
+  incorporated in the resulting archive. The default is to use your username.
+  One suggestion is to include the date, e.g.:
+
+  $ export BUILD_NUMBER=${USER}-`date +%Y%m%d-%H%M%S`
+
+  There are certain characters you should avoid in the build number, typically
+  everything that might confuse 'make' or your shell. So for example avoid
+  punctuation and characters like $ & : / \ < > , and .
+
+
+
+------------------------------
+3- Building an SDK for Windows
+------------------------------
+
+Full Windows SDK builds are now only supported on Linux -- most of the
+framework is not designed to be built on Windows so technically the Windows
+SDK is build on top of a Linux SDK where a few binaries are replaced. So it
+cannot be built on Windows, and it cannot be built on Mac, only on Linux.
+
+I'll repeat this again because it's important:
+
+  To build the Android SDK for Windows, you need to use a *Linux* box.
+
+
+A- Pre-requisites
+-----------------
+
+Before you can even think of building the Android SDK for Windows, you need to
+perform the steps from section "2- Building an SDK for MacOS and Linux" above:
+setup and build a regular Linux SDK. Once this working, please continue here.
+
+Under Ubuntu, you will need the following extra packages:
+
+$ sudo apt-get install mingw32 tofrodos
+
+mingw32 is the cross-compiler, tofrodos adds a unix2dos command
+
+
+B- Building
+-----------
+
+To build, perform the following steps:
+
+$ . build/envsetup.sh
+$ lunch sdk-eng
+$ make win_sdk
+
+Note that this will build both a Linux SDK then a Windows SDK.
+The result is located at
+   out/host/windows/sdk/android-sdk_eng.${USER}_windows/
+
+
+
+----------------------------
+4- Partial SDK Windows Tools
+----------------------------
+
+As explained above, you can only build a *full* SDK for Windows using Linux.
+However sometimes you need to develop one specific tools, e.g. adb.exe or
+aapt.exe, and it's just more convenient to do it on the same platform where
+you can actually test it. This is what this section explains.
+
+
+A- Cygwin pre-requisite & code checkout
+---------------------------------------
+
+You must have Cygwin installed. You can use the latest Cygwin 1.7 or the
+the "legacy Cygwin 1.5" from:
+
+  http://cygwin.org/
+
+Now configure it:
+- When installing Cygwin, set Default Text File Type to Unix/binary, not DOS/text.
+  This is really important, otherwise you will get errors when trying to
+  checkout code using git.
+- Packages that you must install or not:
+  - Required packages: autoconf, bison, curl, flex, gcc, g++, git, gnupg, make,
+                       mingw-zlib, python, zip, unzip.
+  - Suggested extra packages: diffutils, emacs, openssh, rsync, vim, wget.
+  - Packages that must not be installed: readline.
+
+Once you installed Cygwin properly, checkout the code from git as you did
+for MacOS or Linux (see section 2 above.)
+
+
+
+C- Building the Windows Tools
+-----------------------------
+
+This is the easy part: run make on the tool you want.
+How do you know which tools you can build? Well obviously all the ones
+that come in an installed SDK/tools or SDK/platform-tools folder!
+
+Example, to build adb:
+
+  $ cd ~/my-android-git
+  $ . build/envsetup.sh
+  $ lunch sdk-eng
+  $ make adb
+
+The result will be somewhere in out/host/windows-x86/bin/. Just look at
+the output from make to get the exact path. Since you are building this
+under cygwin, you get an unstripped binary that you can happily feed to
+gdb to get debugger symbols:
+
+  $ gdb --args out/host/windows-x86/bin/adb.exe <adb arguments>
+
+
+And before you ask, msys is not supported, nor is MSVC or windbg.
+
+So you can build a lot of little parts of the SDK on Windows, one tool
+at a time, but not the full thing because basically building the whole
+platform is not supported. This means you cannot build "android.jar"
+nor "layoutlib.jar" under Windows. For this you want Linux.
+
+
+
+D- Building the Windows Tools on Linux
+--------------------------------------
+
+You can also build isolated windows tools directly on Linux.
+Again, it requires a checkout of the full android code and the usual
+setup like described above to build an SDK.
+
+Then to build an isolated Windows binary, you'd do something like this:
+
+  $ cd ~/my-android-git
+  $ . build/envsetup.sh
+  $ lunch sdk-eng
+  $ USE_MINGW=1 make adb
+
+The special environment variable "USE_MINGW" must be set to 1. This is
+the clue to switch the make logic to cross-compiling to Windows under
+Linux.
+
+
+
+-------------------------------------
+4- Building an ADT plugin for Eclipse
+-------------------------------------
+
+We've simplified the steps here.
+It used to be that you'd have to download a specific version of
+Eclipse and install it at a special location. That's not needed
+anymore.
+
+Instead you just change directories to your git repository and invoke the
+build script by giving it a destination directory and an optional build number:
+
+  $ mkdir ~/mysdk
+  $ cd ~/my-android-git   # <-- this is where you did your "repo sync"
+  $ sdk/eclipse/scripts/build_server.sh ~/mysdk $USER
+
+
+The first argument is the destination directory. It must be absolute. Do not
+give a relative destination directory such as "../mysdk" -- this would make the
+Eclipse build fail with a cryptic message:
+
+  BUILD SUCCESSFUL
+  Total time: 1 minute 5 seconds
+  **** Package in ../mysdk
+  Error: Build failed to produce ../mysdk/android-eclipse
+  Aborting
+
+The second argument is the build "number". The example used "$USER" but it
+really is a free identifier of your choice. It cannot contain spaces nor
+periods (dashes are ok.) If the build number is missing, a build timestamp will
+be used instead in the filename.
+
+The build should take something like 5-10 minutes.
+
+
+When the build succeeds, you'll see something like this at the end of the
+output:
+
+  ZIP of Update site available at ~/mysdk/android-eclipse-v200903272328.zip
+or
+  ZIP of Update site available at ~/mysdk/android-eclipse-<buildnumber>.zip
+
+When you load the plugin in Eclipse, its feature and plugin name will look like
+"com.android.ide.eclipse.adt_0.9.0.v200903272328-<buildnumber>.jar". The
+internal plugin ID is always composed of the package, the build timestamp and
+then your own build identifier (a.k.a. the "build number"), if provided. This
+means successive builds with the same build identifier are incremental and
+Eclipse will know how to update to more recent ones.
+
+
+
+-------------
+5- Conclusion
+-------------
+
+This completes the howto guide on building your own SDK and ADT plugin.
+Feedback is welcome on the public Android Open Source forums:
+  http://source.android.com/discuss
+
+If you are upgrading from a pre-cupcake to a cupcake or later SDK please read
+the accompanying document "howto_use_cupcake_sdk.txt".
+
+-end-
+

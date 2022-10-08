@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2013 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/panels"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+  <GridLayout
+      android:id="@+id/target_grid"
+      android:layout_width="0dp"
+      android:layout_height="fill_parent"
+      android:layout_weight="6"
+      android:rowCount="2"
+      android:columnCount="2">
+
+    <SurfaceView
+        android:id="@+id/preview_view"
+        android:layout_width="240dp"
+        android:layout_height="180dp" />
+
+    <ImageView
+        android:id="@+id/still_view"
+        android:layout_width="240dp"
+        android:layout_height="180dp" />
+
+  </GridLayout>
+
+  <ScrollView
+      android:id="@+id/controls_scroll"
+      android:layout_width="0dp"
+      android:layout_height="fill_parent"
+      android:layout_weight="2">
+
+    <LinearLayout
+        android:id="@+id/control_bar_contents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/info_button"
+            android:text="@string/info_button_label"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <ToggleButton
+            android:id="@+id/start_recording"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:textColorLink="@android:color/holo_red_light"
+            android:textOff="@string/recording_off_label"
+            android:textOn="@string/recording_on_label" />
+
+        <Button
+            android:id="@+id/flush_button"
+            android:text="@string/flush_button_label"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <ToggleButton
+            android:id="@+id/focus_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:textColorLink="@android:color/holo_red_light"
+            android:textOn="@string/focus_unlock_button_label"
+            android:textOff="@string/focus_lock_button_label" />
+
+        <View
+            android:id="@+id/horizontal_rule_1"
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_marginBottom="@dimen/horiz_rule_btm_margin"
+            android:layout_marginTop="@dimen/horiz_rule_top_margin"
+            android:background="@color/horiz_rule_color" />
+
+        <Spinner
+            android:id="@+id/focus_mode_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:prompt="@string/focus_mode_spinner_prompt"
+            />
+
+        <CheckBox
+            android:id="@+id/use_media_codec"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/use_media_codec_label" />
+
+        <ToggleButton
+            android:id="@+id/manual_control"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:textColorLink="@android:color/holo_blue_light"
+            android:textOff="@string/auto_control_label"
+            android:textOn="@string/manual_control_label" />
+
+        <TextView
+            android:id="@+id/sensitivity_bar_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/sensitivity_value_prompt"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <SeekBar android:id="@+id/sensitivity_seekbar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:progress="0"
+            style="?android:attr/progressBarStyleHorizontal"
+            />
+
+        <TextView
+            android:id="@+id/exposure_time_bar_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/exposure_time_prompt"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <SeekBar android:id="@+id/exposure_time_seekbar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:progress="0"
+            style="?android:attr/progressBarStyleHorizontal"
+            />
+
+        <TextView
+            android:id="@+id/frame_duration_bar_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/frame_duration_value_prompt"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <SeekBar android:id="@+id/frame_duration_seekbar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:progress="0"
+            style="?android:attr/progressBarStyleHorizontal"
+            />
+
+        <RadioGroup
+          android:id="@+id/radio_fmt"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" >
+
+          <RadioButton
+            android:id="@+id/radio_mp4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/radio_mp4"
+            android:checked="true" />
+
+          <RadioButton
+            android:id="@+id/radio_webm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/radio_webm" />
+
+        </RadioGroup>
+
+        <View
+            android:id="@+id/horizontal_rule_2"
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_marginBottom="@dimen/horiz_rule_btm_margin"
+            android:layout_marginTop="@dimen/horiz_rule_top_margin"
+            android:background="@color/horiz_rule_color" />
+
+        <TextView
+            android:id="@+id/capture_result_info_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/capture_result_prompt"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    </LinearLayout>
+  </ScrollView>
+
+</LinearLayout>

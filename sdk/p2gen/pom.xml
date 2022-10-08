@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ This pom is used to take a set of files present in a Maven repo,
+ add OSGI manifest if necessary and put them in a p2 repository suitable
+ for consumption by the Eclipse Tycho builder.
+
+ See README.txt for more information and about invocation options.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.android.tools.rcp</groupId>
+  <artifactId>adt-eclipse</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0.0</version>
+
+  <properties>
+    <android.src.dir>${basedir}/../..</android.src.dir>
+    <android.out.dir>${basedir}/../../out</android.out.dir>
+  </properties>
+
+  <!--
+   Define two profiles: online and offline
+
+   The offline profile is default and will be used by the build server. For this
+   to work, all the required artifacts must already be in the local repository
+   pointed to by the settings.xml
+
+   The online profile could be used for testing/debugging purposes. It can be
+   activated by removing the offline option, and adding "-P online" to the list
+   of command line options. This allows downloading necessary artifacts either
+   from the internet, or from the prebuilts and generated artifacts of the gradle
+   builds.
+  -->
+  <profiles>
+    <profile>
+      <id>offline</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+
+    <profile>
+      <id>online</id>
+      <repositories>
+         <repository>
+          <id>tools</id>
+          <url>file:///${android.out.dir}/repo/</url>
+         </repository>
+         <repository>
+          <id>tools-prebuilts</id>
+          <url>file:///${android.src.dir}/prebuilts/tools/common/m2/repository/</url>
+         </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <build>
+    <!-- Remap the build folder to be something inside out -->
+    <directory>${basedir}/../../out/host/maven/p2gen</directory>
+
+    <plugins>
+      <plugin>
+        <!-- org.reficio:p2-maven-plugin:1.1.0 is checked into prebuils/tools/common/m2/repository -->
+        <groupId>org.reficio</groupId>
+        <artifactId>p2-maven-plugin</artifactId>
+        <version>1.1.0</version>
+
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <configuration>
+              <artifacts>
+                <!-- tools/base dependencies -->
+                <artifact> <id>com.android.tools.build:manifest-merger:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools.ddms:ddmlib:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools.layoutlib:layoutlib-api:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools.lint:lint-api:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools.lint:lint-checks:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:asset-studio:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:common:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:dvlib:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:ninepatch:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:rule-api:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:sdk-common:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:sdklib:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:testutils:22.9.0</id> </artifact>
+
+                <!-- tools/swt dependencies -->
+                <artifact> <id>com.android.tools.ddms:ddmuilib:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:hierarchyviewer2lib:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:sdkstats:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:sdkuilib:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:swtmenubar:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:traceview:22.9.0</id> </artifact>
+                <artifact> <id>com.android.tools:uiautomatorviewer:22.9.0</id> </artifact>
+
+                <!-- prebuilts -->
+                <artifact> <id>com.android.tools.external.lombok:lombok-ast:0.2.2</id> </artifact>
+                <artifact> <id>com.android.tools.external:ant-glob:1.0</id> </artifact>
+                <artifact> <id>com.android.tools.external:liblzf:1.0</id> </artifact>
+                <artifact> <id>com.android.tools.external:libprotobuf-java-lite:2.3.0</id> </artifact>
+                <artifact> <id>com.android.tools.external:propertysheet:1.0</id> </artifact>
+                <artifact> <id>com.google.guava:guava:15.0</id> </artifact>
+                <artifact> <id>commons-codec:commons-codec:1.4</id> </artifact>
+                <artifact> <id>commons-logging:commons-logging:1.1.1</id> </artifact>
+                <artifact> <id>jfree:jcommon:1.0.12</id> </artifact>
+                <artifact> <id>jfree:jfreechart-swt:1.0.9</id> </artifact>
+                <artifact> <id>jfree:jfreechart:1.0.9</id> </artifact>
+                <artifact> <id>net.sf.kxml:kxml2:2.3.0</id> </artifact>
+                <artifact> <id>net.sf.kxml:kxml2:2.3.0</id> </artifact>
+                <artifact> <id>org.apache.commons:commons-compress:1.0</id> </artifact>
+                <artifact> <id>org.apache.httpcomponents:httpclient:4.1.1</id> </artifact>
+                <artifact> <id>org.apache.httpcomponents:httpcore:4.1</id> </artifact>
+                <artifact> <id>org.apache.httpcomponents:httpmime:4.1</id> </artifact>
+                <artifact>
+                  <id>org.freemarker:freemarker:2.3.20</id>
+                  <!--
+                   freemarker 2.3.20 bundles an OSGI manifest..except that manifest is
+                   incorrect. http://sourceforge.net/p/freemarker/bugs/411/
+                   This rule rewrites the OSGI manifest.
+                   -->
+                  <override>true</override>
+                </artifact>
+                <artifact> <id>org.ow2.asm:asm-analysis:4.0</id> </artifact>
+                <artifact> <id>org.ow2.asm:asm-tree:4.0</id> </artifact>
+                <artifact> <id>org.ow2.asm:asm:4.0</id> </artifact>
+              </artifacts>
+            </configuration>
+
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

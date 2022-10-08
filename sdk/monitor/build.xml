@@ -1,0 +1,105 @@
+<project name="com.android.eclipse.rcp.build" default="build">
+    <!-- Root of Android Source Tree -->
+    <property name="ANDROID_SRC" location="../../" />
+
+    <!-- Host Eclipse used for building the RCP -->
+    <property name="basebuilder" value="${ANDROID_SRC}/external/eclipse-basebuilder/basebuilder-3.6.2/org.eclipse.releng.basebuilder/" />
+
+    <!-- Source for target prebuilts -->
+    <property name="targetSrcDir" value="${ANDROID_SRC}/prebuilts/eclipse/" />
+
+    <!-- Location where build happens and resulting binaries are generated -->
+    <property name="outDir" value="${ANDROID_SRC}/out/host/eclipse/rcp/" />
+
+    <!-- Location where the target platform is created -->
+    <property name="targetDir" value="${outDir}/target" />
+
+    <!-- Location where the target platform is created -->
+    <property name="buildDir" value="${outDir}/build" />
+
+    <!-- Location of the sources -->
+    <property name="srcDir" value="${ANDROID_SRC}/sdk/eclipse/" />
+
+    <!-- Identify configurations to build -->
+    <condition property="buildconfigs" value="linux,gtk,x86 &amp; linux,gtk,x86_64">
+        <equals arg1="${buildFor}" arg2="linux" />
+    </condition>
+    <condition property="buildconfigs" value="macosx,cocoa,x86_64">
+        <equals arg1="${buildFor}" arg2="darwin" />
+    </condition>
+    <condition property="buildconfigs" value="win32,win32,x86 &amp; win32,win32,x86_64">
+        <equals arg1="${buildFor}" arg2="windows" />
+    </condition>
+
+    <!-- if no platforms are provided, then build for all platforms -->
+    <property name="buildconfigs" value="linux,gtk,x86 &amp; linux,gtk,x86_64 &amp; win32,win32,x86 &amp; win32,win32,x86_64 &amp; macosx,cocoa,x86_64" />
+
+    <!-- locate launcher plugin inside eclipse -->
+    <path id="equinox.launcher.path">
+        <fileset dir="${basebuilder}/plugins">
+            <include name="org.eclipse.equinox.launcher_*.jar" />
+        </fileset>
+    </path>
+    <property name="equinox.launcher" refid="equinox.launcher.path" />
+
+    <!-- locate pde build plugin inside eclipse -->
+    <path id="pde.build.dir.path">
+        <dirset dir="${basebuilder}/plugins">
+            <include name="org.eclipse.pde.build_*" />
+        </dirset>
+    </path>
+    <property name="pde.build.dir" refid="pde.build.dir.path" />
+
+    <!-- create the build directory, copy plugins and features into it -->
+    <target name="copy_srcs">
+        <mkdir dir="${buildDir}" />
+        <copy todir="${buildDir}" preservelastmodified="true">
+            <fileset dir="${srcDir}/">
+                <include name="plugins/**" />
+                <include name="features/**" />
+                <exclude name="plugins/*/bin/**" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- create target platform -->
+    <target name="create-target">
+        <mkdir dir="${targetDir}" />
+        <mkdir dir="${targetDir}/deltapack" />
+        <mkdir dir="${targetDir}/repos" />
+
+        <unzip src="${targetSrcDir}/deltapack/eclipse-3.7.2-delta-pack.zip" dest="${targetDir}/deltapack" overwrite="false" />
+        <unzip src="${targetSrcDir}/platform/org.eclipse.platform-3.7.2.zip" dest="${targetDir}/repos/platform" overwrite="false" />
+    </target>
+
+    <!-- Launch pde build -->
+    <target name="pde-build" depends="copy_srcs, create-target">
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-buildfile" />
+            <arg value="${pde.build.dir}/scripts/productBuild/productBuild.xml" />
+            <arg value="-data" />
+            <arg value="${buildDir}/workspace" />
+            <arg value="-configuration" />
+            <arg value="${buildDir}/configuration" />
+            <arg value="-Dtimestamp=${timestamp}" />
+            <arg value="-DeclipseLocation=${baseBuilder}" />
+            <arg value="-DbuildDirectory=${buildDir}" />
+            <arg value="-DbaseLocation=${targetDir}/deltapack/eclipse" />
+            <arg value="-DrepoBaseLocation=${targetDir}/repos/" />
+            <arg value="-DtransformedRepoLocation=${targetDir}/transformedRepos/" />
+            <arg value="-Dconfigs=${buildconfigs}" />
+            <classpath>
+                <pathelement location="${equinox.launcher}" />
+            </classpath>
+        </java>
+    </target>
+
+    <target name="clean">
+        <delete dir="${outDir}" />
+        <delete dir="${targetDir}" />
+    </target>
+
+    <target name="build" depends="pde-build" />
+</project>

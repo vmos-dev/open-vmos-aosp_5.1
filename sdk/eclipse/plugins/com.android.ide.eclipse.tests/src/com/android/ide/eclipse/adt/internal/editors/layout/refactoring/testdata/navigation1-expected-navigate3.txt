@@ -1,0 +1,7 @@
+Go To Declaration in navigation1.xml for style="@android:style/Widget.B^utton":
+Open Declaration in values/styles.xml :  [@android:style/Widget.Button]
+    data/res/values/styles.xml
+
+
+After open, the selected text is:
+    <style name="Widget.Button">^

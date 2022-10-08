@@ -1,0 +1,101 @@
+page.title=Security-Enhanced Linux in Android
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<h2 id=introduction>Introduction</h2>
+
+<p>The Android security model is based in part on the concept of application
+sandboxes. Each application runs in its own sandbox. Prior to Android 4.3,
+these sandboxes were defined by the creation of a unique Linux UID for each
+application at time of installation. Starting with Android 4.3,
+Security-Enhanced Linux (SELinux) is used to further define the boundaries of
+the Android application sandbox.</p>
+
+<p>As part of the Android <a href="{@docRoot}devices/tech/security/index.html">security model</a>, Android uses SELinux to enforce mandatory access control (MAC) over all
+processes, even processes running with root/superuser privileges (a.k.a. Linux
+capabilities). SELinux enhances Android security by confining privileged
+processes and automating security policy creation.</p>
+
+<p>Contributions to it have been made by a number of companies and organizations;
+all Android code and contributors are publicly available for review on <a href="https://android.googlesource.com/">android.googlesource.com</a>. With SELinux, Android can better protect and confine system services, control
+access to application data and system logs, reduce the effects of malicious
+software, and protect users from potential flaws in code on mobile devices.</p>
+
+<p>Android includes SELinux in enforcing mode and a corresponding security policy
+that works by default across the <a href="https://android.googlesource.com/">Android Open Source Project</a>. In enforcing mode, illegitimate actions are prevented and all attempted
+violations are logged by the kernel to <code>dmesg</code> and <code>logcat</code>. Android device manufacturers should gather information about errors so they
+may refine their software and SELinux policies before enforcing them.</p>
+
+<h2 id=background>Background</h2>
+
+<p>SELinux operates on the ethos of default denial. Anything that is not
+explicitly allowed is denied. SELinux can operate in one of two global modes:
+permissive mode, in which permission denials are logged but not enforced, and
+enforcing mode, in which denials are both logged and enforced. SELinux also
+supports a per-domain permissive mode in which specific domains (processes) can
+be made permissive while placing the rest of the system in global enforcing
+mode. A domain is simply a label identifying a process or set of processes in
+the security policy, where all processes labeled with the same domain are
+treated identically by the security policy. Per-domain permissive mode enables
+incremental application of SELinux to an ever-increasing portion of the system.
+Per-domain permissive mode also enables policy development for new services
+while keeping the rest of the system enforcing.</p>
+
+<p>In the Android 5.0 (L) release, Android moves to full enforcement of SELinux. This builds
+upon the permissive release of 4.3 and the partial enforcement of 4.4. In
+short, Android is shifting from enforcement on a limited set of crucial domains
+(<code>installd</code>, <code>netd</code>, <code>vold</code> and <code>zygote</code>) to everything (more than 60 domains). This means manufacturers will have to
+better understand and scale their SELinux implementations to provide compatible
+devices. Understand that:</p>
+
+<ul>
+  <li> Everything is in enforcing mode in the 5.0 release
+  <li> No processes other than <code>init</code> should run in the <code>init</code> domain
+  <li> Any generic denial (for a block_device, socket_device, default_service, etc.)
+indicates that device needs a special domain
+</ul>
+
+<h2 id=supporting_documentation>Supporting documentation</h2>
+
+<p>See the documentation below for details on constructing useful policies:</p>
+
+<p><a href="http://seandroid.bitbucket.org/PapersandPresentations.html">http://seandroid.bitbucket.org/PapersandPresentations.html</a></p>
+
+<p><a href="https://www.codeproject.com/Articles/806904/Android-Security-Customization-with-SEAndroid">https://www.codeproject.com/Articles/806904/Android-Security-Customization-with-SEAndroid</a></p>
+
+<p><a href="https://www.nsa.gov/research/_files/publications/implementing_selinux.pdf">https://www.nsa.gov/research/_files/publications/implementing_selinux.pdf</a></p>
+
+<p><a href="https://events.linuxfoundation.org/sites/events/files/slides/abs2014_seforandroid_smalley.pdf">https://events.linuxfoundation.org/sites/events/files/slides/abs2014_seforandroid_smalley.pdf</a></p>
+
+<p><a href="https://www.internetsociety.org/sites/default/files/02_4.pdf">https://www.internetsociety.org/sites/default/files/02_4.pdf</a></p>
+
+<p><a href="https://www.gnu.org/software/m4/manual/index.html">https://www.gnu.org/software/m4/manual/index.html</a></p>
+
+<p><a href="http://freecomputerbooks.com/books/The_SELinux_Notebook-4th_Edition.pdf">http://freecomputerbooks.com/books/The_SELinux_Notebook-4th_Edition.pdf</a></p>
+
+<h2 id=help>Help</h2>
+
+<p>Over time, Android intends to support common manufacturer additions in its
+default SELinux policy. For more information, contact <a href="mailto:security@android.com">security@android.com</a>.</p>

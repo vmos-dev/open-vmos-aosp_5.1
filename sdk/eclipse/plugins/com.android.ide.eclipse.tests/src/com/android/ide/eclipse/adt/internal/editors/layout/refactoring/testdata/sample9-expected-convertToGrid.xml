@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/GridLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="3"
+    android:orientation="horizontal" >
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_gravity="left"
+        android:text="Button" />
+
+    <RadioButton
+        android:id="@+id/radioButton1"
+        android:layout_width="150dp"
+        android:layout_column="0"
+        android:layout_gravity="left"
+        android:text="RadioButton" />
+
+    <RadioButton
+        android:id="@+id/radioButton2"
+        android:layout_gravity="left"
+        android:text="RadioButton" />
+
+    <CheckBox
+        android:id="@+id/checkBox1"
+        android:layout_column="0"
+        android:layout_gravity="left"
+        android:text="CheckBox" />
+
+    <Space
+        android:layout_column="2"
+        android:layout_gravity="fill_vertical"
+        android:layout_row="3" />
+
+</GridLayout>

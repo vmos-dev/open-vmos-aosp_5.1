@@ -1,0 +1,203 @@
+page.title=Performance tuning
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>This document describes performance tuning that you can do to get the most out of your
+  hardware.</p>
+
+<h2>OpenGLRenderer (libhwui) Properties</h2>
+<p>This document lists all the properties that you can use to control
+Android’s 2D hardware accelerated rendering pipeline. Set these properties
+in the <code>device.mk</code> as <code>PRODUCT_PROPERTY_OVERRIDES</code>.
+</p>
+
+<table>
+<tr>
+  <th>Property</th>
+  <th>Type</th>
+  <th>Default Value</th>
+  <th>Description</th>
+</tr>
+
+<tr>
+  <td><code>ro.hwui.disable_scissor_opt</code></td>
+  <td><code>boolean</code></td>
+  <td><code>false</code></td>
+  <td><p>Used to enable or disable scissor optimization. The accepted values are true and false. When scissor optimization is enabled, OpenGLRenderer attempts to minimize the use of scissoring by selectively enabling and disabling the GL scissor test.</p>
+  <p>When the optimization is disabled, OpenGLRenderer keeps the GL scissor test enabled and changes the scissor rect as needed. Some GPUs (for instance, the SGX 540) perform better when changing the scissor rect more often than enabling or disabling the scissor test often.</p>
+  </td>
+</tr>
+
+<tr>
+
+  <td><code>ro.hwui.texture_cache_size</code></td>
+  <td><code>float</code></td>
+  <td><code>24</code></td>
+  <td>Defines the size, in megabytes, of the per process texture cache. We
+  recommend using a cache large enough to hold several screens worth of 32-bit textures (for instance, on a 1280x800 display, a full screen buffer uses about 4 MB so the cache should be at least 20 MB.)</td>
+</tr>
+
+<tr>
+  <td><code>ro.hwui.layer_cache_size</code></td>
+  <td><code>float</code></td>
+  <td><code>16</code></td>
+  <td>Defines the size, in megabytes, of the per process layers cache. We recommend
+  using a cache large enough to hold 4 times the screen in 32 bits. For instance,
+  on a 1280x800 display, a full screen buffer uses about 4 MB, so the cache should be at least 16 MB.</td>
+</tr>
+<tr>
+  <td><code>ro.hwui.gradient_cache_size</code></td>
+  <td><code>0.5</code></td>
+  <td><code>float</code></td>
+  <td>Defines the size, in megabytes, of the per process gradients cache. A single
+  gradient generally occupies between 1 and 4 KB of memory. It is recommended to use a
+  cache large enough to hold at least twelve gradients.</td>
+</tr>
+
+<tr>
+  <td><code>ro.hwui.patch_cache_size</code></td>
+  <td><code>integer</code></td>
+  <td><code>128</code></td>
+  <td>Defines the size, in kilobytes, of the 9-patches cache, per process. This
+cache holds only vertex data and can therefore be kept small. Each vertex is
+made of 4 floats, or 16 bytes.</td>
+</tr>
+
+<tr>
+  <td><code>ro.hwui.path_cache_size</code></td>
+  <td><code>float</code></td>
+  <td><code>4</code></td>
+  <td>Defines the size, in megabytes, of the per process paths cache. We recommended using a
+  cache large enough to hold at least one screen worth of 32-bit textures. For instance,
+  on a 1280x800 display, a full screen buffer uses about 4 MB, so the cache should be at least 4 MB.</td>
+</tr>
+
+<tr>
+  <td><code>ro.hwui.shape_cache_size</code></td>
+  <td><code>float</code></td>
+  <td><code>1</code></td>
+  <td>Defines the size, in megabytes, of the per process shapes caches. This value is used by
+  several caches such as circles and rounded rectangles. We recommend using a cache
+  large enough to hold at least one 8-bit screen. For instance, on a 1280x800 display,
+  a full screen buffer uses about 1 MB, so the cache should be at least 1 MB.</td>
+</tr>
+<tr>
+  <td><code>ro.hwui.drop_shadow_cache_size</code></td>
+  <td><code>float</code></td>
+  <td><code>2</code></td>
+  <td>Defines the size, in megabytes, of the per process text drop shadows cache. We recommend
+  using a cache large enough to hold two screens worth of 8-bit textures. For instance, on a 1280x800 display, a full screen buffer uses about 1 MB, so the cache should be at least 2 MB.</td>
+</tr>
+<tr>
+  <td><code>ro.hwui.r_buffer_cache_size</code></td>
+  <td><code>float</code></td>
+  <td><code>2</code></td>
+  <td>Defines the size, in megabytes, of the render buffers cache per process. It is recommended to use a cache large enough to hold twice the screen in 8 bits. For instance, on a 1280x800 display, a full screen buffer uses about 1 MB so the cache should be at least 2 MB. The cache can be smaller if the device supports 4 bits or 1 bit stencil buffers.</td>
+</tr>
+<tr>
+  <td><code>ro.hwui.texture_cache_flush_rate</code></td>
+  <td><code>float</code></td>
+  <td><code>0.6</code></td>
+  <td>Defines the percentage of the texture cache to keep after a memory flush. Memory flushes are triggered when the system needs to reclaim memory across all applications. We recommend releasing about 50% of the cache in such situations.</td>
+</tr>
+<tr>
+  <td><code>ro.hwui.text_small_cache_width</code></td>
+  <td><code>integer</code></td>
+  <td><code>1024</code></td>
+  <td>Defines the width in pixels of the default font cache. The upper bound depends on how fast the GPU can upload textures.
+  We recommend using at least 1024 pixels but at most 2048 pixels. You should also use a power of two value.</td>
+</tr>
+<tr>
+  <td><code>ro.hwui.text_small_cache_height</code></td>
+  <td><code>integer</code></td>
+  <td><code>256</code></td>
+  <td>Defines the height in pixels of the default font cache. The upper bound depends on how fast the GPU can upload textures.
+  We recommend using at least 256 pixels but at most 1024 pixels. </td>
+</tr>
+<tr>
+  <td><code>ro.hwui.text_large_cache_width</code></td>
+  <td><code>integer</code></td>
+  <td><code>2048</code></td>
+  <td>Defines the width in pixels of the large font cache. This cache is used for glyphs too large to fit in the default font cache. The upper bound depends on how fast the GPU can upload textures. We recommended using at least 2048 pixels but at most 4096 pixels. You should also use a power of two value.</td>
+</tr>
+
+<tr>
+  <td><code>ro.hwui.text_large_cache_height</code></td>
+  <td><code>integer</code></td>
+  <td><code>512</code></td>
+  <td>Defines the height in pixels of the large font cache. The large font cache is used for glyphs too large to fit in the default font cache. The upper bound depends on how fast the GPU can upload textures. 
+  We recommend using at least 512 pixels but at most 2048 pixels. You should also use a power of two value.</td>
+</tr>
+
+<tr>
+  <td><code>ro.zygote.disable_gl_preload</code></td>
+  <td><code>boolean</code></td>
+  <td><code>false</code></td>
+  <td>Used to enable/disable preloading of EGL/GL drivers in Zygote at boot time. When this property is 
+set to false, Zygote will preload the GL drivers by invoking eglGetDisplay(EGL_DEFAULT_DISPLAY). 
+The goal is to load the dynamic libraries code in Zygote to share it with all the other processes. If a driver
+does not support being shared, set this property to true.</td>
+</tr>
+
+<tr>
+  <td><code>hwui.text_gamma_correction</code></td>
+  <td><code>string</code></td>
+  <td><code>lookup</code></td>
+  <td>Selects the text gamma correction technique. There are four possible choices:
+  <ul>
+   <li><code>lookup3</code>: A correction based on lookup tables. Gamma correction is different for black
+  and white text (see thresholds below).</li>
+
+   <li><code>lookup</code>: A correction based on a single lookup table.</li>
+
+    <li><code>shader3</code>: A correction applied by a GLSL shader. Gamma correction is different
+    for black and white text (see thresholds below).</li>
+
+    <li><code>shader</code>: A correction applied by a GLSL shader.</li>
+  </ul>
+  Lookup gamma corrections function best on GPUs with limited shader math. Shader gamma corrections are best to save memory. We recommend using the default <code>lookup</code> technique, which offers a good compromise in terms of quality, speed, and memory usage.
+</td>
+</tr>
+
+<tr>
+  <td><code>hwui.text_gamma</code></td>
+  <td><code>float</code></td>
+  <td><code>1.4</code></td>
+  <td>Defines the gamma value used for text gamma correction.
+  This value can be adjusted based on the display that is used by the device.</td>
+</tr>
+<tr>
+  <td><code>hwui.text_gamma.black_threshold</code></td>
+  <td><code>integer</code></td>
+  <td><code>64</code></td>
+  <td>Defines the luminance threshold below which black gamma correction is applied.
+  The value must be defined in the range 0..255.</td>
+</tr>
+<tr>
+  <td><code>hwui.text_gamma.white_threshold</code></td>
+  <td><code>integer</code></td>
+  <td><code>192</code></td>
+  <td>Defines the luminance threshold above which white gamma correction is applied.
+  The value must be defined in the range 0..255.</td>
+</tr>
+<tr>
+  <td><code>hwui.use_gpu_pixel_buffers</code></td>
+  <td><code>boolean</code></td>
+  <td><code>true</code></td>
+  <td>Used to enable or disable the use of PBOs on OpenGL ES 3.0 hardware. PBOs are used by the renderer to perform asynchronous texture uploads, especially for the font cache. This property should always remain enabled but can be disabled during bringup or development if the use of PBOs causes corruptions or terrible performance. This is why the property is not read-only.</td>
+</tr>
+</table>

@@ -1,0 +1,16 @@
+June 2012
+Copyright 2012, Google, Inc.
+
+This archive contains the following files and directories:
+
+README                      This file
+COPYING                     License for third party code used in Arduino libraries
+app/                        DemoKit Android application
+arduino_libs/               Arduino libraries
+  /AndroidAccessory         Open Accessory Protocol library
+    /examples/demokit       DemoKit sketch for the ADK board
+  /USB_Host_Shield          USB Host library
+hardware/                   Files describing the ADK hardware design
+
+Go to http://a.android.com/demokit for more information about how
+to use the ADK.

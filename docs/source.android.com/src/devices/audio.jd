@@ -1,0 +1,100 @@
+page.title=Audio
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<p>
+  Android's audio Hardware Abstraction Layer (HAL) connects the higher level, audio-specific
+  framework APIs in <a href="http://developer.android.com/reference/android/media/package-summary.html">android.media</a>
+  to the underlying audio driver and hardware. 
+</p>
+
+<p>
+  The following figure and list describe how audio functionality is implemented and the relevant
+  source code that is involved in the implementation:
+</p>
+<p>
+  <img src="images/audio_hal.png" alt="Audio architecture" />
+</p>
+<dl>
+  <dt>
+    Application framework
+  </dt>
+  <dd>
+    At the application framework level is the app code, which utilizes the
+    <a href="http://developer.android.com/reference/android/media/package-summary.html">android.media</a>
+    APIs to interact with the audio hardware. Internally, this code calls corresponding JNI glue
+    classes to access the native code that interacts with the audio hardware.
+  </dd>
+  <dt>
+    JNI
+  </dt>
+  <dd>
+    The JNI code associated with <a href="http://developer.android.com/reference/android/media/package-summary.html">android.media</a> is located in the
+    <code>frameworks/base/core/jni/</code> and <code>frameworks/base/media/jni</code> directories.
+    This code calls the lower level native code to obtain access to the audio hardware.
+  </dd>
+  <dt>
+    Native framework
+  </dt>
+  <dd>
+    The native framework is defined in <code>frameworks/av/media/libmedia</code> and provides a
+    native equivalent to the <a href="http://developer.android.com/reference/android/media/package-summary.html">android.media</a> package. The native framework calls the Binder
+    IPC proxies to obtain access to audio-specific services of the media server.
+  </dd>
+  <dt>
+    Binder IPC
+  </dt>
+  <dd>
+    The Binder IPC proxies facilitate communication over process boundaries. They are located in
+    the <code>frameworks/av/media/libmedia</code> directory and begin with the letter "I".
+  </dd>
+  <dt>
+    Media Server
+  </dt>
+  <dd>
+    The audio services in the media server, located in
+    <code>frameworks/av/services/audioflinger</code>, is the actual code that interacts with your
+    HAL implementations.
+  </dd>
+  <dt>
+    HAL
+  </dt>
+  <dd>
+    The HAL defines the standard interface that audio services call into
+    and that you must implement to have your audio hardware function correctly. The audio HAL
+    interfaces are located in
+<code>hardware/libhardware/include/hardware</code>. See <a
+href="{@docRoot}devices/halref/audio_8h_source.html">audio.h</a> for additional details.
+  </dd>
+  <dt>
+    Kernel Driver
+  </dt>
+  <dd>
+    The audio driver interacts with the hardware and your implementation of the HAL. You can choose
+    to use ALSA, OSS, or a custom driver of your own at this level. The HAL is driver-agnostic.
+    <p>
+  <strong>Note:</strong> If you do choose ALSA, we recommend using <code>external/tinyalsa</code>
+  for the user portion of the driver because of its compatible licensing (The standard user-mode
+  library is GPL licensed).
+</p>
+  </dd>
+</dl>
+
+<p>
+   See the rest of the pages within the Audio section for implementation
+   instructions and ways to improve performance.
+</p>

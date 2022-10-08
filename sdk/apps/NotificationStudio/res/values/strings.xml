@@ -1,0 +1,55 @@
+<!--
+  Copyright 2012 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<resources>
+
+    <string name="app_name">Notification Studio</string>
+    <string name="now">Now</string>
+    <string name="share_generated_code">Share generated code…</string>
+    <string name="share_mockup">Share mockup…</string>
+    <string name="preset">Preset</string>
+    <string name="small_icon">Small Icon</string>
+    <string name="content_title">Content Title</string>
+    <string name="content_text">Content Text</string>
+    <string name="sub_text">Sub Text</string>
+    <string name="large_icon">Large Icon</string>
+    <string name="content_info">Content Info</string>
+    <string name="number">Number</string>
+    <string name="when">When</string>
+    <string name="progress">Progress</string>
+    <string name="uses_chron">Uses Chron</string>
+    <string name="style">Style</string>
+    <string name="picture">Picture</string>
+    <string name="big_text">Big Text</string>
+    <string name="lines">Lines</string>
+    <string name="big_content_title">Big Content Title</string>
+    <string name="summary_text">Summary Text</string>
+    <string name="icon">Icon</string>
+    <string name="text">Text</string>
+    <string name="properties">Properties</string>
+    <string name="action_1">Action 1</string>
+    <string name="action_2">Action 2</string>
+    <string name="action_3">Action 3</string>
+    <string name="preset_custom">(custom)</string>
+    <string name="preset_basic">Basic example</string>
+    <string name="preset_email">Email example</string>
+    <string name="preset_photo">Photo example</string>
+    <string name="style_none">(none)</string>
+    <string name="style_big_picture">BigPictureStyle</string>
+    <string name="style_big_text">BigTextStyle</string>
+    <string name="style_inbox">InboxStyle</string>
+
+</resources>

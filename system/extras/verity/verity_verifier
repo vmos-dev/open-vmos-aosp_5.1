@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Start-up script for VerityVerifier
+
+VERITYVERIFIER_HOME=`dirname "$0"`
+VERITYVERIFIER_HOME=`dirname "$VERITYVERIFIER_HOME"`
+
+java -Xmx512M -jar "$VERITYVERIFIER_HOME"/framework/VerityVerifier.jar "$@"

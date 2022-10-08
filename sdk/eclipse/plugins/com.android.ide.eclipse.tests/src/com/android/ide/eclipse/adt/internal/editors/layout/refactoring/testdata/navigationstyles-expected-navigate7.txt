@@ -1,0 +1,7 @@
+Go To Declaration in navigationstyles.xml for popupBackground">@android:drawable/spinner_dr^opdown_background</item>:
+Open Declaration in drawable/spinner_dropdown_background.xml :  [@android:drawable/spinner_dropdown_background]
+    data/res/drawable/spinner_dropdown_background.xml
+
+
+After open, the selected text is:
+^<?xml version="1.0" encoding="utf-8"?>

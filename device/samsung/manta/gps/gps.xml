@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<glgps xmlns="http://www.glpals.com/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.glpals.com/ glconfig.xsd" >
+  <!--HAL Confguration  -->
+  <hal
+       acPortName="/dev/ttySAC1"
+       lBaudRate="115200"
+       gpioNStdbyPath="/sys/class/gps/bcm475x/GPS_PWR_EN/value"
+       gpioNResetPath="/sys/class/gps/bcm475x/GPS_nRST/value"
+       gpioDelayMs="250"
+       acNvStoDir="/data/gps/"
+
+       acLogDirectory="/data/gps/log/"
+
+       LPmode="false"
+       ReAidingType="0"
+       arp-supl-enable="false"
+       arp-supl-cap-msb="false"
+       arp-supl-cap-msa="false"
+       arp-supl-cap-ecid="false"
+       arp-supl-use-apn="false"
+       acSuplServer="supl.google.com"
+       SuplPort="7276"
+       tlsCertPath="/system/bin/gps.cer"
+       tlsEnable="false"
+       ReAidingIntervalSec="999999"
+       SuplUT1Seconds="20"
+       SuplUT2Seconds="20"
+       SuplUT3Seconds="20"
+       SuplVersion="1"
+       LbsEnable="false"
+       LbsLocal="false"
+       LbsServer="BCMLS2.glpals.com"
+       LbsPort="7275"
+       LbsSyncLto="false"
+       SyncLto="true"
+       ltoFileName="lto2.dat"
+       acLtoDir="/data/gps/"
+       LbsSyncLtoThresholdDays="1"
+       LbsTAC="10101222"
+       ctrlPipe="/data/gps/glgpsctrl"
+       LbsWlanEnable="false"
+       SensorsEnable="false"
+       SensorsPowerSave="false"
+       SensorsLog="false"
+   />
+  <gll
+       LogPriMask="LOG_INFO"
+       LogFacMask="LOG_GLLAPI | LOG_NMEA | LOG_RAWDATA"
+       FrqPlan="FRQ_PLAN_26MHZ_2PPM"
+       RfType="GL_RF_47511_BRCM_EXT_LNA"
+       WarmStandbyTimeout1Seconds="10"
+       WarmStandbyTimeout2Seconds="15"
+    >
+  </gll>
+  <gll_features
+       EnableLowPowerEls="false"
+       EnableLowPowerPmm="true"
+   />
+</glgps>

@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <!--
+        Palette Metadata
+
+        This document provides additional designtime metadata for various Android views, such as
+        logical palette categories (as well as a natural ordering of the views within their
+        categories, fill-preferences (how a view will sets its width and height attributes when
+        dropped into other views), and so on.
+    -->
+<!DOCTYPE metadata [
+<!--- The metadata consists of a series of category definitions -->
+<!ELEMENT metadata (category)*>
+<!--- Each category has a name and contains a list of views in order -->
+<!ELEMENT category (view)*>
+<!ATTLIST category name CDATA #IMPLIED>
+<!--- Each view is identified by its full class name and has various
+      other attributes such as a fill preference  -->
+<!ELEMENT view (view)*>
+<!ATTLIST view
+    class CDATA #IMPLIED
+    name CDATA #IMPLIED
+    init CDATA #IMPLIED
+    icon CDATA #IMPLIED
+    relatedTo CDATA #IMPLIED
+    skip (true|false) "false"
+    render (alone|skip|normal) "normal"
+    fill (none|both|width|height|opposite|width_in_vertical|height_in_horizontal) "none"
+    resize (full|none|horizontal|vertical|scaled) "full"
+    topAttrs CDATA #IMPLIED
+>
+]>
+<metadata>
+    <category
+        name="Form Widgets">
+        <view
+            class="android.widget.TextView"
+            topAttrs="text,textAppearance,textColor,textSize"
+            name="TextView"
+            init=""
+            relatedTo="EditText,AutoCompleteTextView,MultiAutoCompleteTextView">
+            <view
+                name="Large Text"
+                init="android:textAppearance=?android:attr/textAppearanceLarge,android:text=Large Text" />
+            <view
+                name="Medium Text"
+                init="android:textAppearance=?android:attr/textAppearanceMedium,android:text=Medium Text" />
+            <view
+                name="Small Text"
+                init="android:textAppearance=?android:attr/textAppearanceSmall,android:text=Small Text" />
+        </view>
+        <view
+            class="android.widget.Button"
+            topAttrs="text,style"
+            name="Button"
+            init=""
+            relatedTo="ImageButton">
+            <view
+                name="Small Button"
+                init="style=?android:attr/buttonStyleSmall,android:text=Button" />
+        </view>
+        <view
+            class="android.widget.ToggleButton"
+            topAttrs="textOff,textOn,style,background"
+            relatedTo="CheckBox" />
+        <view
+            class="android.widget.CheckBox"
+            topAttrs="text"
+            relatedTo="RadioButton,ToggleButton,CheckedTextView" />
+        <view
+            class="android.widget.RadioButton"
+            topAttrs="text,style"
+            relatedTo="CheckBox,ToggleButton" />
+        <view
+            class="android.widget.CheckedTextView"
+            topAttrs="gravity,paddingLeft,paddingRight,checkMark,textAppearance"
+            relatedTo="TextView,CheckBox" />
+        <view
+            class="android.widget.Spinner"
+            topAttrs="prompt,entries,style"
+            relatedTo="EditText"
+            fill="width_in_vertical" />
+        <view
+            class="android.widget.ProgressBar"
+            topAttrs="style,visibility,indeterminate,max"
+            relatedTo="SeekBar"
+            name="ProgressBar (Large)"
+            init="style=?android:attr/progressBarStyleLarge"
+            resize="scaled" >
+            <view
+                name="ProgressBar (Normal)"
+                init=""
+                resize="scaled" />
+            <view
+                name="ProgressBar (Small)"
+                init="style=?android:attr/progressBarStyleSmall"
+                resize="scaled" />
+            <view
+                name="ProgressBar (Horizontal)"
+                init="style=?android:attr/progressBarStyleHorizontal"
+                resize="horizontal" />
+        </view>
+        <view
+            class="android.widget.SeekBar"
+            topAttrs="paddingLeft,paddingRight,progressDrawable,thumb"
+            relatedTo="ProgressBar"
+            resize="horizontal"
+            fill="width_in_vertical" />
+        <view
+            class="android.widget.QuickContactBadge"
+            topAttrs="src,style,gravity"
+            resize="scaled" />
+        <view
+            class="android.widget.RadioGroup"
+            topAttrs="orientation,paddingBottom,paddingTop,style" />
+        <view
+            class="android.widget.RatingBar"
+            topAttrs="numStars,stepSize,style,isIndicator"
+            resize="horizontal" />
+        <view
+            class="android.widget.Switch"
+            topAttrs="text,textOff,textOn,style,checked"
+            relatedTo="CheckBox,ToggleButton"
+            render="alone" />
+    </category>
+    <category
+        name="Text Fields">
+        <view
+            class="android.widget.EditText"
+            topAttrs="hint,inputType,singleLine"
+            name="Plain Text"
+            init=""
+            resize="full"
+            relatedTo="Spinner,TextView,AutoCompleteTextView,MultiAutoCompleteTextView"
+            fill="width_in_vertical">
+            <view
+                name="Person Name"
+                init="android:inputType=textPersonName" />
+            <view
+                name="Password"
+                init="android:inputType=textPassword" />
+            <view
+                name="Password (Numeric)"
+                init="android:inputType=numberPassword" />
+            <view
+                name="E-mail"
+                init="android:inputType=textEmailAddress" />
+            <view
+                name="Phone"
+                init="android:inputType=phone" />
+            <view
+                name="Postal Address"
+                resize="full"
+                init="android:inputType=textPostalAddress" />
+            <view
+                name="Multiline Text"
+                resize="full"
+                init="android:inputType=textMultiLine" />
+            <view
+                name="Time"
+                init="android:inputType=time" />
+            <view
+                name="Date"
+                init="android:inputType=date" />
+            <view
+                name="Number"
+                init="android:inputType=number" />
+            <view
+                name="Number (Signed)"
+                init="android:inputType=numberSigned" />
+            <view
+                name="Number (Decimal)"
+                init="android:inputType=numberDecimal" />
+        </view>
+        <view
+            class="android.widget.AutoCompleteTextView"
+            topAttrs="singleLine,autoText"
+            fill="width_in_vertical" />
+        <view
+            class="android.widget.MultiAutoCompleteTextView"
+            topAttrs="background,hint,imeOptions,inputType,style,textColor"
+            fill="width_in_vertical" />
+    </category>
+    <category
+        name="Layouts">
+        <view
+            class="android.widget.GridLayout"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.LinearLayout"
+            topAttrs="orientation,gravity"
+            name="LinearLayout (Vertical)"
+            init="android:orientation=vertical"
+            icon="VerticalLinearLayout"
+            fill="opposite"
+            render="skip">
+            <view
+                name="LinearLayout (Horizontal)" />
+        </view>
+        <view
+            class="android.widget.RelativeLayout"
+            topAttrs="background,orientation,paddingLeft"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.FrameLayout"
+            topAttrs="background"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="include"
+            topAttrs="layout"
+            name="Include Other Layout"
+            render="skip"
+            relatedTo="fragment" />
+        <view
+            class="fragment"
+            topAttrs="class,name"
+            name="Fragment"
+            fill="opposite"
+            render="skip"
+            relatedTo="include" />
+        <view
+            class="android.widget.TableLayout"
+            topAttrs="stretchColumns,shrinkColumns,orientation"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.TableRow"
+            topAttrs="paddingTop,focusable,gravity,visibility"
+            fill="opposite"
+            resize="vertical"
+            render="skip" />
+        <view
+            class="android.widget.Space"
+            fill="opposite"
+            render="skip" />
+    </category>
+    <category
+        name="Composite">
+        <view
+            class="android.widget.ListView"
+            topAttrs="drawSelectorOnTop,cacheColorHint,divider,background"
+            relatedTo="ExpandableListView"
+            fill="width_in_vertical" />
+        <view
+            class="android.widget.ExpandableListView"
+            topAttrs="drawSelectorOnTop,cacheColorHint,indicatorLeft,indicatorRight,scrollbars,textSize"
+            relatedTo="ListView"
+            fill="width_in_vertical" />
+        <view
+            class="android.widget.GridView"
+            topAttrs="numColumns,verticalSpacing,horizontalSpacing"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.ScrollView"
+            topAttrs="fillViewport,orientation,scrollbars"
+            relatedTo="HorizontalScrollView"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.HorizontalScrollView"
+            topAttrs="scrollbars,fadingEdgeLength,fadingEdge"
+            relatedTo="ScrollView"
+            render="skip" />
+        <view
+            class="android.widget.SearchView"
+            topAttrs="iconifiedByDefault,queryHint,maxWidth,minWidth,visibility"
+            render="skip" />
+        <view
+            class="android.widget.SlidingDrawer"
+            render="skip"
+            topAttrs="allowSingleTap,bottomOffset,content,handle,topOffset,visibility" />
+        <view
+            class="android.widget.TabHost"
+            topAttrs="paddingTop,background,duplicateParentState,visibility"
+            fill="width_in_vertical"
+            render="alone" />
+        <view
+            class="android.widget.TabWidget"
+            topAttrs="background,paddingLeft,tabStripEnabled,gravity"
+            render="alone" />
+        <view
+            class="android.webkit.WebView"
+            topAttrs="background,visibility,textAppearance"
+            fill="opposite"
+            render="skip" />
+    </category>
+    <category
+        name="Images &amp; Media">
+        <view
+            class="android.widget.ImageView"
+            topAttrs="src,scaleType"
+            resize="scaled"
+            render="skip"
+            relatedTo="ImageButton,VideoView" />
+        <view
+            class="android.widget.ImageButton"
+            topAttrs="src,background,style"
+            resize="scaled"
+            render="skip"
+            relatedTo="Button,ImageView" />
+        <view
+            class="android.widget.Gallery"
+            topAttrs="gravity,spacing,background"
+            fill="width_in_vertical"
+            render="skip" />
+        <view
+            class="android.widget.MediaController"
+            render="skip" />
+        <view
+            class="android.widget.VideoView"
+            relatedTo="ImageView"
+            fill="opposite"
+            render="skip" />
+    </category>
+    <category
+        name="Time &amp; Date">
+        <view
+            class="android.widget.TimePicker"
+            topAttrs="visibility"
+            relatedTo="DatePicker,CalendarView"
+            render="alone" />
+        <view
+            class="android.widget.DatePicker"
+            relatedTo="TimePicker"
+            render="alone" />
+        <view
+            class="android.widget.CalendarView"
+            topAttrs="focusable,focusableInTouchMode,visibility"
+            fill="both"
+            relatedTo="TimePicker,DatePicker" />
+        <view
+            class="android.widget.Chronometer"
+            topAttrs="textSize,gravity,visibility"
+            render="skip" />
+        <view
+            class="android.widget.AnalogClock"
+            topAttrs="dial,hand_hour,hand_minute"
+            relatedTo="DigitalClock" />
+        <view
+            class="android.widget.DigitalClock"
+            relatedTo="AnalogClock" />
+    </category>
+    <category
+        name="Transitions">
+        <view
+            class="android.widget.ImageSwitcher"
+            topAttrs="inAnimation,outAnimation,cropToPadding,padding,scaleType"
+            relatedTo="ViewFlipper,ViewSwitcher,TextSwitcher"
+            render="skip" />
+        <view
+            class="android.widget.AdapterViewFlipper"
+            topAttrs="autoStart,flipInterval,inAnimation,outAnimation"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.StackView"
+            topAttrs="loopViews,gravity"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.TextSwitcher"
+            relatedTo="ViewFlipper,ImageSwitcher,ViewSwitcher"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.ViewAnimator"
+            topAttrs="inAnimation,outAnimation"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.ViewFlipper"
+            topAttrs="flipInterval,inAnimation,outAnimation,addStatesFromChildren,measureAllChildren"
+            relatedTo="ViewSwitcher,ImageSwitcher,TextSwitcher"
+            fill="opposite"
+            render="skip" />
+        <view
+            class="android.widget.ViewSwitcher"
+            topAttrs="inAnimation,outAnimation"
+            relatedTo="ViewFlipper,ImageSwitcher,TextSwitcher"
+            fill="opposite"
+            render="skip" />
+    </category>
+    <category
+        name="Advanced">
+        <view
+            class="requestFocus"
+            render="skip" />
+        <view
+            class="android.view.View"
+            topAttrs="background,visibility,style"
+            render="skip" />
+        <view
+            class="android.view.ViewStub"
+            topAttrs="layout,inflatedId,visibility"
+            render="skip" />
+        <view
+            class="view"
+            topAttrs="class"
+            render="skip" />
+        <view
+            class="android.gesture.GestureOverlayView"
+            topAttrs="gestureStrokeType,uncertainGestureColor,eventsInterceptionEnabled,gestureColor,orientation"
+            render="skip" />
+        <view
+            class="android.view.TextureView"
+            render="skip" />
+        <view
+            class="android.view.SurfaceView"
+            render="skip" />
+        <view
+            class="android.widget.NumberPicker"
+            topAttrs="focusable,focusableInTouchMode"
+            relatedTo="TimePicker,DatePicker"
+            render="alone" />
+        <view
+            class="android.widget.ZoomButton"
+            topAttrs="background"
+            relatedTo="Button,ZoomControls" />
+        <view
+            class="android.widget.ZoomControls"
+            topAttrs="style,background,gravity"
+            relatedTo="ZoomButton"
+            resize="none" />
+        <view
+            class="merge"
+            topAttrs="orientation,gravity,style"
+            skip="true"
+            render="skip" />
+        <view
+            class="android.widget.DialerFilter"
+            fill="width_in_vertical"
+            render="skip" />
+        <view
+            class="android.widget.TwoLineListItem"
+            topAttrs="mode,paddingBottom,paddingTop,minHeight,paddingLeft"
+            render="skip" />
+        <view
+            class="android.widget.AbsoluteLayout"
+            topAttrs="background,orientation,paddingBottom,paddingLeft,paddingRight,paddingTop"
+            name="AbsoluteLayout (Deprecated)"
+            fill="opposite"
+            render="skip" />
+    </category>
+    <category
+        name="Other">
+        <!--  This is the catch-all category which contains unknown views if we encounter any -->
+    </category>
+    <!--  TODO: Add-ons? -->
+</metadata>

@@ -1,0 +1,64 @@
+# Modem helper service. Spawns kickstart.
+type mdm_helper, domain;
+type mdm_helper_exec, file_type, exec_type;
+
+init_daemon_domain(mdm_helper)
+
+# access /sys/power/wakelock
+allow mdm_helper self:capability dac_override;
+
+# Spawn /system/bin/efsks and /system/bin/ks
+allow mdm_helper mdm_helper_exec:file rx_file_perms;
+
+# Access USB host ks bridge drivers
+allow mdm_helper mdm_helper_device:chr_file rw_file_perms;
+
+# Read and write for EFS
+allow mdm_helper efs_block_device:blk_file rw_file_perms;
+allow mdm_helper block_device:dir { getattr write search };
+
+# Let qcks access /dev/mdm node (modem driver)??
+allow mdm_helper radio_device:chr_file r_file_perms;
+# Access the modem Hand Over Block (HOB)
+allow mdm_helper modem_hob_block_device:blk_file rw_file_perms;
+# ks checks the writeback path (dir) for the EFS block devices to make sure it is valid
+allow mdm_helper block_device:dir getattr;
+
+allow mdm_helper firmware_file:dir r_dir_perms;
+allow mdm_helper firmware_file:file r_file_perms;
+
+allow mdm_helper fsg_file:dir r_dir_perms;
+allow mdm_helper fsg_file:file r_file_perms;
+
+allow mdm_helper persist_file:dir r_dir_perms;
+allow mdm_helper persist_modem_file:dir rw_dir_perms;
+allow mdm_helper persist_modem_file:file create_file_perms;
+
+# Runs commands via sh.
+allow mdm_helper shell_exec:file rx_file_perms;
+# TODO remove once the modem team removes system() calls to toolbox functions
+allow mdm_helper system_file:file x_file_perms;
+
+allow mdm_helper sysfs_xhci_msm_hsic:dir r_dir_perms;
+allow mdm_helper sysfs_xhci_msm_hsic:file rw_file_perms;
+allow mdm_helper sysfs_msm_hsic_host:file write;
+
+# host_ready not labeled correctly
+allow mdm_helper sysfs:file write;
+
+wakelock_use(mdm_helper)
+
+# change ownership of modem log files
+allow mdm_helper self:capability { fowner chown fsetid };
+
+# Write ram dump logs
+allow mdm_helper ram_dump_logs:dir create_dir_perms;
+allow mdm_helper ram_dump_logs:file create_file_perms;
+
+# write modem logs to dropbox
+allow mdm_helper dropbox_data_file:dir rw_dir_perms;
+allow mdm_helper dropbox_data_file:file create_file_perms;
+
+# write radio properties
+unix_socket_connect(mdm_helper, property, init)
+allow mdm_helper radio_prop:property_service set;

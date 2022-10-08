@@ -1,0 +1,144 @@
+page.title=Audio Latency
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Audio latency is the time delay as an audio signal passes through a system.
+  For a complete description of audio latency for the purposes of Android
+  compatibility, see <em>Section 5.5 Audio Latency</em>
+  in the <a href="http://source.android.com/compatibility/index.html">Android CDD</a>.
+  See <a href="latency_design.html">Design For Reduced Latency</a> for an 
+  understanding of Android's audio latency-reduction efforts.
+</p>
+
+<p>
+  This page focuses on the contributors to output latency,
+  but a similar discussion applies to input latency.
+</p>
+<p>
+  Assuming the analog circuitry does not contribute significantly, then the major 
+surface-level contributors to audio latency are the following:
+</p>
+
+<ul>
+  <li>Application</li>
+  <li>Total number of buffers in pipeline</li>
+  <li>Size of each buffer, in frames</li>
+  <li>Additional latency after the app processor, such as from a DSP</li>
+</ul>
+
+<p>
+  As accurate as the above list of contributors may be, it is also misleading.
+  The reason is that buffer count and buffer size are more of an
+  <em>effect</em> than a <em>cause</em>.  What usually happens is that
+  a given buffer scheme is implemented and tested, but during testing, an audio
+  underrun is heard as a "click" or "pop."  To compensate, the
+  system designer then increases buffer sizes or buffer counts.
+  This has the desired result of eliminating the underruns, but it also
+  has the undesired side effect of increasing latency.
+</p>
+
+<p>
+  A better approach is to understand the causes of the
+  underruns and then correct those.  This eliminates the
+  audible artifacts and may even permit even smaller or fewer buffers
+  and thus reduce latency.
+</p>
+
+<p>
+  In our experience, the most common causes of underruns include:
+</p>
+<ul>
+  <li>Linux CFS (Completely Fair Scheduler)</li>
+  <li>high-priority threads with SCHED_FIFO scheduling</li>
+  <li>long scheduling latency</li>
+  <li>long-running interrupt handlers</li>
+  <li>long interrupt disable time</li>
+</ul>
+
+<h3>Linux CFS and SCHED_FIFO scheduling</h3>
+<p>
+  The Linux CFS is designed to be fair to competing workloads sharing a common CPU
+  resource. This fairness is represented by a per-thread <em>nice</em> parameter.
+  The nice value ranges from -19 (least nice, or most CPU time allocated)
+  to 20 (nicest, or least CPU time allocated). In general, all threads with a given
+  nice value receive approximately equal CPU time and threads with a
+  numerically lower nice value should expect to
+  receive more CPU time. However, CFS is "fair" only over relatively long
+  periods of observation. Over short-term observation windows,
+  CFS may allocate the CPU resource in unexpected ways. For example, it
+  may take the CPU away from a thread with numerically low niceness
+  onto a thread with a numerically high niceness.  In the case of audio,
+  this can result in an underrun.
+</p>
+
+<p>
+  The obvious solution is to avoid CFS for high-performance audio
+  threads. Beginning with Android 4.1, such threads now use the
+  <code>SCHED_FIFO</code> scheduling policy rather than the <code>SCHED_NORMAL</code> (also called
+  <code>SCHED_OTHER</code>) scheduling policy implemented by CFS.
+</p>
+
+<p>
+  Though the high-performance audio threads now use <code>SCHED_FIFO</code>, they
+  are still susceptible to other higher priority <code>SCHED_FIFO</code> threads.
+  These are typically kernel worker threads, but there may also be a few
+  non-audio user threads with policy <code>SCHED_FIFO</code>. The available <code>SCHED_FIFO</code>
+  priorities range from 1 to 99.  The audio threads run at priority
+  2 or 3.  This leaves priority 1 available for lower priority threads,
+  and priorities 4 to 99 for higher priority threads.  We recommend 
+  you use priority 1 whenever possible, and reserve priorities 4 to 99 for
+  those threads that are guaranteed to complete within a bounded amount
+  of time and are known to not interfere with scheduling of audio threads.
+</p>
+
+<h3>Scheduling latency</h3>
+<p>
+  Scheduling latency is the time between when a thread becomes
+  ready to run, and when the resulting context switch completes so that the
+  thread actually runs on a CPU. The shorter the latency the better, and 
+  anything over two milliseconds causes problems for audio. Long scheduling
+  latency is most likely to occur during mode transitions, such as
+  bringing up or shutting down a CPU, switching between a security kernel
+  and the normal kernel, switching from full power to low-power mode,
+  or adjusting the CPU clock frequency and voltage.
+</p>
+
+<h3>Interrupts</h3>
+<p>
+  In many designs, CPU 0 services all external interrupts.  So a
+  long-running interrupt handler may delay other interrupts, in particular
+  audio direct memory access (DMA) completion interrupts. Design interrupt handlers
+  to finish quickly and defer any lengthy work to a thread (preferably
+  a CFS thread or <code>SCHED_FIFO</code> thread of priority 1).
+</p>
+
+<p>
+  Equivalently, disabling interrupts on CPU 0 for a long period
+  has the same result of delaying the servicing of audio interrupts.
+  Long interrupt disable times typically happen while waiting for a kernel
+  <i>spin lock</i>.  Review these spin locks to ensure that
+  they are bounded.
+</p>
+

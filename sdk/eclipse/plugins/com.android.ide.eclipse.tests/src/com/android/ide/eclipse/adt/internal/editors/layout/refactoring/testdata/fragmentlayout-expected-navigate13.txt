@@ -1,0 +1,12 @@
+Go To Declaration in fragmentlayout.xml for android:name="com.android.ecl^ipse.tests.TestFragment":
+Open XML Declaration :  [com.android.eclipse.tests.TestFragment]
+
+
+After open, the selected text is:
+[^public class TestFragment extends Fragment {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        return null;
+    }
+}]

@@ -1,0 +1,183 @@
+Notes on WST StructuredDocument
+-------------------------------
+
+Created:    2010/11/26
+References: WST 3.1.x, Eclipse 3.5 Galileo
+
+To manipulate XML documents in refactorings, we sometimes use the WST/SEE
+"StructuredDocument" API. There isn't exactly a lot of documentation on
+this out there, so this is a short explanation of how it works, totally
+based on _empirical_ evidence. As such, it must be taken with a grain of salt.
+
+Examples of usage can be found in
+  sdk/eclipse/plugins/com.android.ide.eclipse.adt/src/com/android/ide/eclipse/adt/internal/refactorings/
+
+  
+1- Get a document instance
+--------------------------
+
+To get a document from an existing IFile resource:
+
+    IModelManager modelMan = StructuredModelManager.getModelManager();
+    IStructuredDocument sdoc = modelMan.createStructuredDocumentFor(file);
+
+Note that the IStructuredDocument and all the associated interfaces we'll use
+below are all located in org.eclipse.wst.sse.core.internal.provisional,
+meaning they _might_ change later.
+
+Also note that this parses the content of the file on disk, not of a buffer
+with pending unsaved modifications opened in an editor.
+
+There is a counterpart for non-existent resources:
+
+    IModelManager.createNewStructuredDocumentFor(IFile)
+
+However our goal so far has been to _parse_ existing documents, find
+the place that we wanted to modify and then generate a TextFileChange
+for a refactoring operation. Consequently this document doesn't say
+anything about using this model to modify content directly.
+
+
+2- Structured Document overview
+-------------------------------
+
+The IStructuredDocument is organized in "regions", which are little pieces
+of text.
+
+The document contains a list of region collections, each one being
+a list of regions. Each region has a type, as well as text.
+
+Since we use this to parse XML, let's look at this XML example:
+
+<?xml version="1.0" encoding="utf-8"?> \n
+<resource> \n
+    <color/>
+    <string name="my_string">Some Value</string>  <!-- comment -->\n
+</resource>
+
+
+This will result in the following regions and sub-regions:
+(all the constants below are located in DOMRegionContext)
+
+XML_PI_OPEN
+    XML_PI_OPEN:<?
+    XML_TAG_NAME:xml
+    XML_TAG_ATTRIBUTE_NAME:version
+    XML_TAG_ATTRIBUTE_EQUALS:=
+    XML_TAG_ATTRIBUTE_VALUE:"1.0"
+    XML_TAG_ATTRIBUTE_NAME:encoding
+    XML_TAG_ATTRIBUTE_EQUALS:=
+    XML_TAG_ATTRIBUTE_VALUE:"utf-8"
+    XML_PI_CLOSE:?>
+
+XML_CONTENT
+    XML_CONTENT:\n
+
+XML_TAG_NAME
+    XML_TAG_OPEN:<
+    XML_TAG_NAME:resources
+    XML_TAG_CLOSE:>
+
+XML_CONTENT
+    XML_CONTENT:\n + whitespace before color
+
+XML_TAG_NAME
+    XML_TAG_OPEN:<
+    XML_TAG_NAME:color
+    XML_EMPTY_TAG_CLOSE:/>
+
+XML_CONTENT
+    XML_CONTENT:\n + whitespace before string
+
+XML_TAG_NAME
+    XML_TAG_OPEN:<
+    XML_TAG_NAME:string
+    XML_TAG_ATTRIBUTE_NAME:name
+    XML_TAG_ATTRIBUTE_EQUALS:=
+    XML_TAG_ATTRIBUTE_VALUE:"my_string"
+    XML_TAG_CLOSE:>
+
+XML_CONTENT
+    XML_CONTENT:Some Value
+
+XML_TAG_NAME
+    XML_END_TAG_OPEN:</
+    XML_TAG_NAME:string
+    XML_TAG_CLOSE:>
+
+XML_CONTENT
+    XML_CONTENT: (2 spaces before the comment)
+
+XML_COMMENT_TEXT
+    XML_COMMENT_OPEN:<!--
+    XML_COMMENT_TEXT: comment
+    XML_COMMENT_CLOSE:--
+
+XML_CONTENT
+    XML_CONTENT: \n after comment
+
+XML_TAG_NAME
+    XML_END_TAG_OPEN:</
+    XML_TAG_NAME:resources
+    XML_TAG_CLOSE:>
+
+XML_CONTENT
+    XML_CONTENT:
+
+
+3- Iterating through regions
+----------------------------
+
+To iterate through all regions, we need to process the list of top-level regions and then
+iterate over inner regions:
+
+    for (IStructuredDocumentRegion regions : sdoc.getStructuredDocumentRegions()) {
+        // process inner regions
+        for (int i = 0; i < regions.getNumberOfRegions(); i++) {
+            ITextRegion region = regions.getRegions().get(i);
+            String type = region.getType();
+            String text = regions.getText(region);
+        }
+    }
+
+Each "region collection" basically matches one XML tag, with sub-regions for all the tokens
+inside a tag.
+
+Note that an XML_CONTENT region is actually the whitespace, was is known as a TEXT in the w3c DOM.
+
+Also note that each outer region has a type, but the inner regions also reuse a similar type.
+So for example an outer XML_TAG_NAME region collection is a proper XML tag, and it will contain
+an opening tag, a closing tag but also an XML_TAG_NAME that is the tag name itself.
+
+Surprisingly, the inner regions do not have many access methods we can use on them, except their
+type and start/length/end. There are two length and end methods:
+- getLength() and getEnd() take any whitespace into account.
+- getTextLength() and getTextEnd() exclude some typical trailing whitespace.
+
+Note that regarding the trailing whitespace, empirical evidence shows that in the XML case
+here, the only case where it matters is in a tag such as <string name="my_string">: for the
+XML_TAG_NAME region, getLength is 7 (string + space) and getTextLength is 6 (string, no space).
+Spacing between XML element is its own collapsed region.
+
+If you want the text of the inner region, you actually need to query it from the outer region.
+The outer IStructuredDocumentRegion (the region collection) contains lots more useful access
+methods, some of which return details on the inner regions:
+- getText     : without the whitespace.
+- getFullText : with the whitespace.
+- getStart / getLength / getEnd : type-dependent offset, including whitespace.
+- getStart / getTextLength / getTextEnd : type-dependent offset, excluding "irrelevant" whitespace.
+- getStartOffset / getEndOffset / getTextEndOffset : relative to document.
+
+Empirical evidence shows that there is no discernible difference between the getStart/getEnd
+values and those returned by getStartOffset/getEndOffset. Please abide by the javadoc.
+
+All offsets start at zero.
+
+Given a region collection, you can also browse regions either using a getRegions() list, or
+using getFirst/getLastRegion, or using getRegionAtCharacterOffset(). Iterating the region
+list seems the most useful scenario. There's no actual iterator provided for inner regions.
+
+There are a few other methods available in the regions classes. This was not an exhaustive list.
+
+
+----

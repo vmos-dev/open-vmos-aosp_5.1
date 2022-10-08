@@ -1,0 +1,5 @@
+android.widget.LinearLayout [0,36,240,320]  <LinearLayout>
+    android.widget.CheckBox [0,0,80,36]  <CheckBox>
+    android.widget.RelativeLayout [0,36,240,284]  <RelativeLayout>
+        android.widget.Button [191,0,240,36]  <Button>
+

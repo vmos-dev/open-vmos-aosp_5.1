@@ -1,0 +1,7 @@
+Go To Declaration in navigationstyles.xml for parent="android:Theme.Li^ght">:
+Open Declaration in values/themes.xml :  [android:Theme.Light]
+    data/res/values/themes.xml
+
+
+After open, the selected text is:
+    <style name="Theme.Light">^

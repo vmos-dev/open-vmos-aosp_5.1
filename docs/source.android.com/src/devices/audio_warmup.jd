@@ -1,0 +1,113 @@
+page.title=Audio Warmup
+@jd:body
+
+<!--
+    Copyright 2013 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Audio warmup is the time it takes for the audio amplifier circuit in your device to
+be fully powered and reach its normal operation state. The major contributors
+to audio warmup time are power management and any "de-pop" logic to stabilize
+the circuit.
+</p>
+
+<p>This document describes how to measure audio warmup time and possible ways to decrease
+warmup time.</p>
+
+<h2 id="measuringOutput">Measuring Output Warmup</h2>
+
+<p>
+  AudioFlinger's FastMixer thread automatically measures output warmup
+  and reports it as part of the output of the <code>dumpsys media.audio_flinger</code> command.
+  At warmup, FastMixer calls <code>write()</code>
+  repeatedly until the time between two <code>write()</code>s is the amount expected.
+  FastMixer determines audio warmup by seeing how long a Hardware Abstraction
+Layer (HAL) <code>write()</code> takes to stabilize. 
+</p>
+
+<p>To measure audio warmup, follow these steps for the built-in speaker and wired headphones 
+  and at different times after booting. Warmup times are usually different for each output device 
+  and right after booting the device:</p>
+
+<ol>
+  <li>Ensure that FastMixer is enabled.</li>
+  <li>Enable touch sounds by selecting <b>Settings > Sound > Touch sounds</b> on the device.</li>
+  <li>Ensure that audio has been off for at least three seconds. Five seconds or more is better, because
+  the hardware itself might have its own power logic beyond the three seconds that AudioFlinger has.</li>
+  <li>Press Home, and you should hear a click sound.</li>
+  <li>Run the following command to receive the measured warmup:
+  <br /><code>adb shell dumpsys media.audio_flinger | grep measuredWarmup</code>
+
+<p>
+You should see output like this:
+</p>
+
+<pre>
+sampleRate=44100 frameCount=256 measuredWarmup=X ms, warmupCycles=X
+</pre>
+
+<p>
+  The <code>measuredWarmup=X</code> is X number of milliseconds
+  it took for the first set of HAL <code>write()</code>s to complete.
+</p>
+
+<p>
+  The <code>warmupCycles=X</code> is how many HAL write requests it took
+  until the execution time of <code>write()</code> matches what is expected.
+</p>
+</li>
+<li>
+  Take five measurements and record them all, as well as the mean.
+  If they are not all approximately the same,
+  then it's likely that a measurement is incorrect.
+  For example, if you don't wait long enough after the audio has been off,
+  you will see a lower warmup time than the mean value.
+</li>
+</ol>
+
+
+<h2 id="measuringInput">Measuring Input Warmup</h2>
+
+<p>
+  There are currently no tools provided for measuring audio input warmup.
+  However, input warmup time can be estimated by observing
+  the time required for <a href="http://developer.android.com/reference/android/media/AudioRecord.html#startRecording()">startRecording()</a>
+  to return. 
+</p>
+
+
+<h2 id="reducing">Reducing Warmup Time</h2>
+
+<p>
+  Warmup time can usually be reduced by a combination of:
+  <ul>
+  <li>Good circuit design</li>
+  <li>Accurate time delays in kernel device driver</li>
+  <li>Performing independent warmup operations concurrently rather than sequentially</li>
+  <li>Leaving circuits powered on or not reconfiguring clocks (increases idle power consumption)
+  <li>Caching computed parameters</li>
+  </ul>
+<p>
+  However, beware of excessive optimization. You may find that you
+  need to tradeoff between low warmup time versus
+  lack of popping at power transitions.
+</p>

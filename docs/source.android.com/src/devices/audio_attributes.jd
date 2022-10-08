@@ -1,0 +1,257 @@
+page.title=Audio Attributes
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p>Audio players support attributes that define how the audio system handles routing, volume, and
+focus decisions for the specified source. Applications can attach attributes to an audio playback
+(such as music played by a streaming service or a notification for a new email) then pass the audio
+source attributes to the framework, where the audio system uses the attributes to make mixing
+decisions and to notify applications about the state of the system.</p>
+
+<p class="note"><strong>Note:</strong> Applications can also attach attributes to an audio
+recording (such as audio captured in a video recording), but this functionality is not exposed in
+the public API.</p>
+
+<p>In Android 4.4 and earlier, the framework made mixing decisions using only the audio stream type.
+However, basing such decisions on stream type was too limiting to produce quality output across
+multiple applications and devices. For example, on a mobile device, some applications (i.e.
+Google Maps) played driving directions on the STREAM_MUSIC stream type; however, on mobile
+devices in projection mode (i.e. Android Auto), applications cannot mix driving directions with
+other media streams.</p>
+
+<p>Using the <a href="http://developer.android.com/reference/android/media/AudioAttributes.html">
+audio attribute API</a>, applications can now provide the audio system with detailed information
+about a specific audio source:</p>
+
+<ul>
+<li><b>Usage</b>. Specifies why the source is playing and controls routing, focus, and volume
+decisions.</li>
+<li><b>Content type</b>. Specifies what the source is playing (music, movie, speech,
+sonification, unknown).</li>
+<li><b>Flags</b>. Specifies how the source should be played. Includes support for audibility
+enforcement (camera shutter sounds required in some countries) and hardware audio/video
+synchronization.</li>
+</ul>
+
+<p>For dynamics processing, applications must distinguish between movie, music, and speech content.
+Information about the data itself may also matter, such as loudness and peak sample value.</p>
+
+<h2 id="using">Using attributes</h2>
+
+<p>Usage specifies the context in which the stream is used, providing information about why the
+sound is playing and what the sound is used for. Usage information is more expressive than a stream
+type and allows platforms or routing policies to refine volume or routing decisions.</p>
+
+<p>Supply one of the following usage values for any instance:</p>
+
+<ul>
+<li><code>USAGE_UNKNOWN</code></li>
+<li><code>USAGE_MEDIA</code></li>
+<li><code>USAGE_VOICE_COMMUNICATION</code></li>
+<li><code>USAGE_VOICE_COMMUNICATION_SIGNALLING</code></li>
+<li><code>USAGE_ALARM</code></li>
+<li><code>USAGE_NOTIFICATION</code></li>
+<li><code>USAGE_NOTIFICATION_RINGTONE</code></li>
+<li><code>USAGE_NOTIFICATION_COMMUNICATION_INSTANT</code></li>
+<li><code>USAGE_NOTIFICATION_COMMUNICATION_DELAYED</code></li>
+<li><code>USAGE_NOTIFICATION_EVENT</code></li>
+<li><code>USAGE_ASSISTANCE_ACCESSIBILITY</code></li>
+<li><code>USAGE_ASSISTANCE_NAVIGATION_GUIDANCE</code></li>
+<li><code>USAGE_ASSISTANCE_SONIFICATION</code></li>
+<li><code>USAGE_GAME</code></li>
+</ul>
+
+<p>Audio attribute usage values are mutually exclusive. For examples, refer to <code>
+<a href="http://developer.android.com/reference/android/media/AudioAttributes.html#USAGE_MEDIA">
+USAGE_MEDIA</a></code> and <code>
+<a href="http://developer.android.com/reference/android/media/AudioAttributes.html#USAGE_ALARM">
+USAGE_ALARM</a></code> definitions; for exceptions, refer to the <code>
+<a href="http://developer.android.com/reference/android/media/AudioAttributes.Builder.html">
+AudioAttributes.Builder</a></code> definition.</p>
+
+<h2 id="content-type">Content type</h2>
+
+<p>Content type defines what the sound is and expresses the general category of the content such as
+movie, speech, or beep/ringtone. The audio framework uses content type information to selectively
+configure audio post-processing blocks. While supplying the content type is optional, you should
+include type information whenever the content type is known, such as using
+<code>CONTENT_TYPE_MOVIE</code> for a movie streaming service or <code>CONTENT_TYPE_MUSIC</code>
+for a music playback application.</p>
+
+<p>Supply one of the following content type values for any instance:</p>
+
+<ul>
+<li><code>CONTENT_TYPE_UNKNOWN</code> (default)</li>
+<li><code>CONTENT_TYPE_MOVIE</code></li>
+<li><code>CONTENT_TYPE_MUSIC</code></li>
+<li><code>CONTENT_TYPE_SONIFICATION</code></li>
+<li><code>CONTENT_TYPE_SPEECH</code></li>
+</ul>
+
+<p>Audio attribute content type values are mutually exclusive. For details on content types,
+refer to the <a href="http://developer.android.com/reference/android/media/AudioAttributes.html">
+audio attribute API</a>.</p>
+
+<h2 id="flags">Flags</h2>
+
+<p>Flags specify how the audio framework applies effects to the audio playback. Supply one or more
+of the following flags for an instance:</p>
+
+<ul>
+<li><code>FLAG_AUDIBILITY_ENFORCED</code>. Requests the system ensure the audibility of the
+sound. Use to address the needs of legacy <code>STREAM_SYSTEM_ENFORCED</code> (such as forcing
+camera shutter sounds).</li>
+<li><code>HW_AV_SYNC</code>. Requests the system select an output stream that supports hardware A/V
+synchronization.</li>
+</ul>
+
+<p>Audio attribute flags are non-exclusive (can be combined). For details on these flags,
+refer to the <a href="http://developer.android.com/reference/android/media/AudioAttributes.html">
+audio attribute API</a>.</p>
+
+<h2 id="example">Example</h2>
+
+<p>In this example, AudioAttributes.Builder defines the AudioAttributes to be used by a new
+AudioTrack instance:</p>
+
+<pre>
+AudioTrack myTrack = new AudioTrack(
+  new AudioAttributes.Builder()
+ .setUsage(AudioAttributes.USAGE_MEDIA)
+    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+    .build(),
+  myFormat, myBuffSize, AudioTrack.MODE_STREAM, mySession);
+</pre>
+
+<h2 id="compatibility">Compatibility</h2>
+
+<p>Application developers should use audio attributes when creating or updating applications for
+Android 5.0. However, applications are not required to take advantage of attributes; they can
+handle legacy stream types only or remain unaware of attributes (i.e. a generic media player that
+doesn’t know anything about the content it’s playing).</p>
+
+<p>In such cases, the framework maintains backwards compatibility with older devices and Android
+releases by automatically translating legacy audio stream types to audio attributes. However, the
+framework does not enforce or guarantee this mapping across devices, manufacturers, or Android
+releases.</p>
+
+<p>Compatibility mappings:</p>
+
+<table>
+<tr>
+  <th>Android 5.0</th>
+  <th>Android 4.4 and earlier</th>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SPEECH</code><br>
+  <code>USAGE_VOICE_COMMUNICATION</code>
+  </td>
+  <td>
+  <code>STREAM_VOICE_CALL</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SONIFICATION</code><br>
+  <code>USAGE_ASSISTANCE_SONIFICATION</code>
+  </td>
+  <td>
+  <code>STREAM_SYSTEM</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SONIFICATION</code><br>
+  <code>USAGE_NOTIFICATION_RINGTONE</code>
+  </td>
+  <td>
+  <code>STREAM_RING</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_MUSIC</code><br>
+  <code>USAGE_UNKNOWN</code><br>
+  <code>USAGE_MEDIA</code><br>
+  <code>USAGE_GAME</code><br>
+  <code>USAGE_ASSISTANCE_ACCESSIBILITY</code><br>
+  <code>USAGE_ASSISTANCE_NAVIGATION_GUIDANCE</code><br>
+  </td>
+  <td>
+  <code>STREAM_MUSIC</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SONIFICATION</code><br>
+  <code>USAGE_ALARM</code>
+  </td>
+  <td>
+  <code>STREAM_ALARM</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SONIFICATION</code><br>
+  <code>USAGE_NOTIFICATION</code><br>
+  <code>USAGE_NOTIFICATION_COMMUNICATION_REQUEST</code><br>
+  <code>USAGE_NOTIFICATION_COMMUNICATION_INSTANT</code><br>
+  <code>USAGE_NOTIFICATION_COMMUNICATION_DELAYED</code><br>
+  <code>USAGE_NOTIFICATION_EVENT</code><br>
+  </td>
+  <td>
+  <code>STREAM_NOTIFICATION</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SPEECH</code>
+  </td>
+  <td>
+  (@hide)<code> STREAM_BLUETOOTH_SCO</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>FLAG_AUDIBILITY_ENFORCED</code>
+  </td>
+  <td>
+  (@hide)<code> STREAM_SYSTEM_ENFORCED</code>
+  </td>
+</tr>
+<tr>
+  <td>
+  <code>CONTENT_TYPE_SONIFICATION</code><br>
+  <code>USAGE_VOICE_COMMUNICATION_SIGNALLING</code>
+  </td>
+  <td>
+  (@hide)<code> STREAM_DTMF</code>
+  </td>
+</tr>
+</table>
+
+<p class="note"><strong>Note:</strong> @hide streams are used internally by the framework but are
+not part of the public API.</p>

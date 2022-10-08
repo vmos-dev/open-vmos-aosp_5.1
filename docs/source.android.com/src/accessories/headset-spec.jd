@@ -1,0 +1,682 @@
+page.title=Wired audio headset specification
+@jd:body
+
+<!--
+    Copyright 2014 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<div id="qv-wrapper">
+  <div id="qv">
+    <h2>In this document</h2>
+    <ol id="auto-toc">
+    </ol>
+  </div>
+</div>
+
+<p><em>Version 1.0</em></p>
+
+<p>This document specifies the requirements for headsets and mobile devices to
+function uniformly across the Android ecosystem. It is separated into two
+sections beginning with the specifications for the headset
+accessory followed by the specifications for the mobile device.</p>
+
+<h2 id=headset_accessory_plug_specifications>Headset Accessory (Plug) Specifications</h2>
+
+<p>The requirements in the following section apply to the headset accessory.</p>
+
+<h3 id=functions>Functions</h3>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Accessory Support</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>Stereo Audio Out</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Audio in (Mic)</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Ground</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+ </tr>
+</table>
+
+<h3 id=control-function_mapping>Control-Function Mapping</h3>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Control Function</strong></p>
+</th>
+    <th>
+<p><strong>Accessory Support</strong></p>
+</th>
+    <th>
+<p><strong>Description</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>Function A</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Play/pause/hook (Short Press), Trigger Assist (Long Press), Next (double press)</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Function B</p>
+</td>
+    <td>
+<p>Optional</p>
+</td>
+    <td>
+<p>Vol+</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Function C</p>
+</td>
+    <td>
+<p>Optional</p>
+</td>
+    <td>
+<p>Vol-</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Function D</p>
+</td>
+    <td>
+<p>Optional</p>
+</td>
+    <td>
+<p>Reserved (Nexus devices will use this reserved function to launch Google Now
+voice search)</p>
+</td>
+ </tr>
+</table>
+
+<p><strong>Assign functions to buttons as follows</strong>:</p>
+
+<ul>
+  <li> All one-button headsets must implement Function A.
+  <li> Headsets with multiple buttons must implement functions according to the
+following pattern:
+  <ul>
+    <li> 2 functions: A and D
+    <li> 3 functions: A, B, C
+    <li> 4 functions: A, B, C, D
+  </ul>
+</ul>
+
+<h3 id=mechanical>Mechanical</h3>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Accessory Support</strong></p>
+</th>
+    <th>
+<p><strong>Notes</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>4 conductor 3.5mm plug</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Ref: EIAJ-RC5325A standard</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>CTIA pinout order (LRGM)</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Except in regions with legal requirements for OMTP pinout</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>OMTP pinout order  (LRMG)</p>
+</td>
+    <td>
+<p>Optional</p>
+</td>
+    <td></td>
+ </tr>
+ <tr>
+    <td>
+<p>Microphone</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Must not be obstructed when operating headset controls</p>
+</td>
+ </tr>
+</table>
+
+<h3 id=electrical>Electrical</h3>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Accessory Support</strong></p>
+</th>
+    <th>
+<p><strong>Description</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>Ear speaker impedance</p>
+</td>
+    <td>
+<p><strong>16 ohms or higher</strong></p>
+</td>
+    <td>
+<p>Recommend 32 - 300 ohms</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Mic DC resistance</p>
+</td>
+    <td>
+<p><strong>1000 ohms or higher</strong></p>
+</td>
+    <td>
+<p>Mic characteristics must be compliant with section 5.4 “Audio Recording” of
+current Android Compatibility Definition Document (CDD)</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Control Function Equivalent impedance*</p>
+
+<p>*Total impedance from positive mic terminal to GND when button is pressed with
+2.2 V mic bias applied through 2.2 kOhm resistor</p>
+</td>
+    <td>
+<p><strong>0 ohm</strong></p>
+</td>
+    <td>
+<p>[Function A]  Play/Pause/Hook</p>
+</td>
+ </tr>
+ <tr>
+    <td></td>
+    <td>
+<p><strong>240 ohm</strong> +/- 1% resistance</p>
+</td>
+    <td>
+<p>[Function B]</p>
+</td>
+ </tr>
+ <tr>
+    <td></td>
+    <td>
+<p><strong>470 ohm</strong> +/- 1% resistance</p>
+</td>
+    <td>
+<p>[Function C] </p>
+</td>
+ </tr>
+ <tr>
+    <td></td>
+    <td>
+<p><strong>135 ohm</strong> +/- 1% resistance</p>
+</td>
+    <td>
+<p>[Function D]</p>
+</td>
+ </tr>
+</table>
+
+<h3 id=reference_headset_test_circuit_1>Reference Headset Test Circuit 1</h3>
+
+<img src="images/headset-circuit1.png" alt="Reference Headset Test Circuit 1" />
+<p class="img-caption"><strong>Figure 1.</strong> Reference headset test circuit 1</p>
+
+<p class="note"><strong>Note:</strong> Four-segment plug shows CTIA pinout. For
+OMTP pinout, please swap MIC and GND segments.</p>
+
+<h3 id=reference_headset_test_circuit_2>Reference Headset Test Circuit 2</h3>
+
+<img src="images/headset-circuit2.png" alt="Reference Headset Test Circuit 2" />
+<p class="img-caption"><strong>Figure 2.</strong> Reference headset test circuit 2</p>
+
+<p class="note"><strong>Note:</strong> The second reference circuit above
+illustrates how the actual resistor values (R1 - R4) will change based on the
+microphone capsule resistance to achieve the equivalent impedance values as
+required by the specification. The example above assumes a 5 kOhm microphone
+impedance. Therefore, as an example, to achieve an equivalent R4 impedance of
+135 Ohm, the actual R4 resistor value needs to be 139 Ohms.</p>
+
+<h2 id=mobile_device_jack_specifications>Mobile Device (Jack) Specifications</h2>
+
+<p class="caution"><strong>Caution:</strong> To achieve compatibility with the
+headset specification above, devices that include a 4 conductor 3.5mm audio
+jack must meet the following specifications. Please see the <em>Analog audio
+ports</em> section of the <a
+href="{@docRoot}compatibility/android-cdd.pdf">Android Compatibility Definition
+Document (CDD)</a> for Android compatibility requirements.</p>
+
+<p><strong>Headset Jack Functions</strong></p>
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Device Support</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>Stereo Audio Out</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Audio in (Mic)</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Ground</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+ </tr>
+</table>
+
+<h3 id=software_mapping>Software mapping</h3>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Device Support</strong></p>
+</th>
+    <th>
+<p><strong>Description</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>Function A control event </p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>input event KEY_MEDIA</p>
+
+<p>Android key  KEYCODE_HEADSETHOOK</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Function D control event</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>input event KEY_VOICECOMMAND</p>
+
+<p>Android key KEYCODE_VOICE_ASSIST</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Function B control event</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>input event KEY_VOLUMEUP</p>
+
+<p>Android key  VOLUME_UP</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Function C control event</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>input event KEY_VOLUMEDOWN</p>
+
+<p>Android key  VOLUME_DOWN</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Headset insertion detection</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>input event SW_JACK_PHYSICAL_INSERT 7</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Headset type detection</p>
+</td>
+    <td>
+<p><strong>Mic</strong></p>
+</td>
+    <td>
+<p>input event SW_MICROPHONE_INSERT 4</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Headset type detection</p>
+</td>
+    <td>
+<p><strong>No Mic</strong></p>
+</td>
+    <td>
+<p>input event SW_HEADPHONE_INSERT 2</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Headset speaker impedance</p>
+</td>
+    <td>
+<p><strong>Required Headphone (low)</strong></p>
+</td>
+    <td>
+<p>Failure mode is to indicate headphones so that limitation would be on</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Headset speaker impedance</p>
+</td>
+    <td>
+<p><strong>Required Line In (high)</strong></p>
+</td>
+    <td>
+<p>input event SW_LINEOUT_INSERT 6</p>
+</td>
+ </tr>
+</table>
+
+<h3 id=mechanical11>Mechanical</h3>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Device Support</strong></p>
+</th>
+    <th>
+<p><strong>Description</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>4 conductor 3.5mm jack</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td></td>
+ </tr>
+ <tr>
+    <td>
+<p>CTIA pinout order (LRGM)</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>3 Pin & Mono Plug Compatible</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>OMTP pinout order  (LRMG)</p>
+</td>
+    <td>
+<p>Optional but <strong>Strongly Recommended</strong></p>
+</td>
+    <td></td>
+ </tr>
+ <tr>
+    <td>
+<p>Headset detect sequence</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Plug insert notification must only be triggered after all contacts on plug are
+touching their relevant segments. This will prevent unreliable headset
+detection due to slow insertion. </p>
+</td>
+ </tr>
+</table>
+
+<h3 id=electrical12>Electrical</h3>
+
+<h4 id=general>General</h4>
+
+<table>
+ <tr>
+    <th>
+<p><strong>Function</strong></p>
+</th>
+    <th>
+<p><strong>Device Support</strong></p>
+</th>
+    <th>
+<p><strong>Notes</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p>Minimum output voltage drive capacity </p>
+</td>
+    <td>
+<p>150mV </p>
+</td>
+    <td>
+<p>&gt;= 150mV on 32 ohm</p>
+
+<p>Test conditions: EN50332-2</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Mic bias resistance </p>
+</td>
+    <td>
+<p>Required</p>
+</td>
+    <td>
+<p>Flexible on detection method used and microphone bias resistor selection.
+Require that all button resistance value ranges specified below be detected and
+related to their respective function</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>Mic bias voltage</p>
+</td>
+    <td>
+<p>1.8V - 2.9V</p>
+</td>
+    <td>
+<p>To guarantee compatibility to common microphone capsules.</p>
+</td>
+ </tr>
+</table>
+
+<h4 id=function_impedance_and_threshold_detection>Function Impedance and Threshold Detection</h4>
+
+<p>Devices must detect the following resistor ladder on the accessories. The
+accessories will be tested to the standardized circuit diagram in the diagram
+illustrated earlier (Reference Headset Test Circuit) where the total impedance
+is measured from MIC terminal to GND when a button is pressed with 2.2V mic
+bias applied through 2.2 kOhm resistor. This is the same effective resistance
+as the button detection circuit with the microphone in parallel with the button
+resistor.</p>
+<table>
+ <tr>
+    <th>
+<p><strong>Button Impedance Level</strong></p>
+</th>
+    <th>
+<p><strong>Device Support</strong></p>
+</th>
+    <th>
+<p><strong>Notes</strong></p>
+</th>
+ </tr>
+ <tr>
+    <td>
+<p><strong>70 ohm or less</strong></p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>[Function A]</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p><strong>110 - 180 ohm </strong></p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>[Function D]</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p><strong>210 - 290 ohm</strong></p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>[Function B]</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p><strong>360 - 680 ohm </strong></p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>[Function C]</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p><strong>Headset speaker impedance level</strong></p>
+</td>
+    <td></td>
+    <td></td>
+ </tr>
+ <tr>
+    <td>
+<p>Low Threshold Detection</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Headphone (low) &lt; 1 Kohm</p>
+</td>
+ </tr>
+ <tr>
+    <td>
+<p>High Threshold Detection</p>
+</td>
+    <td>
+<p><strong>Required</strong></p>
+</td>
+    <td>
+<p>Line In (high) &gt; 5 Kohm</p>
+</td>
+ </tr>
+</table>

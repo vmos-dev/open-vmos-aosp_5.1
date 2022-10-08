@@ -1,0 +1,4 @@
+Code completion in completion1.xml for android:gravity="l^eft|bottom" selecting left:
+@@ -15 +15
+-         android:gravity="l^eft|bottom"
++         android:gravity="left^"
