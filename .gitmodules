@@ -1,0 +1,9 @@
+[submodule "cts"]
+	path = cts
+	url = git@github.com:VMOS-XiaoSuan/cts.git
+[submodule "packages"]
+	path = packages
+	url = git@github.com:VMOS-XiaoSuan/packages.git
+[submodule "tools"]
+	path = tools
+	url = git@github.com:VMOS-XiaoSuan/tools.git
