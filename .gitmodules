@@ -7,3 +7,6 @@
 [submodule "tools"]
 	path = tools
 	url = git@github.com:VMOS-XiaoSuan/tools.git
+[submodule "frameworks"]
+	path = frameworks
+	url = git@github.com:VMOS-XiaoSuan/frameworks.git
