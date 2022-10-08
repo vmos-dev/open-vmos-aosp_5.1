@@ -1,0 +1,20 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [Media]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-MediaBrowserService
+level:        ADVANCED
+icon:         screenshots/icon-web.png
+apiRefs:
+    - android:android.service.media.MediaBrowserService
+    - android:android.media.browse.MediaBrowser
+    - android:android.media.session.MediaSession
+    - android:android.media.session.MediaController
+    - android:android.app.Notification.MediaStyle
+license: apache2

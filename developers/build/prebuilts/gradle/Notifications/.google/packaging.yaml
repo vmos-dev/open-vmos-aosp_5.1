@@ -1,0 +1,20 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [Wearable]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-Wearable Notifications
+level:        INTERMEDIATE
+icon:         screenshots/ic_launcher.png
+apiRefs:
+    - android:android.app.Notification
+    - android:android.support.v4.app.NotificationCompat
+    - android:android.support.v4.app.NotificationManagerCompat
+    - android:android.support.v4.app.RemoteInput
+    - android:android.support.wearable.view.WearableListView
+license: apache2

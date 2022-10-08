@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2014 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>BasicManagedProfile</name>
+    <group>Admin</group>
+    <package>com.example.android.basicmanagedprofile</package>
+
+
+
+    <!-- change minSdk if needed-->
+    <minSdk>21</minSdk>
+    <compileSdkVersion>21</compileSdkVersion>
+
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample demonstrates how to create a managed profile. You can also learn how to
+            enable or disable other apps and how to set restrictions to them. Intents can be
+            configured to be forwarded between primary account and managed profile. Finally, you can
+            wipe all the data associated with the profile.
+            Note that there can only be one managed profile on a device. 
+            ]]>
+        </intro>
+    </strings>
+    <template src="base"/>
+
+       <metadata>
+        <status>PUBLISHED</status>
+        <categories>Device Admin</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>ADVANCED</level>
+        <icon>screenshotsicon-web.png</icon>
+        <screenshots>
+            <img>screenshots/not_set_up.png</img>
+            <img>screenshots/set_up.png</img>
+            <img>screenshots/main.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.admin.DevicePolicyManager</android>
+            <android>android.app.admin.DeviceAdminReceiver</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+This sample demonstrates basic functionalities of Managed Profile API
+introduced in Android 5.0 Lollipop. You can set up this app as a
+profile owner, and use this app to enable/disable apps in the newly
+created managed profile. You can also set restrictions to some apps,
+enable/disable Intent forwarding between profiles, and wipe out all
+the data associated with the profile.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+As of Android 5.0, DevicePolicyManager introduces new features to
+support managed profile.
+
+To set up this app as a profile owner, you need to encrypt your device
+(you are prompted to do if you haven't). This doesn't wipe out the
+device, but be aware that you can set up only one managed profile at a
+time.
+
+[isProfileOwnerApp][1] can be used to determine if a particular
+package is registered as the profile owner for the current user. You
+can initiate the provisioning flow of a managed profile with Intent of
+[ACTION_PROVISION_MANAGED_PROFILE][2].
+
+You have to implement a class extending [DeviceAdminReceiver][3] to
+receive the result of the provisioning flow. Use
+[setProfileEnabled][4] to enable the newly created profile, and your
+app is now set up as a profile owner.
+
+[1]: http://developer.android.com/reference/android/app/admin/DevicePolicyManager.html#isProfileOwnerApp(java.lang.String)
+[2]: http://developer.android.com/reference/android/app/admin/DevicePolicyManager.html#ACTION_PROVISION_MANAGED_PROFILE
+[3]: http://developer.android.com/reference/android/app/admin/DeviceAdminReceiver.html
+[4]: http://developer.android.com/reference/android/app/admin/DevicePolicyManager.html#setProfileEnabled(android.content.ComponentName)
+]]>
+        </intro>
+    </metadata>
+
+</sample>

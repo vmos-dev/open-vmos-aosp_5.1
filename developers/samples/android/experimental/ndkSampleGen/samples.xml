@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<samples>
+<sample name="Teapot" path="../../../../../development/ndk/platforms/android-17/samples/Teapot"/>
+<sample name="MoreTeapots" path="../../../../../development/ndk/platforms/android-18/samples/MoreTeapots"/>
+</samples>

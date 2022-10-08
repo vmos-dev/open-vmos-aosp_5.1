@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>WidgetData</name>
+    <group>Content</group>
+    <package>com.example.android.widgetdata</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>11</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample demonstrates how to create a list-based widget specifically backed by a
+            content provider.\n\n
+This sample uses a collection view (a ListView) to present some mock weather data in a widget.
+In particular, we will be using a content provider to demonstrate how the widget can retrieve data
+and update itself when you are using more complex data sources.
+When working with external data, or data which must be fetched over high latency, it is important
+to keep the data cached in a persistent location so that the widget feels responsive.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base" />
+    <template src="FragmentView" />
+    <common src="activities"/>
+    <common src="logger" />
+
+    <metadata>
+    <status>PUBLISHED</status>
+    <categories>Content</categories>
+    <technologies>Android</technologies>
+    <languages>Java</languages>
+    <solutions>Mobile</solutions>
+    <level>INTERMEDIATE</level>
+    <icon>screenshots/icon-web.png</icon>
+    <screenshots>
+        <img>screenshots/1-widget.png</img>
+    </screenshots>
+    <api_refs>
+        <android>android.widget.RemoteViews</android>
+        <android>android.widget.RemoteViewsService</android>
+        <android>android.database.ContentObserver</android>
+        <android>android.content.ContentResolver</android>
+    </api_refs>
+    <description>
+<![CDATA[
+This sample demonstrates how to create a list-based widget specifically backed 
+by a content provider.
+]]>
+    </description>
+    <intro>
+<![CDATA[
+This sample uses a collection view (a ListView) to present some mock weather data in a widget.
+In particular, we will be using a content provider to demonstrate how the widget can retrieve data
+and update itself when you are using more complex data sources.
+When working with external data, or data which must be fetched over high latency, it is important
+to keep the data cached in a persistent location so that the widget feels responsive.
+
+We define a [ContentProvider][1] that handles queries from a [RemoteView][2] [ListView][3] widget.
+A [ContentObserver][4] notifies the widget when data changes in the ContentProvider.
+Data for the widget is provided by a [RemoteViewsService][5] that populates a RemoteView collection (the ListView).
+
+[1]: http://developer.android.com/reference/android/content/ContentProvider.html
+[2]: http://developer.android.com/reference/android/widget/RemoteViews.RemoteView.html
+[3]: http://developer.android.com/reference/android/widget/ListView.html
+[4]: http://developer.android.com/reference/android/database/ContentObserver.html
+[5]: http://developer.android.com/reference/android/widget/RemoteViewsService.html
+]]>
+    </intro>
+</metadata>
+</sample>

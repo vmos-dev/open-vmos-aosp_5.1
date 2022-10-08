@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>EmbeddedApp</name>
+    <group>Wearable</group>
+    <package>com.example.android.wearable.embeddedapp</package>
+
+
+
+    <!-- change minSdk if needed-->
+    <minSdk>18</minSdk>
+
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This simple app demonstrates how to embed a wearable app into a phone app.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <template src="Wear"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Wearable</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>BEGINNER</level>
+        <icon>src/main/res/drawable-xxhdpi/ic_launcher.png</icon>
+        <screenshots>
+            <img>screenshots/embedded_wearable_app.png</img>
+            <img>screenshots/phone_app.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.Activity</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+This simple app demonstrates how to embed a wearable app into a phone app.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+Wearable apps can be installed directly onto Android Wear devices during development, using either a direct ADB
+connection or ADB-over-Bluetooth. However, when releasing your app to end users, you must package your
+wearable APK inside of a traditional APK for distribution via a paired phone.
+
+When end users install this APK onto their phone, the wearable APK will be automatically detected, extracted, and pushed
+to their any paired wearable devices.
+
+This sample demonstrates how to properly package a wearable app for release in this manner. The wearable app is inside
+the `Wearable` directory, and the phone app (which will be used as a container for distribution) is the `Application`
+directory. There is nothing special about these apps, other than the `wearApp` dependency in the (host) phone app's
+`build.gradle` file:
+
+```groovy
+dependencies {
+    compile 'com.google.android.gms:play-services-wearable:6.5.+'
+    wearApp project(':Wearable')
+}
+```
+
+This dependency will automatically package the wearable APK during a **release build** (e.g. using the "Build > Generate
+Signed APK..." command in Android Studio). Note that this packaging is **not** performed for debug builds for
+performance reasons. During development, your wearable and phone apps must still be pushed individually to their
+respective devices using an ADB connection.
+]]>
+        </intro>
+    </metadata>
+</sample>

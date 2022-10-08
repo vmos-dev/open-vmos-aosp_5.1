@@ -1,0 +1,18 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [Design, UI]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-BorderlessButtons
+level:        INTERMEDIATE
+icon:         screenshots/big_icon.png
+apiRefs:
+    - android:android.widget.Button
+    - android:android.widget.ListView
+    - android:android.app.ListActivity
+license: apache2

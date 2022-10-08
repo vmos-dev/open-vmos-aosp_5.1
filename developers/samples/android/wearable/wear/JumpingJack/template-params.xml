@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>JumpingJack</name>
+    <group>Wearable</group>
+    <package>com.example.android.wearable.jumpingjack</package>
+
+
+
+    <!-- change minSdk if needed-->
+    <minSdk>18</minSdk>
+
+
+    <strings>
+        <intro>
+            <![CDATA[
+            Uses the Gravity sensor to count how many jumping jacks you have performed.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <template src="Wear"/>
+    <common src="logger"/>
+    <common src="activities"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Wearable</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>screenshots/web-icon.png</icon>
+        <screenshots>
+            <img>screenshots/jumping_jack.gif</img>
+        </screenshots>
+        <api_refs>
+            <android>android.hardware.SensorEvent</android>
+            <android>android.hardware.SensorEventManager</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+A basic sample showing how to use the Gravity sensor on the wearable device
+by counting how many jumping jacks you have performed.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+[SensorEventListener][1] offers you methods used for receiving notifications from the
+[SensorManager][2] when sensor values have changed.
+
+This example counts how many times Jumping Jakcs are performed by detecting the value
+of the Gravity sensor by the following code:
+
+```java
+@Override
+public void onSensorChanged(SensorEvent event) {
+    detectJump(event.values[0], event.timestamp);
+}
+
+private void detectJump(float xValue, long timestamp) {
+    if ((Math.abs(xValue) > GRAVITY_THRESHOLD)) {
+        if(timestamp - mLastTime < TIME_THRESHOLD_NS && mUp != (xValue > 0)) {
+            onJumpDetected(!mUp);
+        }
+        mUp = xValue > 0;
+        mLastTime = timestamp;
+    }
+}
+```
+
+The detectJump method above assumes that when a person is wearing the watch, the x-component of gravity
+as measured by the Gravity Sensor is +9.8 when the hand is downward and -9.8 when the hand
+is upward (signs are reversed if the watch is worn on the right hand). Since the upward or
+downward may not be completely accurate, we leave some room and instead of 9.8, we use
+GRAVITY_THRESHOLD (7.0f). We also consider the up <-> down movement successful if it takes less than
+TIME_THRESHOLD_NS (2000000000 nanoseconds).
+
+[1]: http://developer.android.com/reference/android/hardware/SensorEventListener.html
+[2]: http://developer.android.com/reference/android/hardware/SensorManager.html
+]]>
+        </intro>
+    </metadata>
+</sample>

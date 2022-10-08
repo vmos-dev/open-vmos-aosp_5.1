@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+##############################################################################
+##
+##  GitHub Upload/Sync script for Android Samples
+##
+##############################################################################
+
+##replace with auth token for google-automerger GitHub account
+TOKEN=herpderp
+
+##iterate through samples
+
+cd ./prebuilts/gradle
+for i in $(ls);
+
+##for testing
+#foo="ActionBarCompat-Basic"
+#foo="ActionBarCompat-Basic ActionBarCompat-ListPopupMenu FooBar"
+#foo="ActionBarCompat-Basic Notifications"
+#for i in $foo;
+
+do
+echo "
+$i"
+
+URL=https://github.com/googlesamples/android-$i
+
+result=$(curl -o /dev/null --silent --head --write-out '%{http_code}' "$URL")
+#echo "$result $URL"
+
+##checking to see if the repo already exists
+if [ "$result" != "404" ]; then
+   echo "$i already exists as a repo"
+ else
+   echo "A repo for $i does not exist yet"
+
+repoName="googlesamples/android-$i"
+
+#echo "
+#URL Repo Name:
+#"$repoName
+
+
+CREATE="curl -H 'Authorization: token '$TOKEN \
+     -d '{\"name\":\"android-'$i'\", \"team_id\":889859}' \
+     https://api.github.com/orgs/googlesamples/repos"
+
+#echo "
+#Create Script:
+#"$CREATE
+
+eval $CREATE
+
+#add secondary team permissions (robots)
+ADDTEAM="curl -X PUT \
+-H 'Authorization: token '$TOKEN \
+-H 'Content-Length: 0' \
+https://api.github.com/teams/889856/repos/$repoName"
+
+#echo "
+#Add Team Robots:
+#"$ADDTEAM
+
+eval $ADDTEAM
+
+
+URL="https://$TOKEN@github.com/$repoName"
+#echo "
+#Authenticated URL:
+#"$URL
+
+   cd $i
+   git init
+    #overrides .gitconfig just for this project - does not alter your global settings.
+   git config user.name "google-automerger"
+   git config user.email automerger@google.com
+   git add .
+   git commit -m "Initial Commit"
+   git remote add origin $URL
+   git push origin master
+   cd ..
+ fi
+done
+

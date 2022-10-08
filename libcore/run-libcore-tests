@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# make sure there's a vogar on the path, but prefer the user's one.
+export PATH=$PATH:~dalvik-prebuild/vogar/bin
+
+VOGAR="vogar $VOGAR_FLAGS"
+
+# We enumerate the test packages for vogar rather than just giving it the classes.jar
+# so hundreds of packages can be tested in parallel, rather than one big jar file serially.
+all_test_packages=$(find `dirname $0`/*/src/test -name "*.java" | \
+  fgrep -v junit | \
+  fgrep -v org/w3c/domts | \
+  xargs grep -h '^package ' | sed 's/^package //' | sed 's/;$//' | sort | uniq | tr "\n" " ")
+all_test_packages="$all_test_packages tests.api.org.w3c.dom"
+
+# Use the list of packages supplied on the command-line, if any.
+test_packages=${*:-$all_test_packages}
+
+echo "Running tests for following test packages:"
+echo $test_packages | tr " " "\n"
+
+$VOGAR \
+  --vm-arg -Xmx32M \
+  --classpath out/target/common/obj/JAVA_LIBRARIES/core-tests_intermediates/javalib.jar \
+  --classpath out/target/common/obj/JAVA_LIBRARIES/sqlite-jdbc_intermediates/classes.jar \
+  $test_packages \
+  || true

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2014 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>ScreenCapture</name>
+    <group>Media</group>
+    <package>com.example.android.screencapture</package>
+
+    <minSdk>21</minSdk>
+
+    <strings>
+        <intro>
+<![CDATA[
+This sample demonstrates how to use Media Projection API introduced in Android 5.0 Lollipop. Press
+"Start" to start capturing the screen.
+]]>
+        </intro>
+    </strings>
+
+    <!-- The basic templates have already been enabled. Uncomment more as desired. -->
+    <template src="base"/>
+    <template src="FragmentView"/>
+    <common src="logger"/>
+    <common src="activities"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Media</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/main.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.media.projection.MediaProjection</android>
+            <android>android.media.projection.MediaProjectionManager</android>
+            <android>android.hardware.display.VirtualDisplay</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+This sample demonstrates how to use Media Projection API to capture device screen in real time and
+show it on a SurfaceView.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+Media Projection API lets you capture the current screen through Surface.
+
+To start media projection, you need to get an instance of [MediaProjection][1]. For this, you have
+to call startActivityForResult with an Intent from
+[MediaProjectionManager.createScreenCaptureIntent()][2]. This shows a confirmation dialog to the
+user. When user confirms it, you will get a result code and data in onActivityResult, so pass those
+to [getMediaProjection][3].
+
+Once you get a MediaProjection, use [createVirtualDisplay][4] and bind it to a Surface.
+
+[1]: https://developer.android.com/reference/android/media/projection/MediaProjection.html
+[2]: https://developer.android.com/reference/android/media/projection/MediaProjectionManager.html#createScreenCaptureIntent()
+[3]: https://developer.android.com/reference/android/media/projection/MediaProjectionManager.html#getMediaProjection(int, android.content.Intent)
+[4]: https://developer.android.com/reference/android/media/projection/MediaProjection.html#createVirtualDisplay(java.lang.String, int, int, int, int, android.view.Surface, android.hardware.display.VirtualDisplay.Callback, android.os.Handler)
+]]>
+        </intro>
+    </metadata>
+</sample>

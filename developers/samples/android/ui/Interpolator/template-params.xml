@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>Interpolator</name>
+    <group>UI</group>
+    <package>com.example.android.interpolator</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>21</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample demonstrates the use of animation interpolators and path animations for
+            Material Design. It shows how an ObjectAnimator is used to animate two properties of a
+            view (scale X and Y) along a path.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <template src="FragmentView"/>
+
+    <common src="logger"/>
+    <common src="activities"/>
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Design, Transitions, Input</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/before.png</img>
+            <img>screenshots/after.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.animation.ObjectAnimator</android>
+            <android>android.view.animation.Interpolator</android>
+        </api_refs>
+        <description>
+<![CDATA[
+This sample demonstrates the use of animation interpolators and path animations for
+`Material Design`.
+]]>
+        </description>
+        <intro>
+<![CDATA[
+Material design is a comprehensive guide for visual, motion, and interaction
+design across platforms and devices. Starting with API level 21,
+[Android includes support for material design][1] apps.
+
+This sample demonstrates the use of `Material Design` animation interpolators
+and path animations. It uses an [ObjectAnimator][2] to animate two view properties,
+`Scale_X` and `Scale_Y`. Users can pick from a set of interpolator options. They
+can also define the duration of the animation.
+
+[1]: https://developer.android.com/training/material/index.html
+[2]: https://developer.android.com/guide/topics/graphics/prop-animation.html#object-animator
+
+]]>
+        </intro>
+    </metadata>
+
+
+
+</sample>

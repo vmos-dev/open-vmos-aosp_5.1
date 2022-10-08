@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<sample>
+    <name>DoneBar</name>
+    <group>UI</group>
+    <package>com.example.android.donebar</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>14</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+                This sample demonstrates two alternative presentations of the
+                action bar that are well-suited for simple data entry scenarios.
+
+                In this presentation, a done bar replaces the action
+                bar entirely, providing two direct actions to persist or dismiss changes. This is
+                suitable for cases where no additional view details or actions are needed in the
+                action bar.
+            ]]>
+        </intro>
+    </strings>
+
+    <activity>
+        <class>DoneBarActivity</class>
+        <title>Done Bar</title>
+        <description>In this presentation, a done bar replaces the action bar entirely, providing
+            two direct actions to persist or dismiss changes. This is suitable for cases where no
+            additional view details or actions are needed in the action bar.</description>
+    </activity>
+
+    <activity>
+        <class>DoneButtonActivity</class>
+        <title>Done Button</title>
+        <description>In this presentation, a done button replaces the action bar\'s "Up" affordance
+            and app icon, while the cancel action is made available in the action overflow. This is
+            well-suited to scenarios where additional view details or
+            actions may be needed in the action bar.</description>
+    </activity>
+
+    <template src="base"/>
+    <template src="ActivityCards"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>UI</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/1-main.png</img>
+            <img>screenshots/2-done-bar.png</img>
+            <img>screenshots/3-done-button.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.ActionBar</android>
+        </api_refs>
+        <description>
+This sample shows how to create a custom view in the ActionBar to show a done button, using
+2 alternative layouts. This is well suited for simple data entry activities, where the only
+options for the user are to cancel or confirm the data changes.
+        </description>
+        <intro>
+API 11 introduced the [ActionBar][1] as a navigational UI element. In most cases, a custom view isn't required
+or even recommended, as using a menu xml file is all that is needed to add action icons to it. However, it is
+possible to use a custom view and it is useful in some cases.
+
+This sample contains two activities with custom views in their action bar, each with a "done" button. These are
+designed to be used with simple data entry screen where the only options for the user are to cancel or confirm
+the changes.
+
+1. Create a layout for the [ActionBar][2].
+2. In the activity, before setting the content view, inflate the view using the LayoutInflater.
+3. Use `getActionBar()` to get the ActionBar, and set the display options with `ActionBar.DISPLAY_SHOW_CUSTOM`.
+4. Set the custom view by calling `setCustomView(customActionBarView, new ActionBar.LayoutParams(
+ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT))` on the ActionBar.
+5. You can now set the content view of the Activity.
+
+
+[1]: http://developer.android.com/design/patterns/actionbar.html
+[2]: http://developer.android.com/reference/android/app/ActionBar.html
+        </intro>
+    </metadata>
+
+</sample>

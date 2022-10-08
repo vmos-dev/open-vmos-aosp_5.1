@@ -1,0 +1,11 @@
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.freemarker:freemarker:2.3.20'
+    compile gradleApi()
+    compile localGroovy()
+}

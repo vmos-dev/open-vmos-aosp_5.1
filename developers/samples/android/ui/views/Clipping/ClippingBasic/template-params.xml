@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>ClippingBasic</name>
+    <group>UI</group>
+    <package>com.example.android.clippingbasic</package>
+
+
+    <minSdk>21</minSdk>
+    <compileSdkVersion>21</compileSdkVersion>
+
+
+    <strings>
+        <intro>
+            <![CDATA[
+            Basic sample to demonstrate clipping on a View.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <template src="FragmentView"/>
+    <common src="logger"/>
+    <common src="activities"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>UI Views</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>BEGINNER</level>
+        <icon>screenshots/web-icon.png</icon>
+        <screenshots>
+            <img>screenshots/screenshot-1.png</img>
+            <img>screenshots/screenshot-2.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.view.ViewOutlineProvider</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+A basic app showing how to clip on a View using [ViewOutlineProvider][1] interface,
+by which a View builds its outline, used for shadowing and clipping.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+The [ViewOutlineProvider][1] interface offers you a method to populate the outline of a View.
+You need to implement a getOutline(android.view.View, android.graphics.Outline)
+method to clip a View in a specific shape.
+
+This example clips the outline of a View as a rounded rectangle by defining a class that
+ implements ViewOutlineProvider by following code:
+
+```java
+private class ClipOutlineProvider extends ViewOutlineProvider {
+    @Override
+    public void getOutline(View view, Outline outline) {
+        final int margin = Math.min(view.getWidth(), view.getHeight()) / 10;
+        outline.setRoundRect(margin, margin, view.getWidth() - margin,
+                view.getHeight() - margin, margin / 2);
+    }
+}
+```
+
+To clip a View by the defined outline, setting a OutlineProvider to a View
+to be clipped is needed like following:
+
+```java
+final View clippedView = view.findViewById(R.id.frame);
+clippedView.setOutlineProvider(mOutlineProvider);
+```
+
+You can toggle if the View is clipped by calling [setClipToOutline(boolean)][2]
+like following code:
+
+```java
+clippedView.setClipToOutline(true); // Setting false disable clipping
+```
+
+[1]: https://developer.android.com/reference/android/view/ViewOutlineProvider.html
+[2]: https://developer.android.com/reference/android/view/View.html#setClipToOutline(boolean)
+]]>
+        </intro>
+    </metadata>
+</sample>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>AgendaData</name>
+    <group>Wearable</group>
+    <package>com.example.android.wearable.agendadata</package>
+
+
+
+    <!-- change minSdk if needed-->
+    <minSdk>18</minSdk>
+
+
+    <strings>
+        <intro>
+            <![CDATA[
+            Syncs calendar events to your wearable at the press of a button, using the Wearable
+            DataApi to transmit data such as event time, description, and background image. The DataItems can be
+            deleted individually via an action on the event notifications, or all at once via a button on the
+            companion. When deleted using the notification action, a ConfirmationActivity is used to indicate
+            success or failure.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <template src="Wear"/>
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Wearable</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>Wearable/src/main/res/drawable-xxhdpi/ic_launcher.png</icon>
+        <screenshots>
+            <img>screenshots/companion_agenda_data.png</img>
+            <img>screenshots/dummy_calendar_event.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.IntentService</android>
+            <ext>com.google.android.gms.wearable.DataApi</ext>
+            <ext>com.google.android.gms.wearable.Node</ext>
+        </api_refs>
+        <description>
+<![CDATA[
+Sample demonstrating sync of calendar events to a wearable by the press of a button.
+]]>
+        </description>
+        <intro>
+<![CDATA[
+Using the Wearable [DataApi][1] allows to transmit data such as event time,
+description, and background image.
+
+The sent [DataItems][2] can be deleted individually via an action on the event notifications,
+or all at once via a button on the companion.
+
+When deleted using the notification action, a ConfirmationActivity is used to indicate
+success or failure. The sample shows implementations for both the success as well failure case.
+
+[1]: https://developer.android.com/reference/com/google/android/gms/wearable/DataApi.html
+[2]: https://developer.android.com/reference/com/google/android/gms/wearable/DataItem.html
+]]>
+        </intro>
+    </metadata>
+</sample>

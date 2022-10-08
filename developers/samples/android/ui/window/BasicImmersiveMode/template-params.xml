@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>BasicImmersiveMode</name>
+    <group>UI</group>
+    <package>com.example.android.basicimmersivemode</package>
+    
+    <!-- change minSdk if needed-->
+    <minSdk>19</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            \"Immersive Mode\" is a new UI mode which improves \"hide full screen\" and
+            \"hide nav bar\" modes, by letting users swipe the bars in and out.  This sample
+            demonstrates how to enable and disable immersive mode programmatically.
+            ]]>
+        </intro>
+        <sample_action>Toggle Immersive Mode!</sample_action>
+    </strings>
+
+    <template src="base"/>
+    <template src="SingleView"/>
+    <common src="logger"/>
+    <common src="activities"/>
+
+<metadata>
+    <status>PUBLISHED</status>
+    <categories>UI</categories>
+    <technologies>Android</technologies>
+    <languages>Java</languages>
+    <solutions>Mobile</solutions>
+    <level>INTERMEDIATE</level>
+    <icon>screenshots/big_icon.png</icon>
+    <screenshots>
+        <img>screenshots/1-activity.png</img>
+        <img>screenshots/2-immersive.png</img>
+    </screenshots>
+    <api_refs>
+        <android>android.view.View</android>
+        <android>android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY</android>
+
+    </api_refs>
+    <description>
+<![CDATA[
+Sample demonstrating the use of immersive mode to hide the system and navigation bars for
+full screen applications.
+]]>
+    </description>
+    <intro>
+<![CDATA[
+'Immersive Mode' is a new UI mode which improves 'hide full screen' and 'hide nav bar' 
+modes, by letting users swipe the bars in and out.
+
+This sample demonstrates how to enable and disable immersive mode programmatically.
+
+Immersive mode was introduced in Android 4.4 (Api Level 19). It is toggled using the 
+SYSTEM_UI_FLAG_IMMERSIVE system ui flag. When combined with the SYSTEM_UI_FLAG_HIDE_NAVIGATION and SYSTEM_UI_FLAG_FULLSCREEN  flags, hides the navigation and status bars and lets your app capture all touch events on the screen.
+]]>
+    </intro>
+</metadata>
+</sample>

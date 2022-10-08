@@ -1,0 +1,47 @@
+<p>This is a demo application highlighting how to use some of the new APIs in
+Honeycomb, including:</p>
+
+<ul>
+  <li><a href="../../../guide/topics/fundamentals/fragments.html">Fragments</a></li>
+  <li>The <a href="../../../guide/topics/ui/actionbar.html">action bar</a>
+      and contextual action bar</li>
+  <li>Drag and drop</li>
+  <li>The new <a href="../../../reference/android/animation/package-summary.html"><code>android.animation</code></a>
+      framework</li>
+  <li>Custom notifications</li>
+  <li>For information on how to implement <a href="../../../reference/android/widget/StackView.html"><code>StackView</code></a>
+      and other adapter-based app widgets, see <a href="../StackWidget/index.html">StackView App Widget</a></li>
+</ul>
+
+<p>The image gallery shows how all these pieces can work together in one application.</p>
+
+<p class="note"><strong>Update:</strong> This app has been updated for Android 4.0 to support
+handsets by reusing fragments in separate activities when on smaller screens.</p>
+
+<p>The application includes the following key classes:<p>
+<ul>
+  <li><a href="src/com/example/android/hcgallery/ContentFragment.html">ContentFragment</a>
+      A fragment responsible for containing the "content" of the application.
+      Displays images, receives drag/drop events from other fragments, and can
+      invoke the contextual action bar using
+      <a href="../../../reference/android/view/ActionMode.html">action modes</a>.</li>
+  <li><a href="src/com/example/android/hcgallery/TitlesFragment.html">TitlesFragment</a>
+      Shows a ListView of photos to display in the ContentFragment. Photos can
+      be chosen either by tapping on the listview, or dragging them from the
+      list to the content area. The list of photos displayed depends on the
+      category selected in the ActionBar.</li>
+  <li><a href="src/com/example/android/hcgallery/MainActivity.html">MainActivity</a>
+      This is the main entry point of the application. MainActivity is
+      responsible for initialization of the ActionBar, TitlesFragment, and
+      ContentFragment. MainActivity is also responsible for keeping track of
+      the currently selected theme and currently selected photo when the
+      activity is recreated, such as when the screen is rotated or an intent to
+      a separate activity is fired (such as the included Camera sample).
+      MainActivity also contains code demonstrating how to animate
+      showing/hiding fragments (in this case, the TitlesFragment) and the
+      ActionBar, demonstrating how to smoothly transition between states
+      in your application.</li></ul>
+
+<img alt="Screenshot" src="../images/hcgallery.png" />
+<img alt="Screenshot" src="../images/hcgallery-phone1.png" />
+<img alt="Screenshot" src="../images/hcgallery-phone2.png" />

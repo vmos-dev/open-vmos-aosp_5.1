@@ -1,0 +1,17 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [Getting Started, Wearable]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-SkeletonWearableApp
+level:        BEGINNER
+icon:         Wearable/src/main/res/drawable-xhdpi/ic_launcher.png
+apiRefs:
+    - android:android.support.wearable.view.CardFragment
+    - android:android.support.wearable.view.GridViewPager
+license: apache2

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+
+<sample>
+    <name>MyCloud</name>
+    <group>Content</group>
+    <package>com.example.android.storageprovider</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>19</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            \nA simple implementation of a documents provider using the storage access framework in
+            Android 4.4.
+            ]]>
+        </intro>
+        <sample_action>Log in</sample_action>
+    </strings>
+
+    <template src="base"/>
+    <template src="SingleView"/>
+    <common src="logger"/>
+    <common src="activities"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Content</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/1-logged-out.png</img>
+            <img>screenshots/2-logged-in.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.provider.DocumentsProvider</android>
+        </api_refs>
+        <description>
+This sample shows how to implement a simple documents provider using the storage access
+framework available in Android 4.4.
+        </description>
+
+        <intro>
+This sample uses the [StorageAccessFramework][1] introduced in Android 4.4 to implement a [DocumentsProvider][2].
+
+See [Writing A Custom Document Provider guide][3] for all the details on how to do this.
+
+
+[1]: https://developer.android.com/guide/topics/providers/document-provider.html
+[2]: https://developer.android.com/reference/android/provider/DocumentsProvider.html
+[3]: https://developer.android.com/guide/topics/providers/document-provider.html#custom
+        </intro>
+    </metadata>
+
+</sample>

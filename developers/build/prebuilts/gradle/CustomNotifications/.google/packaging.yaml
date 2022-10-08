@@ -1,0 +1,20 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [Notification, UI]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-CustomNotifications
+level:        BEGINNER
+icon:         screenshots/icon-web.png
+apiRefs:
+    - android:android.app.Notification
+    - android:android.app.NotificationManager
+    - android:android.app.PendingIntent
+    - android:android.support.v4.app.NotificationCompat
+    - android:android.widget.RemoteViews
+license: apache2

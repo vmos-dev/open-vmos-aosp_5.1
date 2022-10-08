@@ -1,0 +1,26 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.0.0-rc1'
+    }
+}
+
+apply plugin: 'android'
+
+dependencies {
+    compile "com.android.support:support-v4:18.0.+"
+    compile "com.android.support:appcompat-v7:18.0.+"
+}
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "18.0.1"
+
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 16
+    }
+}

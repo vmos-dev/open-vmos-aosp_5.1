@@ -1,0 +1,159 @@
+/*
+ * This file contains expectations for tests that we'd like to eventually fix, but aren't urgent.
+ */
+[
+{
+  description: "libcore.java.io.OldFileTest#test_deleteOnExit fails on IRM05 mysid-user",
+  name: "libcore.java.io.OldFileTest#test_deleteOnExit",
+  bug: 5834665
+},
+{
+  description: "libcore.java.net.URLConnectionTest#testServerShutdownInput fails on ICL27 mysid-userdebug (5534202 is caused by 5731252)",
+  name: "libcore.java.net.URLConnectionTest#testServerShutdownInput",
+  bug: 5534202
+},
+{
+  description: "This test has been failing in our continuous build recently.",
+  names: [
+    "libcore.java.net.URLConnectionTest#testConnectTimeouts"
+  ],
+  bug: 3441111
+},
+{
+  description: "We're retiring the security manager. Unfortunately, tests all over the place
+                need to check that they're secure, so they all fail when we refuse to install
+                a security manager. This suppresses all of these failures.",
+  result: EXEC_FAILED,
+  failure: "disable securityManager",
+  pattern: ".*java.lang.SecurityException\\s+at java.lang.System.setSecurityManager.*",
+  bug: 2585285
+},
+{
+  description: "ignore compilation errors due to different available APIs",
+  result: COMPILE_FAILED,
+  failure: "ignore compilation errors",
+  pattern: ".*\\.java:\\d+: cannot find symbol.*"
+},
+{
+  description: "the average length of possible UTF-8 sequences is 2 bytes.",
+  result: EXEC_FAILED,
+  name: "org.apache.harmony.tests.java.nio.charset.UTFCharsetEncoderTest#testSpecificDefaultValue",
+  substring: "junit.framework.AssertionFailedError: expected:<1.1> but was:<2.0>"
+},
+{
+  description: "Some tests (ExcludedProxyTest) connect to a public webserver to check that the HTTP client works",
+  result: EXEC_FAILED,
+  failure: "connect to the Internet",
+  pattern: ".*java.net.UnknownHostException:.*jcltest.apache.org.*"
+},
+{
+  description: "Some tests depend on ICU data, which has changed. Others make assumptions about floating point rounding",
+  result: EXEC_FAILED,
+  names: [
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_BigDecimalExceptionOrder",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_DateTimeConversion",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_FloatConversionE",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_FloatConversionF",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_FloatConversionG",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_FloatDoubleBigDecimalExceptionOrder",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_GeneralConversionOther",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_LineSeparator",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_Percent",
+    "org.apache.harmony.tests.java.util.FormatterTest#test_formatLjava_lang_String$Ljava_lang_Object_Width"
+  ]
+},
+{
+  description: "(Needs investigation) Some tests make assertions that don't make sense, others use broken port allocation logic.",
+  result: EXEC_FAILED,
+  names: [
+    "org.apache.harmony.tests.java.net.Inet6AddressTest#test_getByNameLjava_lang_String",
+    "org.apache.harmony.tests.java.net.InetAddressTest#test_equalsLjava_lang_Object",
+    "org.apache.harmony.tests.java.net.InetAddressTest#test_getByNameLjava_lang_String",
+    "org.apache.harmony.tests.java.net.InetAddressTest#test_isReachableLjava_net_NetworkInterfaceII_loopbackInterface"
+  ]
+},
+{
+  description: "(Needs investigation) Test failures from the harmony import of external/apache-harmony/archive",
+  bug: 12189307,
+  result: EXEC_FAILED,
+  names: [
+    "org.apache.harmony.tests.java.util.jar.ManifestTest#testNul",
+    "org.apache.harmony.tests.java.util.jar.ManifestTest#testRead",
+    "org.apache.harmony.tests.java.util.jar.ManifestTest#testStreamConstructor"
+  ]
+},
+{
+  description: "Potentially flakey because they rely on a specific local TCP port being free.",
+  result: EXEC_FAILED,
+  names: [
+      "org.apache.harmony.tests.java.nio.channels.ServerSocketChannelTest#test_bind_explicitPort"
+  ]
+},
+{
+  description: "The ResourceBundle code under test is probably not used much on Android and needs a lot of attention.",
+  bug: 13747957,
+  result: EXEC_FAILED,
+  names: [
+      "org.apache.harmony.tests.java.util.ControlTest#test_needsReload_LStringLLocaleLStringLClassLoaderResourceBundleJ"
+  ]
+},
+{
+  description: "Fails in CTS, passes in CoreTestRunner.",
+  result: EXEC_FAILED,
+  names: [
+      "org.apache.harmony.tests.java.net.URLConnection#test_getContentEncoding",
+      "libcore.java.text.OldNumberFormatTest#test_parseLjava_lang_String",
+      "libcore.java.nio.channels.OldSocketChannelTest#test_writeLjava_nio_ByteBuffer_Nonblocking_HugeData",
+      "org.apache.harmony.tests.java.lang.ProcessManagerTest#testSleep",
+      "libcore.java.security.cert.OldPKIXParametersTest#testPKIXParametersKeyStore04"
+  ]
+},
+{
+  description: "Suffers from DH slowness, disabling for now.",
+  result: EXEC_FAILED,
+  names: [
+      "libcore.java.security.OldDHTest#testDHGen",
+      "libcore.java.security.OldKeyPairGeneratorTestDH#testKeyPairGenerator",
+      "libcore.javax.crypto.spec.KeyPairGeneratorTestDH#testKeyPairGenerator",
+      "libcore.javax.crypto.spec.AlgorithmParametersTestDH#testAlgorithmParameters",
+      "libcore.javax.crypto.spec.AlgorithmParameterGeneratorTestDH#testAlgorithmParameterGenerator"
+  ]
+},
+{
+  description: "Destroys MD5 provider, hurts succeeding tests",
+  result: EXEC_FAILED,
+  names: [
+      "tests.api.javax.security.cert.X509CertificateTest#testVerifyPublicKey",
+      "tests.api.javax.security.cert.X509CertificateTest#testVerifyPublicKeyString"
+  ]
+},
+{
+  description: "Suffers from side effect of other, currently unknown test",
+  result: EXEC_FAILED,
+  names: [
+      "org.apache.harmony.luni.tests.internal.net.www.protocol.http.HttpURLConnectionTest#testProxyAuthorization"
+  ]
+},
+{
+  description: "Support_TestWebServer requires isolation.",
+  result: EXEC_FAILED,
+  names: [
+      "libcore.java.net.OldURLClassLoaderTest#test_findResourceLjava_lang_String"
+  ]
+},
+{
+  description: "Causes OutOfMemoryError to test finalization",
+  result: EXEC_FAILED,
+  names: [
+      "org.apache.harmony.tests.java.lang.ref.SoftReferenceTest#test_get_SoftReference",
+      "org.apache.harmony.crypto.tests.javax.crypto#ExemptionMechanismTest#test_finalize"
+  ]
+},
+{
+  description: "Causes open dex file error",
+  result: EXEC_FAILED,
+  names: [
+      "org.apache.harmony.tests.java.lang.reflect.GenericSignatureFormatErrorTest#test_signatureFormatError"
+  ]
+}
+]

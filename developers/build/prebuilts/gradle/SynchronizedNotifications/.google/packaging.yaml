@@ -1,0 +1,18 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [Wearable]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-SynchronizedNotifications
+level:        INTERMEDIATE
+icon:         screenshots/web-icon.png
+apiRefs:
+    - android:com.google.android.gms.wearable.DataApi
+    - android:com.google.android.gms.wearable.Wearable
+    - android:com.google.android.gms.wearable.WearableListenerService
+license: apache2

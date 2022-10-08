@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Copyright 2013 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Record the current working directory. This allows us to correctly interpret
+# relative paths
+CALLED_FROM=$( pwd -P )
+
+# Record the location of this script. The assumption is that the script is located in the
+# top-level build directory, so finding the script means finding the build directory.
+SCRIPTNAME=$(basename "$0")
+SCRIPTPATH=$( cd "$(dirname "$0")" ; pwd -P )
+GRADLE=$SCRIPTPATH/gradlew
+
+# Parameter 1 is the path from the cwd to the sample.
+SAMPLE_PATH=""
+if  [ -n "$1" ]; then
+    SAMPLE_PATH=$CALLED_FROM/$1
+fi
+
+# Calculate the relative path from the sample location to the main build directory. This
+# allows us to define build dependencies as relative paths, rather than requiring the developer
+# to add them to the environment.
+BUILDPATH=$(perl -e "use File::Spec; print File::Spec->abs2rel(@ARGV)" $SCRIPTPATH $SAMPLE_PATH)
+
+# Same thing for the samples common code: calculate the relative path.
+SAMPLES_COMMON=$( cd $SCRIPTPATH/../samples/android/common ; pwd -P)
+COMMONPATH=$(perl -e "use File::Spec; print File::Spec->abs2rel(@ARGV)" $SAMPLES_COMMON $SAMPLE_PATH)
+
+# Launch a Gradle build with the SampleGen creation parameters on the command line
+# Note: Daemon disabled since the script reads for System.console. This overrides user settings.
+$GRADLE -b $SCRIPTPATH/build.gradle --info --no-daemon create -Pout=$SAMPLE_PATH \
+    -PcalledFrom=$CALLED_FROM -PpathToSamplesCommon=$COMMONPATH -PpathToBuild=$BUILDPATH

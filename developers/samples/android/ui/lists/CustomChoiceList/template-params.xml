@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>CustomChoiceList</name>
+    <group>UI</group>
+    <package>com.example.android.customchoicelist</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>4</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+                This sample demonstrates how to create custom checkable layouts, for use with ListView\'s choiceMode
+                attribute.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <common src="logger"/>
+
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Widgets</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>BEGINNER</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/1-main.png</img>
+            <img>screenshots/2-settings.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.widget.Checkable</android>
+            <android>android.widget.ListView</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+This sample demonstrates how to create custom checkable layouts, for use with ListView's choiceMode
+attribute.
+]]>
+        </description>
+
+        <!-- Multi-paragraph introduction to sample, from an educational point-of-view.
+        Makrdown formatting allowed. This will be used to generate a mini-article for the
+        sample on DAC. -->
+        <intro>
+<![CDATA[
+This sample demonstrates how to create custom single- or multi-choice [ListView][1] UIs on Android.
+
+When a ListView has a `android:choiceMode` attribute set, it will allow users to "choose" one or more items. For
+exmaple, refer to `res/layout/sample_main.xml` in this project:
+
+```xml
+<ListView android:id="@android:id/list"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:paddingLeft="@dimen/page_margin"
+    android:paddingRight="@dimen/page_margin"
+    android:scrollbarStyle="outsideOverlay"
+    android:choiceMode="multipleChoice" />
+```
+
+The framework provides these default list item layouts that show standard radio buttons or check boxes next to a single
+line of text:
+
+- android.R.layout.simple_list_item_single_choice
+- android.R.layout.simple_list_item_multiple_choice.
+
+In some cases, you may want to customize this layout. When doing so, the root view must implement the Checkable
+interface. For an example, see this sample's `CheckableLinearLayout` class.
+
+Lastly, remember to use padding on your ListViews to adhere to the standard metrics described in the Android Design
+guidelines. When doing so, you should set the `android:scrollbarStyle` attribute such that the scrollbar doesn't inset.
+
+[1]: http://developer.android.com/reference/android/widget/ListView.html
+]]>
+        </intro>
+    </metadata>
+</sample>

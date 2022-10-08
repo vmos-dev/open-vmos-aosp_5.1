@@ -1,0 +1,26 @@
+This is an example app that displays a list of coupons.
+
+Build Instructions
+-------------------
+
+This sample uses the Gradle build system. To build this project, use the
+"gradlew assemble" command or use "Import Project" in Android Studio.
+
+To see a list of all available commands, run "gradlew tasks".
+
+Dependencies
+-------------
+
+- Android SDK Build-tools v19.0.1
+- Android Support Repository v4
+- Android Support Library v19.0.1
+- Google Repository 5
+
+Dependencies are available for download via the Android SDK Manager.
+
+Android Studio is available for download at:
+    http://developer.android.com/sdk/installing/studio.html
+
+The images in the app's main/assets folder are licensed under Creative Commons Attribution 2.5
+(http://creativecommons.org/licenses/by/2.5/). They can be attributed to Katherine Kuan.
+Please follow the best practices for attribution (http://wiki.creativecommons.org/Marking/Users).

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>BasicSyncAdapter</name>
+    <group>Connectivity</group>
+    <package>com.example.android.basicsyncadapter</package>
+
+
+    <!-- change minSdk if needed-->
+    <minSdk>7</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample demonstrates using SyncAdapter to fetch background data for an app that
+            doesn\'t require a user-visible account type or 2-way synchronization.
+
+            \n\nThis sample periodically downloads the feed from the Android Developer Blog and
+            caches the data in a content provider. At runtime, the cached feed data is displayed
+            inside a ListView.
+            ]]>
+        </intro>
+    </strings>
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Background, Connectivity</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>INTERMEDIATE</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/main.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.Service</android>
+            <android>android.content.AbstractThreadedSyncAdapter</android>
+            <android>android.content.ContentProvider</android>
+            <android>android.content.ContentResolver</android>
+            <android>android.content.SyncResult</android>
+            <android>android.database.sqlite.SQLiteDatabase</android>
+        </api_refs>
+        <description>
+<![CDATA[
+This sample demonstrates using SyncAdapter to fetch background
+data for an app. It covers the creation of the required Service
+that the OS uses to initiate the background data sync as well as
+scheduling syncs with background data.
+]]>
+        </description>
+        <intro>
+<![CDATA[
+This sample demonstrates using SyncAdapter to fetch background data
+for an app. SyncAdapters can be used to execute your data transfer
+code at configurable intervals, while efficiently using battery and
+other system resources.
+
+This sample implements all the required elements of a sync adapter.
+- Creates a sync adapter class.
+- Creates a bound Service which the OS uses to initiate a sync.
+- Defines the sync adapter properties in an XML resource file.
+- Declares the bound Service in the app manifest.
+
+For more on SyncAdapters refer to [Transferring Data Using Sync Adapters][1]
+
+[1]: http://developer.android.com/training/sync-adapters/index.html
+]]>
+        </intro>
+    </metadata>
+
+    <template src="base"/>
+    <common src="accounts"/>
+    <common src="db"/>
+    <common src="logger"/>
+</sample>

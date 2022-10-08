@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>ActionBarCompat-Basic</name>
+    <group>UI</group>
+    <package>com.example.android.actionbarcompat.basic</package>
+
+    <dependency>com.android.support:appcompat-v7:21.0.2</dependency>
+
+    <!-- change minSdk if needed-->
+    <minSdk>7</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample shows you how to use ActionBarCompat to create a basic Activity which
+            displays action items. It covers inflating items from a menu resource, as well as adding
+            an item in code. Items that are not shown as action items on the Action Bar are
+            displayed in the action bar overflow.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+
+<metadata>
+    <status>PUBLISHED</status>
+    <categories>Getting Started, UI</categories>
+    <technologies>Android</technologies>
+    <languages>Java</languages>
+    <solutions>Mobile</solutions>
+    <level>BEGINNER</level>
+    <!-- Dimensions: 512x512, PNG fomrat -->
+    <icon>screenshots/big-icon.png</icon>
+    <!-- Path to screenshots. Use <img> tags for each. -->
+    <screenshots>
+        <img>screenshots/screenshot1.png</img>
+        <img>screenshots/screenshot2.png</img>
+    </screenshots>
+    <!-- List of APIs that this sample should be cross-referenced under. Use <android>
+    for fully-qualified Framework class names ("android:" namespace).
+
+    Use <ext> for custom namespaces, if needed. See "Samples Index API" documentation
+    for more details. -->
+    <api_refs>
+        <android>android.app.ActionBar</android>
+        <android>android.support.v7.app.ActionBarActivity</android>
+        <android>android.support.v4.view.MenuItemCompat</android>
+    </api_refs>
+    <description>
+<![CDATA[
+This sample shows you how to use ActionBarCompat to create a basic Activity
+which displays action items. It covers inflating items from a menu resource,
+as well as adding an item in code.
+]]>
+    </description>
+    <intro>
+<![CDATA[
+Android 3.0 introduced the “action bar” control, a toolbar that is expected
+to be present in most types of applications. This control identifies the user
+location, and provides user actions and navigation modes.
+Using the action bar offers your users a familiar interface across applications
+that the system gracefully adapts for different screen configurations.
+
+Instantiating an action bar can be done by using the [ActionBar][1] API provided
+in API 11 or above. Support for older devices is provided by the
+[support library’s ActionBar][2] implementation, compatible back to API 7.
+This sample demonstrates using the support library APIs.
+
+Using an ActionBar with the support library requires the following steps:
+
+1. Create your activity by extending ActionBarActivity.
+2. Use (or extend) one of the Theme.AppCompat themes for your activity.
+
+Once this is done, action items will be created for any options menu items that
+would otherwise be created during when `[onCreateOptionsMenu()][3]` is called.
+
+[1]: http://developer.android.com/reference/android/app/ActionBar.html
+[2]: http://developer.android.com/reference/android/support/v7/app/ActionBar.html
+[3]: http://developer.android.com/reference/android/app/Activity.html#onCreateOptionsMenu(android.view.Menu)
+]]>
+    </intro>
+</metadata>
+</sample>

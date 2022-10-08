@@ -1,0 +1,17 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       PUBLISHED
+technologies: [Android]
+categories:   [UI, ActionBar]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-ActionBarCompat-ShareActionProvider
+level:        ADVANCED
+icon:         screenshots/icon-web.png
+apiRefs:
+    - android:android.support.v7.widget.ShareActionProvider
+    - android:android.support.v7.app.ActionBarActivity
+license: apache2

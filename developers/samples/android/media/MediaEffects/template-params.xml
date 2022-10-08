@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2014 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+
+<sample>
+    <name>MediaEffects</name>
+    <group>Media</group>
+    <package>com.example.android.mediaeffects</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>14</minSdk>
+
+    <!-- Include additional dependencies here.-->
+    <!-- dependency>com.google.android.gms:play-services:5.0.+</dependency -->
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample shows how to use the Media Effects APIs that were introduced in Android 4.0.
+            These APIs let you apply effects to image frames represented as OpenGL ES 2.0 textures.
+            Image frames can be images loaded from disk, frames from the device\'s camera, or other
+            video streams.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+    <template src="FragmentView"/>
+    <common src="logger"/>
+    <common src="activities"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Media, OpenGL</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>ADVANCED</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/menu.png</img>
+            <img>screenshots/duotone.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.media.effect.Effect</android>
+            <android>android.media.effect.EffectContext</android>
+            <android>android.media.effect.EffectFactory</android>
+            <android>android.opengl.GLSurfaceView</android>
+        </api_refs>
+
+        <description>
+<![CDATA[
+This sample shows how to use the Media Effects APIs that were
+introduced in Android 4.0.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+The [Media Effects APIs][1] lets you apply effects to image frames
+represented as OpenGL ES 2.0 textures.  Image frames can be images
+loaded from disk, frames from the device's camera, or other video
+streams.
+
+For a list of available effects, refer to [EffectsFactory][2].
+
+[1]: http://developer.android.com/reference/android/media/effect/package-summary.html
+[2]: http://developer.android.com/reference/android/media/effect/EffectFactory.html
+]]>
+        </intro>
+    </metadata>
+
+</sample>

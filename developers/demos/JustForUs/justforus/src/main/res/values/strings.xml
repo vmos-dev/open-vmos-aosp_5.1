@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2014 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<!-- String resources -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Title of the application. [CHAR LIMIT=12] -->
+    <string name="app_name">Just for Us</string>
+
+    <!--
+      Template string with coupon title, subtitle, and sender name for the text to use
+      when the coupon is shared with other apps. [CHAR LIMIT=NONE]
+    -->
+    <string name="message_format_without_sender">Excited to redeem my coupon! <xliff:g id="coupon_title">%s</xliff:g> - <xliff:g id="coupon_subtitle">%s</xliff:g> #justforus</string>
+
+    <!--
+      Template string with coupon title, subtitle, and sender name for the text to use
+      when the coupon is shared with other apps. [CHAR LIMIT=NONE]
+    -->
+    <string name="message_format_with_sender">Excited to redeem my coupon with <xliff:g id="coupon_title">%s</xliff:g>! <xliff:g id="coupon_title">%s</xliff:g> - <xliff:g id="coupon_subtitle">%s</xliff:g> #justforus</string>
+
+    <!--
+      Title of the share intent picker dialog. Displayed above a list of apps that the
+      user can share to. [CHAR LIMIT=20]
+    -->
+    <string name="redeem_using">Redeem using</string>
+</resources>

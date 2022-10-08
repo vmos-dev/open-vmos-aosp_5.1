@@ -1,0 +1,241 @@
+
+
+
+
+// BEGIN_EXCLUDE
+import com.example.android.samples.build.SampleGenPlugin
+apply plugin: SampleGenPlugin
+
+samplegen {
+  pathToBuild "../../../../build"
+  pathToSamplesCommon "../../common"
+}
+
+task emitBrowseableAll {
+    println "Executing all tasks"
+}
+
+task emitGradleAll {
+    println "Executing all tasks"
+}
+
+task emitGradleZipAll {
+    println "Executing all tasks"
+}
+
+def tasksBrowseable = []
+def tasksGradle = []
+def tasksGradleZip = []
+def samplesXml = (new XmlParser()).parse('samples.xml')
+samplesXml.sample.each { sample ->
+  println "Creating task : " +  sample.@name
+
+  //
+  //Browseable task
+  //
+  task "task${sample.@name}Browseable" (type:Copy) {
+    def outputPath =outPath("browseable", sample.@name);
+    //Get absolute path of input path
+    FileTree inputFileTree = project.fileTree(sample.@path)
+    def inputPath = inputFileTree.getFiles().iterator().next().parentFile.absolutePath //sample.@path
+
+    println  "Input path : " + inputPath
+
+    mkdir outputPath
+    into outputPath
+
+    from("${inputPath}/AndroidManifest.xml")
+    from("${inputPath}/lint.xml")
+    from("${inputPath}/project.properties")
+    into("res") {
+      from("${inputPath}/res")
+    }
+    into("assets") {
+      from("${inputPath}/assets")
+    }
+
+    //Collect C++ files
+    into("jni") {
+      from("${inputPath}/jni")
+    }
+
+    //Collect java files
+    def javaDirs = ["${inputPath}/src"]
+    FileTree javaTree = null;
+    javaDirs.each { dir ->
+      FileTree tree = project.fileTree("${dir}")
+      javaTree = (javaTree == null) ? tree : javaTree.plus(tree)
+    }
+
+    println javaTree;
+    println javaDirs
+    Map collapsedPaths = collapsePaths(javaTree, javaDirs)
+    println collapsedPaths
+
+    javaDirs.each { srcPath ->
+      println srcPath
+      into("src") {
+        def javaPath = "${srcPath}"
+        from(javaPath)
+        setIncludeEmptyDirs(false)
+        include(["**/*.java", "**/*.xml"])
+        eachFile { FileCopyDetails fcd ->
+          if (fcd.file.isFile()) {
+            def filename = fcd.name;
+            String collapsed = collapsedPaths.get(fcd.file.path);
+            fcd.path = "src/${collapsed}";
+          } else {fcd.exclude()}
+        }
+        println "***************** done"
+      }
+    }
+  }
+
+  //
+  //Zipfile task
+  //
+  task "task${sample.@name}Gradle"(type:Copy) {
+    //dependsOn(preflight)
+
+    def outputPath =outPath("gradle", sample.@name);
+    def inputPath = sample.@path
+    // Copy entire sample into output -- since it's already in Gradle format, we'll explicitly exclude content that
+    // doesn't belong here.
+    mkdir outputPath
+    into outputPath
+    from("${inputPath}") {
+        // Paths to exclude from output
+        exclude ".classpath"
+        exclude ".cproject"
+        exclude ".project"
+        exclude ".settings"
+        exclude "bin"
+        exclude "gen"
+        exclude "obj"
+        exclude "libs"
+        exclude "**/proguard-project.txt"
+        exclude "${samplegen.targetSampleModule()}/**/README*.txt"
+    }
+
+    // Remove BEGIN_EXCLUDE/END_EXCLUDE blocks from source files
+    eachFile { file ->
+        if (file.name.endsWith(".gradle") || file.name.endsWith(".java")) {
+            // TODO(trevorjohns): Outputs a blank newline for each filtered line. Replace with java.io.FilterReader impl.
+            boolean outputLines = true;
+            def removeExcludeBlocksFilter = { line ->
+                if (line ==~ /\/\/ BEGIN_EXCLUDE/) {
+                    outputLines = false;
+                } else if (line ==~ /\/\/ END_EXCLUDE/) {
+                    outputLines = true;
+                } else if (outputLines) {
+                    return line;
+                }
+                return ""
+            }
+            filter(removeExcludeBlocksFilter)
+        }
+    }
+  }
+
+  task "task${sample.@name}GradleZip"(type:Zip) {
+    def outputPath =outPath("browseable", "");
+    def folderName = "${sample.@name}"
+    archiveName = "${sample.@name}.zip"
+    def inputPath = outPath("gradle", sample.@name)
+    from inputPath
+    into folderName
+    include "**"
+    def outDir = project.file(outputPath)
+    destinationDir = outDir
+  }
+
+  //Add tasks to list
+  tasksBrowseable.add("task${sample.@name}Browseable")
+  tasksGradle.add("task${sample.@name}Gradle")
+  tasksGradleZip.add("task${sample.@name}GradleZip")
+}
+
+//Add generated tasks to dependency list
+emitBrowseableAll.dependsOn(tasksBrowseable)
+emitGradleAll.dependsOn(tasksGradle)
+emitGradleZipAll.dependsOn([tasksGradle, tasksGradleZip])
+
+String outPath(String buildType, String sampleName) {
+/*
+    def repoInfo = "repo info platform/developers/build".execute().text
+    def buildPath = (repoInfo =~ /Mount path: (.*)/)[0][1]
+*/
+    return "${samplegen.pathToBuild}/out/${buildType}/${sampleName}";
+}
+
+/**
+ * Collapse a path "IntelliJ-style" by putting dots rather than slashes between
+ * path components that have only one child. So the two paths
+ *
+ * com/example/android/foo/bar.java
+ * com/example/android/bar/foo.java
+ *
+ * Become
+ * com.example.android/foo/bar.java
+ * com.example.android/bar/foo.java
+ *
+ * @param path
+ * @param roots
+ * @return
+ */
+Map<String,String> collapsePaths(FileTree path, List<String> roots) {
+    Map result = new HashMap<String,String>();
+
+    println ("******************** Collapse *************************")
+
+    path.visit { FileVisitDetails f ->
+        if (f.isDirectory()) return;
+        StringBuilder collapsedPath = new StringBuilder("${f.name}");
+        File current = f.file;
+
+        //
+        // Starting at this file, walk back to the root of the path and
+        // substitute dots for any directory that has only one child.
+        //
+
+        // Don't substitute a dot for the separator between the end of the
+        // path and the filename, even if there's only one file in the directory.
+        if (!f.isDirectory()) {
+            current = current.parentFile;
+            collapsedPath.insert(0, "${current.name}/")
+        }
+
+        // For everything else, use a dot if there's only one child and
+        // a slash otherwise. Filter out the root paths, too--we only want
+        // the relative path. But wait, Groovy/Gradle is capricious and
+        // won't return the proper value from a call to roots.contains(String)!
+        // I'm using roots.sum here instead of tracking down why a list of
+        // strings can't return true from contains() when given a string that
+        // it quite obviously does contain.
+        current = current.parentFile;
+        while((current != null)
+                && (roots.sum {String r-> return r.equals(current.absolutePath) ? 1 : 0 } == 0)) {
+
+          //Exclude files starting with "."
+          def files = 0
+          current.list().each { file ->
+            if (!file.startsWith("."))
+              files++
+          }
+          char separator = files > 1 ? '/' : '.';
+          collapsedPath.insert(0, "${current.name}${separator}");
+          current = current.parentFile;
+        }
+        result.put(f.file.path, collapsedPath.toString());
+    }
+
+    println ("******************** Results *************************")
+
+    result.each {entry -> println("${entry}\n\n");}
+    return result
+}
+
+
+//apply from: "ndkbuild.gradle"
+// END_EXCLUDE
+

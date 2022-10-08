@@ -1,0 +1,42 @@
+<p>A sample application that demonstrates Android's search framework.</p>
+
+<p>This application includes a dictionary of words. By invoking the Android search dialog inside the
+app (via the device search button or Menu > Search), you can perform a search
+across the dictionary. As you type, suggestions will appear, which you can select
+to view the complete definition. You can also execute the search to view all word definitions
+that match the entered text. The application also allows Quick Search Box (Android's system-wide
+search) to provide dictionary suggestions.</p>
+
+<p>The code in this application demonstrates how to:</p>
+<ul>
+  <li>Implement a search interface using Android's search framework</li>
+  <li>Provide custom search suggestions and offer them in Quick Search Box</li>
+  <li>Create an SQLite database and an FTS3 table for full-text searches</li>
+  <li>Create a <a href="../../../guide/topics/providers/content-providers.html">content
+provider</a> to perform all search and suggestion queries</li>
+  <li>Use <code><a
+href="../../../reference/android/widget/SimpleCursorAdapter.html">SimpleCursorAdapter</a></code> to
+bind data from a Cursor to a ListView.</li>
+</ul>
+
+<p><b>Revisions:</b></p>
+<ul>
+  <li>Updated for Android 3.0 to use the <a href="../../../guide/topics/ui/actionbar.html">Action
+Bar</a> and the <code><a
+href="../../../reference/android/widget/SearchView.html">SearchView</a></code> widget as an action item.
+(Available in the <em>Samples for SDK API 11</em>.)</li>
+</ul>
+
+<p>See also:</p>
+<ul>
+  <li><a href="../../../guide/topics/search/index.html">Search Developer Guide</a></li>
+</ul>
+
+<p class="note"><strong>Note:</strong> For the original version of Searchable Dictionary, which
+reads words from a file instead of a database and uses a custom <code><a
+href="../../../reference/android/widget/BaseAdapter.html">BaseAdapter</a></code>, see the SDK
+samples included with the platforms for API Level 4-6.</p>
+
+
+<img src="../images/SearchableDictionary1.png" />
+<img src="../images/SearchableDictionary2.png" />

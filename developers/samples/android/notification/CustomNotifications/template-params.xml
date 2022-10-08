@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>CustomNotifications</name>
+    <group>Notification</group>
+    <package>com.example.android.customnotifications</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>4</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample demonstrates notifications with custom content views.
+            ]]>
+        </intro>
+    </strings>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Notification, UI</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>BEGINNER</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/main-notification.png</img>
+            <img>screenshots/notification.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.Notification</android>
+            <android>android.app.NotificationManager</android>
+            <android>android.app.PendingIntent</android>
+            <android>android.support.v4.app.NotificationCompat</android>
+            <android>android.widget.RemoteViews</android>
+        </api_refs>
+        <description>
+<![CDATA[
+This sample demonstrates notifications with custom content views.
+The use of collapsed and expanded notification views are shown.
+]]>
+        </description>
+        <intro>
+<![CDATA[
+This sample demonstrates notifications with custom content views. It
+also demonstrates the expanded notification introduced in API level 16.
+
+This sample shows all the required steps to create and display custom
+notifications:
+
+- Create Intent to launch Activity when notification is clicked.
+- Define custom layouts for collapsed and expanded views.
+- Use NotificationManager's notify to show notification.
+
+In the sample, click on the "SHOW NOTIFICATION" button to create
+a notification. Use two-fingered gestures up and down to collapse
+and expand the notification.
+]]>
+        </intro>
+    </metadata>
+
+    <template src="base"/>
+
+</sample>

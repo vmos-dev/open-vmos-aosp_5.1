@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/* //device/apps/common/assets/res/any/strings.xml
+**
+** Copyright 2006, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+<resources>
+    <string name="menu_upload_exceptions">Upload Exceptions</string>
+    <string name="menu_clear_exceptions">Clear Exceptions</string>
+
+    <string name="enable_wifi">Enable Wifi</string>
+    <string name="disable_wifi">Disable Wifi</string>
+    <string name="wifi_on_duration">Wifi on (ms): </string>
+    <string name="wifi_off_duration">Wifi off (ms): </string>
+    <string name="wifi_cycles_done">Cycles done: </string>
+    <string name="start_toggling">Start Wifi Toggle</string>
+    <string name="stop_toggling">Stop Wifi Toggle</string>
+    <string name="start_screen_toggling">Start Screen Toggle</string>
+    <string name="stop_screen_toggling">Stop Screen Toggle</string>
+    <string name="start_scan">Start Scan</string>
+    <string name="scan_cycles">Scan Cycles: </string>
+    <string name="disconnect">Disconnect</string>
+
+    <string name="start_tdls">Start TDLS</string>
+    <string name="stop_tdls">Stop TDLS</string>
+    <string name="mac_tdls"> IP/MAC: </string>
+
+    <string name="start_mms">Start MMS</string>
+    <string name="stop_mms">Stop MMS</string>
+    <string name="start_hipri">Start HiPri</string>
+    <string name="stop_hipri">Stop HiPri</string>
+    <string name="crash">CRASH</string>
+    <string name="report_all_bad">Report all bad</string>
+
+    <string name="netid">NetId</string>
+    <string name="add_default_route">Add Default Route</string>
+    <string name="remove_default_route">Remove Default Route</string>
+    <string name="default_request">Make a http request</string>
+    <string name="default_socket">Make a raw request</string>
+    <string name="bound_http_request">Make bound http request</string>
+    <string name="bound_socket_request">Make bound socket request</string>
+    <string name="routed_http_request">Make routed http request</string>
+    <string name="routed_socket_request">Make routed socket request</string>
+
+
+        <string name="device_info_default">unknown</string>
+        <string name="device_info_uptime">Uptime</string>
+        <string name="device_info_awaketime">Awake Time</string>
+        <string name="device_info_asleeptime">Asleep Time</string>
+
+    <string name="build_id_label">Build ID</string>
+    <string name="build_date_label">Build Date</string>
+    <string name="build_type_label">Build Type</string>
+    <string name="build_product_label">Build Product</string>
+    <string name="build_user_label">Build Label</string>
+    <string name="build_host_label">Build Host</string>
+    <string name="gsm_version_baseband_label">Baseband Version</string>
+    <string name="gsm_version_ril_impl_label">RIL Impl Version</string>
+
+    <string name="turn_on_radio">Turn on radio</string>
+    <string name="turn_off_radio">Turn off radio</string>
+
+    <string name="refresh_networks">Refresh Network List</string>
+
+    <string name="radioInfo_menu_viewADN">View SIM Address Book</string>
+    <string name="radioInfo_menu_viewFDN">View Fixed Dialing Numbers</string>
+    <string name="radioInfo_menu_viewSDN">View Service Dialing Numbers</string>
+
+    <!-- Package summary in Package Browser -->
+    <string name="disabled"><i>disabled</i></string>
+    <string name="system"><i>system</i></string>
+    <string name="debuggable"><i>debuggable</i></string>
+    <string name="nocode"><i>no code</i></string>
+    <string name="persistent"><i>persistent</i></string>
+    <string name="restart">Restart</string>
+    <string name="package_summary_uid_label">User ID</string>
+    <string name="package_summary_task_label">Task Affinity</string>
+    <string name="package_summary_version_label">Version</string>
+    <string name="package_summary_source_label">Source</string>
+    <string name="package_summary_receivers_label">Receivers</string>
+    <string name="package_summary_data_label">Data</string>
+    <string name="package_summary_instrumentation_label">Instrumentation</string>
+    <string name="package_summary_process_label">Process</string>
+    <string name="package_summary_services_label">Services</string>
+    <string name="package_summary_providers_label">Providers</string>
+    <string name="package_summary_activities_label">Activities</string>
+
+    <!-- Activity details in Package Browser -->
+    <string name="none">"(none)"</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="launch_multiple">Multiple (normal)</string>
+    <string name="launch_singleTop">Single Top</string>
+    <string name="launch_singleTask">Single Task</string>
+    <string name="launch_singleInstance">Single Instance</string>
+    <string name="launch_unknown">"(Unknown)"</string>
+
+    <string name="development_settings_show_cpu_text">Show CPU usage</string>
+    <string name="development_settings_always_finish_text">Immediately destroy activities</string>
+    <string name="development_settings_show_load_text">Show running processes</string>
+    <string name="development_settings_show_updates_text">Show screen updates</string>
+    <string name="development_settings_compatibility_mode_text">Disable compatibility mode</string>
+    <string name="development_settings_compatibility_mode_toast">Reboot required for
+            change to take effect.</string>
+    <string name="development_settings_enable_gl_text">Enable OpenGL ES (reboot needed)</string>
+    <string name="development_settings_allow_mock_location_text">Allow mock locations for testing</string>
+    <string name="development_settings_wait_for_debugger_text">Wait for debugger</string>
+    <string name="development_settings_show_background_text">Show background</string>
+    <string name="development_settings_show_xmpp_text">Show GTalk service connection status</string>
+    <string name="development_settings_debug_app_label_text">Debug App:</string>
+    <string name="development_settings_show_sleep_text">Show sleep state on LED</string>
+    <string name="development_settings_keep_screen_on_text">Keep screen on while plugged in</string>
+    <string name="development_settings_window_orientation_listener_log">Enable window orientation listener log</string>
+
+    <string name="monkey_screen_initialActivity_text"></string>
+    <string name="monkey_screen_number_of_events_label">Number of Events: </string>
+    <string name="monkey_screen_start_text">Start</string>
+    <string name="monkey_screen_initial_activity_label">Initial Activity: </string>
+
+    <string name="show_activity_clear_on_background_label">Clear on Background</string>
+    <string name="show_activity_task_affinity_label">Task Affinity</string>
+    <string name="show_activity_process_label">Process</string>
+    <string name="show_activity_state_not_needed_label">State Not Needed</string>
+    <string name="show_activity_required_permission_label">Required Permission</string>
+    <string name="show_activity_multiprocess_label">Multiprocess</string>
+
+    <string name="red_button_behavior_label">End Button Behavior</string>
+
+    <string name="gls_tester_label">GLS Tester</string>
+    <string name="gls_tester_prefer_hosted">Hosted</string>
+    <string name="gls_tester_require_google">Google</string>
+    <string name="gls_tester_get_accounts">List</string>
+    <string name="gls_tester_clear">Clear</string>
+    <string name="gls_tester_go">Go</string>
+    <string name="gls_tester_do_notification">Notify on failure</string>
+    <string name="gls_tester_run_intent">Run intent</string>
+    <string name="gls_tester_wipe_passwords">Wipe passwords</string>
+    <string name="process_name_header">Process Name:</string>
+    <string name="package_list_header">Packages in process:</string>
+    <string name="package_label">Package Name:</string>
+
+    <!-- Application configuration requirements related attributes -->
+    <string name="touchscreen_label">touchscreen:</string>
+    <string name="input_method_label">inputMethod:</string>
+    <string name="hard_keyboard_label">hardKeyboard:</string>
+    <string name="navigation_label">navigation:</string>
+    <string name="five_way_nav_label">five way nav:</string>
+    <string name="gles_version_label">GLES Version:</string>
+
+    <!-- Permission details related string attribtues -->
+    <string name="perm_name_text">Name :  </string>
+    <string name="dialog_title_error">Error</string>
+    <string name="invalid_perm_name">Invalid Permission Name</string>
+    <string name="ok">Ok</string>
+    <string name="perm_desc_text">Desc :  </string>
+    <string name="perm_group_text">Group :  </string>
+    <string name="perm_protection_text">Protection Level :  </string>
+    <string name="perm_source_text">Source package :  </string>
+    <string name="perm_list_header_text">Apps using permission  </string>
+    <string name="source_uid_text">Source uid :  </string>
+    <string name="shared_pkgs_text">Packages accessing via shared uid :  </string>
+
+    <!-- AccountsTester -->
+    <string name="accounts_tester_app_name">Accounts Tester</string>
+    <string name="accounts_tester_get_accounts_by_type">Get By Type</string>
+    <string name="accounts_tester_get_all_accounts">Get All</string>
+    <string name="accounts_tester_add_account">Add</string>
+    <string name="accounts_tester_select_account_type">Select Account Type</string>
+    <string name="accounts_tester_process_name_header">Process Name:</string>
+    <string name="accounts_tester_remove_account">Remove Account</string>
+    <string name="accounts_tester_get_auth_token">Get Auth Token</string>
+    <string name="accounts_tester_get_auth_token_by_type_and_feature">Get Auth Token By Type/Feature</string>
+    <string name="accounts_tester_test_has_features">Has Features</string>
+    <string name="accounts_tester_invalidate_auth_token">Invalidate Token</string>
+    <string name="accounts_tester_account_context_menu_title">account operations</string>
+    <string name="accounts_tester_ok_button">Ok</string>
+    <string name="accounts_tester_enter_auth_token_type">Enter the authtoken type:</string>
+    <string name="accounts_tester_enter_features">Enter the features separated by a space:</string>
+    <string name="accounts_tester_update_credentials">Update Credentials</string>
+    <string name="accounts_tester_confirm_credentials">Confirm Credentials</string>
+    <string name="accounts_tester_clear_password">Clear Password</string>
+    <string name="accounts_tester_edit_properties">Properties</string>
+    <string name="accounts_tester_desired_authtokentype_label">authtoken type:</string>
+    <string name="accounts_tester_desired_features_label">features:</string>
+
+    <!-- SyncAdapterDriver -->
+    <string name="bind_button">bind</string>
+    <string name="unbind_button">unbind</string>
+    <string name="start_sync_button">start sync</string>
+    <string name="cancel_sync_button">cancel sync</string>
+    <string name="sync_adapters_spinner_label">Registered Sync Adapters:</string>
+    <string name="status_starting_sync_format">Starting a sync of account %s...</string>
+    <string name="status_remote_exception_while_starting_sync">Got a RemoteException while starting the sync</string>
+    <string name="status_canceled_sync">Canceled the sync</string>
+    <string name="status_remote_exception_while_canceling_sync">Got a RemoteException while canceling the sync</string>
+    <string name="status_received_heartbeat">Received heartbeat</string>
+    <string name="status_sync_failed_format">Sync failed: %s</string>
+    <string name="status_sync_succeeded_format">Sync succeeded: %s</string>
+    <string name="status_already_bound">Already bound to sync adapter</string>
+    <string name="status_sync_adapter_not_selected">No selected sync adapter</string>
+    <string name="binding_connected_format">Connected to Sync Adapter\n\tauthority: %1$s\n\taccount type: %2$s</string>
+    <string name="binding_not_connected">Not connected to a sync adapter</string>
+    <string name="binding_bind_failed">Bind failed</string>
+    <string name="binding_waiting_for_connection">Waiting for service to be connected...</string>
+    <string name="select_account_to_sync">Select account to sync</string>
+
+    <!-- BadBehaviorActivity -->
+    <string name="bad_behavior_crash_main_label">Crash the main app thread</string>
+    <string name="bad_behavior_crash_thread_label">Crash an auxiliary app thread</string>
+    <string name="bad_behavior_crash_native_label">Crash the native process</string>
+    <string name="bad_behavior_crash_system_label">Crash the system server</string>
+    <string name="bad_behavior_wtf_label">Report a WTF condition</string>
+    <string name="bad_behavior_anr_label">ANR (Stop responding for 20 seconds)</string>
+    <string name="bad_behavior_anr_activity_label">ANR starting an Activity</string>
+    <string name="bad_behavior_anr_broadcast_label">ANR receiving a broadcast Intent</string>
+    <string name="bad_behavior_anr_service_label">ANR starting a Service</string>
+    <string name="bad_behavior_anr_system_label">System ANR (in ActivityManager)</string>
+    <string name="bad_behavior_wedge_system_label">Wedge system (5 minute system ANR)</string>
+
+    <!-- CacheAbuser -->
+    <string name="cache_abuser_start_internal_abuse">Quickly abuse internal cache</string>
+    <string name="cache_abuser_start_slow_internal_abuse">Slowly abuse internal cache</string>
+    <string name="cache_abuser_start_external_abuse">Quickly abuse external cache</string>
+    <string name="cache_abuser_start_slow_external_abuse">Slowly abuse external cache</string>
+    <string name="cache_abuser_stop_abuse">Stop cache abuse</string>
+
+    <!-- MediaScannerActivity -->
+    <string name="scancard">Scan SD card</string>
+    <string name="numsongs"># of albums</string>
+    <string name="insertbutton">Insert %1s albums</string>
+</resources>

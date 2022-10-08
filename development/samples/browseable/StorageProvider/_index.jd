@@ -1,0 +1,10 @@
+page.tags="MyCloud"
+sample.group=Content
+@jd:body
+
+<p>
+            
+            \nA simple implementation of a documents provider using the storage access framework in
+            Android 4.4.
+            
+        </p>

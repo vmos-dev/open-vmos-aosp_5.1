@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2013 The Android Open Source Project
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<sample>
+    <name>BluetoothLeGatt</name>
+    <group>Connectivity</group>
+    <package>com.example.android.bluetoothlegatt</package>
+
+    <!-- change minSdk if needed-->
+    <minSdk>18</minSdk>
+
+    <strings>
+        <intro>
+            <![CDATA[
+            This sample demonstrates how to use the Bluetooth LE Generic Attribute Profile (GATT)
+            to transmit arbitrary data between devices.
+            ]]>
+        </intro>
+    </strings>
+
+    <template src="base"/>
+
+    <metadata>
+        <status>PUBLISHED</status>
+        <categories>Connectivity</categories>
+        <technologies>Android</technologies>
+        <languages>Java</languages>
+        <solutions>Mobile</solutions>
+        <level>ADVANCED</level>
+        <icon>screenshots/icon-web.png</icon>
+        <screenshots>
+            <img>screenshots/1-main.png</img>
+            <img>screenshots/2-detail.png</img>
+        </screenshots>
+        <api_refs>
+            <android>android.app.Service</android>
+            <android>android.bluetooth.BluetoothGattService</android>
+        </api_refs>
+        <description>
+<![CDATA[
+This sample demonstrates how to use the Bluetooth LE Generic Attribute Profile (GATT)
+to transmit arbitrary data between devices.
+]]>
+        </description>
+
+        <intro>
+<![CDATA[
+This sample shows a list of available Bluetooth LE devices and provides
+an interface to connect, display data and display GATT services and
+characteristics supported by the devices.
+
+It creates a [Service][1] for managing connection and data communication with a GATT server
+hosted on a given Bluetooth LE device.
+
+The Activities communicate with the Service, which in turn interacts with the [Bluetooth LE API][2].
+
+[1]:http://developer.android.com/reference/android/app/Service.html
+[2]:https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html
+]]>
+        </intro>
+    </metadata>
+</sample>

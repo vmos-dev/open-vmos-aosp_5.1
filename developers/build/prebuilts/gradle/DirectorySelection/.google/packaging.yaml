@@ -1,0 +1,17 @@
+# GOOGLE SAMPLE PACKAGING DATA
+#
+# This file is used by Google as part of our samples packaging process.
+# End users may safely ignore this file. It has no relevance to other systems.
+---
+status:       DRAFTED
+technologies: [Android]
+categories:   [Content]
+languages:    [Java]
+solutions:    [Mobile]
+github:       android-DirectorySelection
+level:        INTERMEDIATE
+icon:         screenshots/web-icon.png
+apiRefs:
+    - android:android.content.ContentResolver
+    - android:android.provider.DocumentsContract
+license: apache2
