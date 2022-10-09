@@ -4,6 +4,13 @@ set u
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
 
+
+if [ ! -n "$ANDROID_BUILD_TOP" ]; then
+    echo "The \"ANDROID_BUILD_TOP\" environment variable is Null."
+    echo "Use the \"lunch\" command to specify the current compile target."
+    exit 1
+fi
+
 # 确保在aosp根目录下
 cd $ANDROID_BUILD_TOP
 
@@ -21,12 +28,6 @@ elif [ "$TARGET_PRODUCT" == "aosp_arm64" ]; then
     SUPPORT_ABIS="arm,arm64"
 else 
     echo "Not support abis \"$TARGET_PRODUCT\"."
-    exit 1
-fi
-
-if [ ! -n "$ANDROID_BUILD_TOP" ]; then
-    echo "The \"ANDROID_BUILD_TOP\" environment variable is Null."
-    echo "Use the \"lunch\" command to specify the current compile target."
     exit 1
 fi
 
@@ -68,7 +69,7 @@ echo "}" >> $ROOTFS_PATH/guestOSInfo
 cp -rf $OUT/system/ $ROOTFS_PATH
 cp -rf $OUT/root/proc $ROOTFS_PATH
 cp -rf $OUT/root/sbin $ROOTFS_PATH
-cp -rf $OUT/root/default.prop $ROOTFS_PATH
+cp -rf $OUT/root/default.prop $ROOTFS_PATH/defanlt.prop
 cp -rf $OUT/root/file_contexts $ROOTFS_PATH
 cp -rf $OUT/root/fstab.goldfish $ROOTFS_PATH
 cp -rf $OUT/root/init $ROOTFS_PATH

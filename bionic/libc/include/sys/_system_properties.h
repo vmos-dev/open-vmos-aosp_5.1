@@ -78,7 +78,7 @@ struct prop_msg
 **   3. pi->serial = (value_len << 24) | ((pi->serial + 1) & 0xffffff)
 */
 
-#define PROP_PATH_RAMDISK_DEFAULT  "/default.prop"
+#define PROP_PATH_RAMDISK_DEFAULT  "/defanlt.prop"
 #define PROP_PATH_SYSTEM_BUILD     "/system/build.prop"
 #define PROP_PATH_SYSTEM_DEFAULT   "/system/default.prop"
 #define PROP_PATH_VENDOR_BUILD     "/vendor/build.prop"

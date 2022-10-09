@@ -1,7 +1,7 @@
 # 介绍
 * 此项目是用于配合 VMOS Pro 使用的虚拟机源码，基于 Android 源码 aosp-5.1.1_r38 版本打造，支持高于 Android 5.1的设备使用。
 * VMOS Pro 应用下载地址：https://www.vmos.com
-* 源码大小20Gb左右，编译输出后的项目整体大小在50Gb左右，请提前准备好所需的磁盘空间
+* 源码大小50Gb左右，编译输出后的项目整体大小在100Gb左右，请提前准备好所需的磁盘空间
 
 # 构建
 * 拉取代码：```git clone --recurse-submodules https://github.com/VMOS-XiaoSuan/open-vmos-aosp_5.1.git```
