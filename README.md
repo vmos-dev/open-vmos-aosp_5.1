@@ -25,7 +25,7 @@ VMOS Pro Android 5.1 ROM 可理解为通过 VMOS Pro 运行在 Android 系统内
 1. 维护系统版本号：手动更改源码根目录下```rom_version_arm64```(64位) 或者 ```rom_version_arm```(32位) 中的版本号。（只是为了做版本管理，不修改也可以）  
 2. 在源码根目录下执行打包脚本```pack_arm64_user.sh```(64位) 或者 ```pack_arm_user.sh```(32位) 
 3. 脚本执行成功后，系统镜像包会输出在```$ANDROID_BUILD_TOP/vmos_51_$TARGET_PRODUCT-$TARGET_BUILD_VARIANT.zip```中
-
+4. 打包成功后的 zip 包可以导入到 VMOS Pro(2.9.3版本及以上) 中使用
 
 # VMOS Pro Android 5.1 ROM 使用场景
 #### 1、实现应用多开
