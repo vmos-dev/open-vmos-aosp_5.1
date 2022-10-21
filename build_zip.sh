@@ -14,20 +14,22 @@ fi
 # 确保在aosp根目录下
 cd $ANDROID_BUILD_TOP
 
-read line < ./RomVersion
+if [ "$TARGET_PRODUCT" == "aosp_arm" ]; then
+    SUPPORT_ABIS="arm"
+    ROM_VERSION_PATH="rom_version_arm"
+elif [ "$TARGET_PRODUCT" == "aosp_arm64" ]; then
+    SUPPORT_ABIS="arm,arm64"
+    ROM_VERSION_PATH="rom_version_arm64"
+else 
+    echo "Not support abis \"$TARGET_PRODUCT\"."
+    exit 1
+fi
+
+read line < $ROM_VERSION_PATH
 ROM_VERSION=$line
 tmp=`echo $ROM_VERSION | sed 's/[0-9]//g'`
 if [ -n "$tmp" ]; then
     echo "The value of RomVersion is malformed \"$ROM_VERSION\""
-    exit 1
-fi
-
-if [ "$TARGET_PRODUCT" == "aosp_arm" ]; then
-    SUPPORT_ABIS="arm"
-elif [ "$TARGET_PRODUCT" == "aosp_arm64" ]; then
-    SUPPORT_ABIS="arm,arm64"
-else 
-    echo "Not support abis \"$TARGET_PRODUCT\"."
     exit 1
 fi
 
