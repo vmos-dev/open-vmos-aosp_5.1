@@ -7,12 +7,12 @@
 [submodule "tools"]
 	path = tools
 	url = git@github.com:VMOS-XiaoSuan/tools.git
-[submodule "frameworks"]
-	path = frameworks
-	url = git@github.com:VMOS-XiaoSuan/frameworks.git
 [submodule "external"]
 	path = external
 	url = git@github.com:VMOS-XiaoSuan/external.git
 [submodule "prebuilts"]
 	path = prebuilts
 	url = git@github.com:VMOS-XiaoSuan/prebuilts.git
+[submodule "frameworks"]
+	path = frameworks
+	url = git@github.com:VMOS-XiaoSuan/frameworks.git
