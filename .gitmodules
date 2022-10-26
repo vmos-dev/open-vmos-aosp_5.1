@@ -1,18 +1,18 @@
 [submodule "cts"]
 	path = cts
-	url = git@github.com:VMOS-XiaoSuan/cts.git
+	url = https://github.com/VMOS-XiaoSuan/cts.git
 [submodule "packages"]
 	path = packages
-	url = git@github.com:VMOS-XiaoSuan/packages.git
+	url = https://github.com/VMOS-XiaoSuan/packages.git
 [submodule "tools"]
 	path = tools
-	url = git@github.com:VMOS-XiaoSuan/tools.git
+	url = https://github.com/VMOS-XiaoSuan/tools.git
 [submodule "external"]
 	path = external
-	url = git@github.com:VMOS-XiaoSuan/external.git
+	url = https://github.com/VMOS-XiaoSuan/external.git
 [submodule "prebuilts"]
 	path = prebuilts
-	url = git@github.com:VMOS-XiaoSuan/prebuilts.git
+	url = https://github.com/VMOS-XiaoSuan/prebuilts.git
 [submodule "frameworks"]
 	path = frameworks
-	url = git@github.com:VMOS-XiaoSuan/frameworks.git
+	url = https://github.com/VMOS-XiaoSuan/frameworks.git
